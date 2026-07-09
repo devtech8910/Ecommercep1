@@ -26,6 +26,19 @@
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/animations.css" />
     <link rel="stylesheet" href="css/responsive.css" />
+
+    <!-- Anti-FOUC Theme Script -->
+    <script>
+      (function(){
+        var theme = localStorage.getItem('dtf_theme') || 'system';
+        if (theme === 'system') {
+          var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        } else {
+          document.documentElement.setAttribute('data-theme', theme);
+        }
+      })();
+    </script>
   </head>
   <body>
     <!-- ========================================
@@ -59,15 +72,15 @@
               <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
             </a>
             <div class="dropdown-menu glass-panel" role="menu" aria-labelledby="categories-btn">
-              <a href="pages/category.html?cat=men" class="dropdown-item" role="menuitem">
+              <a href="pages/mens-wear.html" class="dropdown-item" role="menuitem">
                 <span class="dropdown-icon" aria-hidden="true">♂</span>
                 Men's Wear
               </a>
-              <a href="pages/category.html?cat=women" class="dropdown-item" role="menuitem">
+              <a href="pages/womens-wear.html" class="dropdown-item" role="menuitem">
                 <span class="dropdown-icon" aria-hidden="true">♀</span>
                 Women's Wear
               </a>
-              <a href="pages/category.html?cat=kids" class="dropdown-item" role="menuitem">
+              <a href="pages/kids-wear.html" class="dropdown-item" role="menuitem">
                 <span class="dropdown-icon" aria-hidden="true">★</span>
                 Kids Wear
               </a>
@@ -77,6 +90,9 @@
 
         <!-- Nav Actions -->
         <div class="nav-actions">
+          <button class="nav-icon-btn theme-toggle-btn" aria-label="Toggle theme">
+            <svg class="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"></svg>
+          </button>
           <a href="pages/wishlist.html" class="nav-icon-btn" aria-label="Wishlist" id="wishlist-nav-btn">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             <span class="icon-badge" id="wishlist-count" aria-live="polite">0</span>
@@ -101,9 +117,9 @@
         <ul class="mobile-links" role="list">
           <li><a href="index.html" class="mobile-link active" aria-current="page">Home</a></li>
           <li><a href="pages/shop.html" class="mobile-link">Shop</a></li>
-          <li><a href="pages/category.html?cat=men" class="mobile-link">Men's Wear</a></li>
-          <li><a href="pages/category.html?cat=women" class="mobile-link">Women's Wear</a></li>
-          <li><a href="pages/category.html?cat=kids" class="mobile-link">Kids Wear</a></li>
+          <li><a href="pages/mens-wear.html" class="mobile-link">Men's Wear</a></li>
+          <li><a href="pages/womens-wear.html" class="mobile-link">Women's Wear</a></li>
+          <li><a href="pages/kids-wear.html" class="mobile-link">Kids Wear</a></li>
           <li class="mobile-divider" aria-hidden="true"></li>
           <li><a href="pages/wishlist.html" class="mobile-link">Wishlist</a></li>
           <li><a href="pages/cart.html" class="mobile-link">Cart</a></li>
@@ -232,7 +248,7 @@
 
             <!-- ── Men's Wear ── -->
             <article class="cat-card" role="listitem" id="mens-card">
-              <a href="pages/category.html?cat=men" class="cat-link" aria-label="Go to Men's Wear">
+              <a href="pages/mens-wear.html" class="cat-link" aria-label="Go to Men's Wear">
 
                 <!-- Full photo -->
                 <div class="cat-photo-wrap">
@@ -265,7 +281,7 @@
 
             <!-- ── Women's Wear ── -->
             <article class="cat-card cat-card--featured" role="listitem" id="womens-card">
-              <a href="pages/category.html?cat=women" class="cat-link" aria-label="Go to Women's Wear">
+              <a href="pages/womens-wear.html" class="cat-link" aria-label="Go to Women's Wear">
 
                 <div class="cat-photo-wrap">
                   <img
@@ -293,7 +309,7 @@
 
             <!-- ── Kids Wear ── -->
             <article class="cat-card" role="listitem" id="kids-card">
-              <a href="pages/category.html?cat=kids" class="cat-link" aria-label="Go to Kids' Wear">
+              <a href="pages/kids-wear.html" class="cat-link" aria-label="Go to Kids' Wear">
 
                 <div class="cat-photo-wrap">
                   <img
@@ -555,9 +571,9 @@
               <ul class="footer-links" role="list">
                 <li><a href="index.html" class="footer-link">Home</a></li>
                 <li><a href="pages/shop.html" class="footer-link">Shop All</a></li>
-                <li><a href="pages/category.html?cat=men" class="footer-link">Men's Wear</a></li>
-                <li><a href="pages/category.html?cat=women" class="footer-link">Women's Wear</a></li>
-                <li><a href="pages/category.html?cat=kids" class="footer-link">Kids Wear</a></li>
+                <li><a href="pages/mens-wear.html" class="footer-link">Men's Wear</a></li>
+                <li><a href="pages/womens-wear.html" class="footer-link">Women's Wear</a></li>
+                <li><a href="pages/kids-wear.html" class="footer-link">Kids Wear</a></li>
               </ul>
             </div>
 

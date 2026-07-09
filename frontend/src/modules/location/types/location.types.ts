@@ -38,6 +38,11 @@ export interface AddressFormData {
   street: string;
   area: string;
   landmark: string;
+  countryId?: number;
+  stateId?: number;
+  cityId?: number;
+  areaId?: number;
+  streetId?: number;
   city: string;
   state: string;
   country: string;

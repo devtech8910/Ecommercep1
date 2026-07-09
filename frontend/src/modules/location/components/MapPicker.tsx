@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { Coordinates } from '../types/location.types';
 
@@ -22,6 +22,19 @@ interface MapPickerProps {
   onLocationChange: (coords: Coordinates) => void;
   className?: string;
 }
+
+/**
+ * ChangeMapView — Dynamically pans the Leaflet map when the center prop changes.
+ * react-leaflet's MapContainer only reads `center` on first mount, so this
+ * child component uses the `useMap()` hook to imperatively call setView().
+ */
+const ChangeMapView: React.FC<{ center: Coordinates }> = ({ center }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.setView([center.lat, center.lng], map.getZoom(), { animate: true });
+  }, [center.lat, center.lng, map]);
+  return null;
+};
 
 /**
  * MapEventsComponent handles clicks on the map to relocate the marker (Phase 7)
@@ -85,6 +98,8 @@ export const MapPicker: React.FC<MapPickerProps> = ({
             ref={markerRef}
           />
           <MapEventsComponent onMapClick={onLocationChange} />
+          {/* Dynamically pan map when center changes (fixes static map bug) */}
+          <ChangeMapView center={center} />
         </MapContainer>
       </div>
 

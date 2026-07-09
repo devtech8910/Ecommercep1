@@ -578,3 +578,54 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
     'background: #4f8ef7; color: white; padding: 4px 8px; border-radius: 0 4px 4px 0;'
   );
 }
+
+/* ============================================================
+   THEME TOGGLER (Light / Dark / System)
+   ============================================================ */
+(function initThemeToggler() {
+  const themeBtns = document.querySelectorAll('.theme-toggle-btn');
+  if (!themeBtns.length) return;
+
+  const themes = ['light', 'dark', 'system'];
+  
+  function applyTheme(theme) {
+    if (theme === 'system') {
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    } else {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+    
+    // Update icons
+    themeBtns.forEach(btn => {
+      btn.setAttribute('data-current-theme', theme);
+      btn.setAttribute('aria-label', `Toggle theme (current: ${theme})`);
+      const icon = btn.querySelector('.theme-icon');
+      if (icon) {
+        if (theme === 'light') icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'; // Sun
+        else if (theme === 'dark') icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'; // Moon
+        else icon.innerHTML = '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'; // Monitor
+      }
+    });
+  }
+
+  // Initial load
+  let currentTheme = localStorage.getItem('dtf_theme') || 'system';
+  applyTheme(currentTheme);
+
+  // Toggle on click
+  themeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      let idx = themes.indexOf(currentTheme);
+      idx = (idx + 1) % themes.length;
+      currentTheme = themes[idx];
+      localStorage.setItem('dtf_theme', currentTheme);
+      applyTheme(currentTheme);
+    });
+  });
+
+  // Watch system preference changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (currentTheme === 'system') applyTheme('system');
+  });
+})();

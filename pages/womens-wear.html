@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="DevTech Fashion — Premium Women's Wear Collection." />
+    <title>Women's Wear — DevTech Fashion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/animations.css" />
+    <link rel="stylesheet" href="../css/responsive.css" />
+    <script>
+      (function(){
+        var theme = localStorage.getItem('dtf_theme') || 'system';
+        if (theme === 'system') {
+          var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        } else {
+          document.documentElement.setAttribute('data-theme', theme);
+        }
+      })();
+    </script>
+    <style>
+      .category-hero {
+        position: relative;
+        padding: 160px 0 100px;
+        background: linear-gradient(rgba(10, 10, 30, 0.4), rgba(10, 10, 30, 0.8)), url('https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=1920&q=85&auto=format&fit=crop') center/cover;
+        color: white;
+        text-align: center;
+      }
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 30px;
+        padding: 60px 0;
+      }
+      .product-card {
+        background: var(--bg-surface);
+        border: 1px solid rgba(0,0,0,0.05);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+      }
+      .product-img-wrap {
+        position: relative;
+        padding-top: 130%;
+        background: #f0f0f0;
+      }
+      .product-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .product-info {
+        padding: 20px;
+      }
+      .product-title {
+        font-family: var(--font-display);
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: var(--text-primary);
+      }
+      .product-price {
+        font-family: var(--font-sans);
+        font-weight: 700;
+        color: var(--accent-purple);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar (Simplified version for category pages) -->
+    <header class="navbar nav-scrolled" id="navbar" role="banner" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,0,0,0.1);">
+      <nav class="nav-container" aria-label="Main Navigation">
+        <a href="../index.html" class="nav-logo" aria-label="DevTech Fashion Home">
+          <span class="logo-mark" aria-hidden="true">DT</span>
+          <span class="logo-text">DevTech <em>Fashion</em></span>
+        </a>
+        <ul class="nav-links" role="list" id="nav-links">
+          <li><a href="../index.html" class="nav-link">Home</a></li>
+          <li><a href="mens-wear.html" class="nav-link">Men's Wear</a></li>
+          <li><a href="womens-wear.html" class="nav-link active">Women's Wear</a></li>
+          <li><a href="kids-wear.html" class="nav-link">Kids Wear</a></li>
+        </ul>
+        <div class="nav-actions">
+          <button class="nav-icon-btn theme-toggle-btn" aria-label="Toggle theme">
+            <svg class="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"></svg>
+          </button>
+          <a href="cart.html" class="nav-icon-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          </a>
+          <a href="login.html" class="btn btn-primary">Login</a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <!-- Hero -->
+      <section class="category-hero">
+        <div class="container">
+          <h1 class="section-title" style="color: white; margin-bottom: 20px; font-size: 4rem;">Women's Collection</h1>
+          <p class="section-subtitle" style="color: rgba(255,255,255,0.8); max-width: 600px; font-size: 1.2rem;">Timeless grace and modern edge. Discover exquisite dresses, elegant tops, and breathtaking accessories.</p>
+        </div>
+      </section>
+
+      <!-- Products -->
+      <section class="container">
+        <div class="product-grid">
+          <article class="product-card">
+            <div class="product-img-wrap">
+              <img src="https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600&q=80&fit=crop" class="product-img" alt="Dress" />
+            </div>
+            <div class="product-info">
+              <h3 class="product-title">Silk Evening Gown</h3>
+              <p class="product-price">₹18,499</p>
+            </div>
+          </article>
+          <article class="product-card">
+            <div class="product-img-wrap">
+              <img src="https://images.unsplash.com/photo-1550614000-4b95d466f913?w=600&q=80&fit=crop" class="product-img" alt="Blouse" />
+            </div>
+            <div class="product-info">
+              <h3 class="product-title">Floral Wrap Blouse</h3>
+              <p class="product-price">₹4,299</p>
+            </div>
+          </article>
+          <article class="product-card">
+            <div class="product-img-wrap">
+              <img src="https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&q=80&fit=crop" class="product-img" alt="Handbag" />
+            </div>
+            <div class="product-info">
+              <h3 class="product-title">Classic Leather Tote</h3>
+              <p class="product-price">₹14,999</p>
+            </div>
+          </article>
+          <article class="product-card">
+            <div class="product-img-wrap">
+              <img src="https://images.unsplash.com/photo-1532453288672-3a27e9be9efd?w=600&q=80&fit=crop" class="product-img" alt="Heels" />
+            </div>
+            <div class="product-info">
+              <h3 class="product-title">Stiletto Pumps</h3>
+              <p class="product-price">₹9,999</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" style="padding-top: 60px;">
+      <div class="container text-center" style="padding-bottom: 40px; color: rgba(255,255,255,0.7);">
+        <p>&copy; 2026 DevTech Solutions. All rights reserved.</p>
+        <p style="margin-top: 10px;"><a href="../index.html" style="color: white; text-decoration: underline;">Back to Home</a></p>
+      </div>
+    </footer>
+    <script src="../js/script.js"></script>
+  </body>
+</html>

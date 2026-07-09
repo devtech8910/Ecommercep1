@@ -1,13 +1,13 @@
-import { forwardGeocode, reverseGeocode } from '../service/geocoding.service.js';
+import { forwardGeocode, reverseGeocode, autocompleteSearch } from '../service/geocoding.service.js';
 
 export async function handleGeocode(req, res) {
   try {
     const { houseNumber, building, street, area, city, state, pincode, country } = req.body;
 
-    if (!street || !area || !city || !state || !pincode) {
+    if (!street && !area && !city && !state && !pincode) {
       return res.status(400).json({
         success: false,
-        error: 'Street, area, city, state, and pincode are required fields for forward geocoding.'
+        error: 'At least one location field (street, area, city, state, or pincode) must be provided for geocoding.'
       });
     }
 
@@ -80,6 +80,30 @@ export async function handleReverseGeocode(req, res) {
     return res.status(500).json({
       success: false,
       error: 'An internal server error occurred while reverse geocoding.'
+    });
+  }
+}
+
+export async function handleAutocomplete(req, res) {
+  try {
+    const { query } = req.body;
+    if (!query || query.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Query string is required for autocomplete.'
+      });
+    }
+
+    const results = await autocompleteSearch(query);
+    return res.status(200).json({
+      success: true,
+      data: results
+    });
+  } catch (error) {
+    console.error('Controller autocomplete error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'An internal server error occurred while fetching autocomplete suggestions.'
     });
   }
 }

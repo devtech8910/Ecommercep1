@@ -14,7 +14,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'devtech_fashion_secret_key';
 
 // Enable CORS for frontend requests
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001', 'http://127.0.0.1:3001', 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: (origin, callback) => {
+    // Allow all origins in local development (handles custom localhost ports, file://, etc.)
+    callback(null, true);
+  },
   credentials: true
 }));
 
