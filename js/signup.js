@@ -148,47 +148,67 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Success Step 1
-    verifiedPhoneNumber = `${countryCode.value}${phoneVal}`;
-    displayPhone.textContent = `${countryCode.value} ${phoneVal}`;
+    const checkPhoneNum = `${countryCode.value}${phoneVal}`;
 
     const phoneSubmitBtn = document.getElementById('phone-submit-btn');
     const submitSpan = phoneSubmitBtn.querySelector('span');
     phoneSubmitBtn.disabled = true;
-    if (submitSpan) submitSpan.textContent = 'Sending OTP...';
+    if (submitSpan) submitSpan.textContent = 'Verifying...';
 
-    // Generate 6-digit random code
-    generatedPhoneOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Call backend endpoint to check if phone is already registered
+    fetch(`http://localhost:5000/auth/check-phone?phone=${encodeURIComponent(checkPhoneNum)}`)
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && json.exists) {
+          showError(phoneInput, phoneError, 'You already have an account with this mobile number.');
+          phoneSubmitBtn.disabled = false;
+          if (submitSpan) submitSpan.textContent = 'Send OTP Code';
+          return;
+        }
 
-    // Call WhatsApp API (CallMeBot) if enabled
-    if (OTP_CONFIG.callmebot.enabled) {
-      const whatsappMsg = `DevTech verification code is: ${generatedPhoneOtp}`;
-      const url = `https://api.callmebot.com/whatsapp.php?phone=${verifiedPhoneNumber}&text=${encodeURIComponent(whatsappMsg)}&apikey=${OTP_CONFIG.callmebot.apiKey}`;
-      
-      fetch(url)
-        .then(response => {
-          console.log('WhatsApp OTP request sent via CallMeBot.');
-        })
-        .catch(err => {
-          console.error('CallMeBot Error:', err);
-        });
-    }
+        // Success Step 1
+        verifiedPhoneNumber = checkPhoneNum;
+        displayPhone.textContent = `${countryCode.value} ${phoneVal}`;
+        if (submitSpan) submitSpan.textContent = 'Sending OTP...';
 
-    // Always log code to terminal/console and show alert fallback for testing
-    console.log(`[DevTech] WhatsApp OTP sent: ${generatedPhoneOtp}`);
-    
-    setTimeout(() => {
-      phoneSubmitBtn.disabled = false;
-      if (submitSpan) submitSpan.textContent = 'Send OTP Code';
-      
-      // Alert fallback if API is not active yet so developer can see the code easily
-      if (!OTP_CONFIG.callmebot.enabled) {
-        alert(`⚡ [Demo Mode] OTP sent to WhatsApp: ${generatedPhoneOtp}\n(To receive real messages, set 'callmebot.enabled' to true in signup.js)`);
-      }
-      
-      goToStep(2);
-      startOTPTimer();
-    }, 1200);
+        // Generate 6-digit random code
+        generatedPhoneOtp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Call WhatsApp API (CallMeBot) if enabled
+        if (OTP_CONFIG.callmebot.enabled) {
+          const whatsappMsg = `DevTech verification code is: ${generatedPhoneOtp}`;
+          const url = `https://api.callmebot.com/whatsapp.php?phone=${verifiedPhoneNumber}&text=${encodeURIComponent(whatsappMsg)}&apikey=${OTP_CONFIG.callmebot.apiKey}`;
+          
+          fetch(url)
+            .then(response => {
+              console.log('WhatsApp OTP request sent via CallMeBot.');
+            })
+            .catch(err => {
+              console.error('CallMeBot Error:', err);
+            });
+        }
+
+        // Always log code to terminal/console and show alert fallback for testing
+        console.log(`[DevTech] WhatsApp OTP sent: ${generatedPhoneOtp}`);
+        
+        setTimeout(() => {
+          phoneSubmitBtn.disabled = false;
+          if (submitSpan) submitSpan.textContent = 'Send OTP Code';
+          
+          if (!OTP_CONFIG.callmebot.enabled) {
+            alert(`⚡ [Demo Mode] OTP sent to WhatsApp: ${generatedPhoneOtp}\n(To receive real messages, set 'callmebot.enabled' to true in signup.js)`);
+          }
+          
+          goToStep(2);
+          startOTPTimer();
+        }, 1200);
+      })
+      .catch(err => {
+        console.error('Phone check error:', err);
+        showError(phoneInput, phoneError, 'Failed to verify phone number. Please try again.');
+        phoneSubmitBtn.disabled = false;
+        if (submitSpan) submitSpan.textContent = 'Send OTP Code';
+      });
   });
 
   // ============================================================
@@ -326,45 +346,64 @@ document.addEventListener('DOMContentLoaded', () => {
       // Clear error, show progress
       clearError(emailInput, emailErr);
       emailVerifyTrigger.disabled = true;
-      emailVerifyTrigger.textContent = 'Sending...';
+      emailVerifyTrigger.textContent = 'Verifying...';
 
-      // Generate 6-digit random code
-      generatedEmailOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      fetch(`http://localhost:5000/auth/check-email?email=${encodeURIComponent(emailVal)}`)
+        .then(res => res.json())
+        .then(json => {
+          if (json.success && json.exists) {
+            showError(emailInput, emailErr, 'You already have an account with this email address.');
+            emailVerifyTrigger.disabled = false;
+            emailVerifyTrigger.textContent = 'Verify';
+            return;
+          }
 
-      // Call EmailJS if enabled
-      if (OTP_CONFIG.emailjs.enabled) {
-        if (typeof emailjs !== 'undefined') {
-          console.log('Initiating EmailJS OTP transmission...');
-          emailjs.send(OTP_CONFIG.emailjs.serviceId, OTP_CONFIG.emailjs.templateId, {
-            to_email: emailVal,
-            otp_code: generatedEmailOtp,
-            to_name: 'DevTech Member'
-          })
-          .then((response) => {
-            console.log('Email OTP sent successfully via EmailJS! Response status:', response.status, response.text);
-          })
-          .catch((err) => {
-            console.error('EmailJS Error details:', err);
-            alert(`⚠️ EmailJS Send Error: ${err.text || err.message || JSON.stringify(err)}\n\nPlease ensure your Service ID and Template ID are correct.`);
-          });
-        } else {
-          console.error('EmailJS library is not defined on the window object.');
-          alert('⚠️ EmailJS library failed to load. Please check your internet connection and refresh the page.');
-        }
-      }
+          emailVerifyTrigger.textContent = 'Sending...';
 
-      console.log(`[DevTech] Email OTP sent: ${generatedEmailOtp}`);
+          // Generate 6-digit random code
+          generatedEmailOtp = Math.floor(100000 + Math.random() * 900000).toString();
 
-      setTimeout(() => {
-        emailOtpBlock.style.display = 'block';
-        emailVerifyTrigger.textContent = 'Verify';
-        emailVerifyTrigger.disabled = false;
-        emailOtpInput.focus();
+          // Call EmailJS if enabled
+          if (OTP_CONFIG.emailjs.enabled) {
+            if (typeof emailjs !== 'undefined') {
+              console.log('Initiating EmailJS OTP transmission...');
+              emailjs.send(OTP_CONFIG.emailjs.serviceId, OTP_CONFIG.emailjs.templateId, {
+                to_email: emailVal,
+                otp_code: generatedEmailOtp,
+                to_name: 'DevTech Member'
+              })
+              .then((response) => {
+                console.log('Email OTP sent successfully via EmailJS! Response status:', response.status, response.text);
+              })
+              .catch((err) => {
+                console.error('EmailJS Error details:', err);
+                alert(`⚠️ EmailJS Send Error: ${err.text || err.message || JSON.stringify(err)}\n\nPlease ensure your Service ID and Template ID are correct.`);
+              });
+            } else {
+              console.error('EmailJS library is not defined on the window object.');
+              alert('⚠️ EmailJS library failed to load. Please check your internet connection and refresh the page.');
+            }
+          }
 
-        if (!OTP_CONFIG.emailjs.enabled) {
-          alert(`⚡ [Demo Mode] OTP sent to Email: ${generatedEmailOtp}\n(To receive real emails, configure your EmailJS credentials in signup.js)`);
-        }
-      }, 1000);
+          console.log(`[DevTech] Email OTP sent: ${generatedEmailOtp}`);
+
+          setTimeout(() => {
+            emailOtpBlock.style.display = 'block';
+            emailVerifyTrigger.textContent = 'Verify';
+            emailVerifyTrigger.disabled = false;
+            emailOtpInput.focus();
+
+            if (!OTP_CONFIG.emailjs.enabled) {
+              alert(`⚡ [Demo Mode] OTP sent to Email: ${generatedEmailOtp}\n(To receive real emails, configure your EmailJS credentials in signup.js)`);
+            }
+          }, 1000);
+        })
+        .catch(err => {
+          console.error('Email check error:', err);
+          showError(emailInput, emailErr, 'Failed to verify email address. Please try again.');
+          emailVerifyTrigger.disabled = false;
+          emailVerifyTrigger.textContent = 'Verify';
+        });
     });
   }
 

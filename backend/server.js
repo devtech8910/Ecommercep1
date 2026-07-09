@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
+import { query } from './db.js';
 import locationRouter from './modules/location/routes/location.routes.js';
 import addressRouter from './modules/address/routes/address.routes.js';
 import authRouter from './modules/auth/routes/auth.routes.js';
@@ -25,7 +26,7 @@ app.use(cors({
 app.use(express.json());
 
 // JWT Authentication middleware with fallback for backward compatibility
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
@@ -34,11 +35,16 @@ app.use((req, res, next) => {
       req.userId = decoded.userId;
     } catch (err) {
       console.warn('JWT verify failed, falling back to mock user:', err.message);
-      req.userId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12';
+      req.userId = 1;
     }
   } else {
-    // Default fallback to pre-seeded customer user UUID for backward compatibility
-    req.userId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12';
+    // Default fallback to first user in database (if exists), otherwise default to 1
+    try {
+      const result = await query('SELECT id FROM users ORDER BY id LIMIT 1;');
+      req.userId = result.rows[0] ? result.rows[0].id : 1;
+    } catch (e) {
+      req.userId = 1;
+    }
   }
   next();
 });

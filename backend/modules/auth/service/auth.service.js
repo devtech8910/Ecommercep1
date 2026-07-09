@@ -55,3 +55,11 @@ export async function loginUser(email, password) {
   const { password_hash, ...userWithoutPassword } = user;
   return { user: userWithoutPassword, token };
 }
+
+export async function getUserByPhone(phone) {
+  return repository.findUserByPhone(phone);
+}
+
+export async function getUserByEmail(email) {
+  return repository.findUserByEmail(email);
+}

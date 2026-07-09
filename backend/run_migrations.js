@@ -16,10 +16,13 @@ async function runMigration(filename) {
 
 async function run() {
     try {
+        await runMigration('v1_core_schema.sql');
+        await runMigration('v3_seed_data.sql');
         await runMigration('v4_location_hierarchy.sql');
         await runMigration('v5_seed_locations.sql');
+        console.log('✅ All migrations ran successfully!');
     } catch(err) {
-        console.error(err);
+        console.error('❌ Migration failed:', err);
     } finally {
         pool.end();
     }

@@ -64,3 +64,31 @@ export async function login(req, res) {
     return res.status(401).json({ success: false, errors: [error.message] });
   }
 }
+
+export async function checkPhone(req, res) {
+  try {
+    const { phone } = req.query;
+    if (!phone) {
+      return res.status(400).json({ success: false, error: 'Phone number parameter is required.' });
+    }
+    const user = await service.getUserByPhone(sanitize(phone));
+    return res.status(200).json({ success: true, exists: !!user });
+  } catch (error) {
+    console.error('checkPhone error:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error.' });
+  }
+}
+
+export async function checkEmail(req, res) {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email parameter is required.' });
+    }
+    const user = await service.getUserByEmail(sanitize(email));
+    return res.status(200).json({ success: true, exists: !!user });
+  } catch (error) {
+    console.error('checkEmail error:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error.' });
+  }
+}

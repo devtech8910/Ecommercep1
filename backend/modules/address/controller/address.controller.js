@@ -6,8 +6,8 @@ function sanitize(val) {
   return val.replace(/<[^>]*>/g, '').trim();
 }
 
-function isValidUuid(uuid) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid);
+function isValidId(id) {
+  return /^\d+$/.test(id);
 }
 
 function validateAddressData(data) {
@@ -48,7 +48,7 @@ function validateAddressData(data) {
 
 export async function getAddresses(req, res) {
   try {
-    const userId = req.userId || 1; // Default mock user ID
+    const userId = req.userId || 2; // Default mock user ID
     const addresses = await service.listAddressesService(userId);
     return res.status(200).json({ success: true, data: addresses });
   } catch (error) {
@@ -59,7 +59,7 @@ export async function getAddresses(req, res) {
 
 export async function saveAddress(req, res) {
   try {
-    const userId = req.userId || 1;
+    const userId = req.userId || 2;
     const { isValid, errors } = validateAddressData(req.body);
 
     if (!isValid) {
@@ -100,9 +100,9 @@ export async function saveAddress(req, res) {
 export async function updateAddress(req, res) {
   try {
     const id = req.params.id;
-    const userId = req.userId || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12';
+    const userId = req.userId || 2;
 
-    if (!isValidUuid(id)) {
+    if (!isValidId(id)) {
       return res.status(400).json({ success: false, error: 'Invalid address ID.' });
     }
 
@@ -148,9 +148,9 @@ export async function updateAddress(req, res) {
 export async function deleteAddress(req, res) {
   try {
     const id = req.params.id;
-    const userId = req.userId || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12';
+    const userId = req.userId || 2;
 
-    if (!isValidUuid(id)) {
+    if (!isValidId(id)) {
       return res.status(400).json({ success: false, error: 'Invalid address ID.' });
     }
 
@@ -169,9 +169,9 @@ export async function deleteAddress(req, res) {
 export async function makeDefault(req, res) {
   try {
     const id = req.params.id;
-    const userId = req.userId || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12';
+    const userId = req.userId || 2;
 
-    if (!isValidUuid(id)) {
+    if (!isValidId(id)) {
       return res.status(400).json({ success: false, error: 'Invalid address ID.' });
     }
 

@@ -6,6 +6,12 @@ export async function findUserByEmail(email) {
   return result.rows[0] || null;
 }
 
+export async function findUserByPhone(phone) {
+  const sql = `SELECT * FROM users WHERE phone = $1;`;
+  const result = await query(sql, [phone]);
+  return result.rows[0] || null;
+}
+
 export async function findUserById(id) {
   const sql = `SELECT * FROM users WHERE id = $1;`;
   const result = await query(sql, [id]);
