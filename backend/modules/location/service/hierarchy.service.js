@@ -92,6 +92,13 @@ export async function getStates(countryId) {
 }
 
 export async function getCities(stateId) {
+    if (!stateId || stateId === 'all') {
+        return executeQuery(
+            'SELECT id, name, lat, lng FROM loc_cities ORDER BY name',
+            [],
+            'cities'
+        );
+    }
     return executeQuery(
         'SELECT id, name, lat, lng FROM loc_cities WHERE state_id = $1 ORDER BY name',
         [stateId],

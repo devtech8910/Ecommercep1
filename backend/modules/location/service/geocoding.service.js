@@ -225,21 +225,38 @@ function mapNominatimToGeocodeResult(item) {
 }
 
 function mapNominatimToAddressComponents(item) {
-  const addr = item.address;
+  const addr = item.address || {};
+  
+  // Extract state
+  const state = addr.state || '';
+  
+  // Extract district from county, state_district, district, or administrative_area_level_2
+  const district = addr.county || addr.state_district || addr.district || addr.administrative_area_level_2 || '';
+  
+  // Extract pincode from postcode or postal_code
+  const pincode = addr.postcode || addr.postal_code || '';
+  
+  // Extract area from suburb, village, city, or town
+  const area = addr.suburb || addr.village || addr.city || addr.town || '';
+  
+  // Extract street from road, street, or neighbourhood
+  const street = addr.road || addr.street || addr.neighbourhood || '';
+
   return {
     latitude: parseFloat(item.lat),
     longitude: parseFloat(item.lon),
     formattedAddress: item.display_name,
-    accuracy: 'ROOFTOP', // Default to rooftop for exact pin drops
+    accuracy: 'ROOFTOP',
     address: {
       houseNumber: addr.house_number || '',
       building: addr.building || addr.apartment || addr.hotel || '',
-      street: addr.road || '',
-      area: addr.suburb || addr.neighbourhood || addr.village || addr.subdivision || '',
-      city: addr.city || addr.town || addr.municipality || '',
-      state: addr.state || '',
+      street: street,
+      area: area,
+      city: district || addr.city || addr.town || '',
+      state: state,
       country: addr.country || 'India',
-      pincode: addr.postcode || ''
+      pincode: pincode,
+      rawAddress: addr
     }
   };
 }
@@ -287,6 +304,21 @@ function mapGoogleToGeocodeResult(result) {
   const route = getComp(['route']);
   const streetName = [streetNumber, route].filter(Boolean).join(' ');
 
+  // Spec mappings
+  const state = getComp(['administrative_area_level_1']);
+  const district = getComp(['administrative_area_level_2']) || getComp(['locality', 'postal_town']);
+  const pincode = getComp(['postal_code']);
+  const area = getComp(['sublocality', 'sublocality_level_1', 'sublocality_level_2', 'neighborhood', 'colony']);
+  const street = streetName || getComp(['route', 'neighborhood', 'street_address']);
+
+  // Convert comps to key-value raw object for logging
+  const rawObj = {};
+  comps.forEach(c => {
+    c.types.forEach(t => {
+      rawObj[t] = c.long_name;
+    });
+  });
+
   return {
     latitude: result.geometry.location.lat,
     longitude: result.geometry.location.lng,
@@ -295,12 +327,13 @@ function mapGoogleToGeocodeResult(result) {
     address: {
       houseNumber: streetNumber,
       building: getComp(['premise', 'subpremise']),
-      street: streetName || getComp(['neighborhood']),
-      area: getComp(['sublocality', 'sublocality_level_1', 'political']),
-      city: getComp(['locality', 'postal_town']),
-      state: getComp(['administrative_area_level_1']),
+      street: street,
+      area: area,
+      city: district,
+      state: state,
       country: getComp(['country']) || 'India',
-      pincode: getComp(['postal_code'])
+      pincode: pincode,
+      rawAddress: rawObj
     }
   };
 }

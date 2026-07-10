@@ -26,8 +26,6 @@ export async function getStates(req, res) {
 export async function getCities(req, res) {
     try {
         const { stateId } = req.query;
-        if (!stateId) return res.status(400).json({ success: false, error: 'stateId is required' });
-        
         const cities = await HierarchyService.getCities(stateId);
         res.status(200).json({ success: true, data: cities });
     } catch (err) {

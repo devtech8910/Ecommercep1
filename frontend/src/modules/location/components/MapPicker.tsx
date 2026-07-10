@@ -20,7 +20,8 @@ const customMarkerIcon = new L.Icon({
 interface MapPickerProps {
   center: Coordinates;
   onLocationChange: (coords: Coordinates) => void;
-  className?: string;
+  height?: number;
+  interactive?: boolean;
 }
 
 /**
@@ -37,7 +38,7 @@ const ChangeMapView: React.FC<{ center: Coordinates }> = ({ center }) => {
 };
 
 /**
- * MapEventsComponent handles clicks on the map to relocate the marker (Phase 7)
+ * MapEventsComponent handles clicks on the map to relocate the marker
  */
 const MapEventsComponent: React.FC<{ onMapClick: (coords: Coordinates) => void }> = ({ onMapClick }) => {
   useMapEvents({
@@ -49,13 +50,14 @@ const MapEventsComponent: React.FC<{ onMapClick: (coords: Coordinates) => void }
 };
 
 /**
- * MapPicker — Renders Leaflet OpenStreetMap container (Phase 7)
- * Height: 250px (Strictly enforced)
+ * MapPicker — Renders Leaflet map with Google Maps tiles.
+ * Supports configurable height and interactive mode.
  */
 export const MapPicker: React.FC<MapPickerProps> = ({
   center,
   onLocationChange,
-  className = ''
+  height = 220,
+  interactive = true,
 }) => {
   const markerRef = useRef<L.Marker>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([center.lat, center.lng]);
@@ -78,12 +80,22 @@ export const MapPicker: React.FC<MapPickerProps> = ({
   );
 
   return (
-    <div className={`map-picker-wrapper ${className}`} style={{ position: 'relative' }}>
-      <div style={{ height: '250px', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)' }}>
+    <div style={{ position: 'relative' }}>
+      <div
+        style={{
+          height: `${height}px`,
+          borderRadius: '12px',
+          overflow: 'hidden',
+          border: '1px solid rgba(0,0,0,0.1)',
+        }}
+      >
         <MapContainer
           center={mapCenter}
           zoom={16}
-          scrollWheelZoom={true}
+          scrollWheelZoom={interactive}
+          dragging={interactive}
+          doubleClickZoom={interactive}
+          zoomControl={interactive}
           style={{ height: '100%', width: '100%' }}
         >
           <TileLayer
@@ -92,20 +104,35 @@ export const MapPicker: React.FC<MapPickerProps> = ({
             subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
           />
           <Marker
-            draggable={true}
-            eventHandlers={eventHandlers}
+            draggable={interactive}
+            eventHandlers={interactive ? eventHandlers : {}}
             position={[center.lat, center.lng]}
             icon={customMarkerIcon}
             ref={markerRef}
           />
-          <MapEventsComponent onMapClick={onLocationChange} />
+          {interactive && <MapEventsComponent onMapClick={onLocationChange} />}
           {/* Dynamically pan map when center changes (fixes static map bug) */}
           <ChangeMapView center={center} />
         </MapContainer>
       </div>
 
-      {/* Coordinate display overlay (Phase 7) */}
-      <div className="absolute bottom-3 left-3 z-[1000] px-3 py-1.5 rounded-lg bg-white/90 border border-black/10 text-[10px] text-slate-700 font-mono backdrop-blur-sm">
+      {/* Coordinate display overlay */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '12px',
+          left: '12px',
+          zIndex: 1000,
+          padding: '4px 12px',
+          borderRadius: '8px',
+          backgroundColor: 'rgba(255,255,255,0.9)',
+          border: '1px solid rgba(0,0,0,0.1)',
+          fontSize: '10px',
+          color: '#334155',
+          fontFamily: 'monospace',
+          backdropFilter: 'blur(4px)',
+        }}
+      >
         LAT: {center.lat.toFixed(6)} | LNG: {center.lng.toFixed(6)}
       </div>
     </div>

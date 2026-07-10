@@ -70,9 +70,12 @@ export const LocationService = {
     }
   },
 
-  async fetchCities(stateId: number): Promise<LocationEntity[]> {
+  async fetchCities(stateId?: number | string): Promise<LocationEntity[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/hierarchy/cities?stateId=${stateId}`);
+      const url = stateId 
+        ? `${API_BASE_URL}/hierarchy/cities?stateId=${stateId}` 
+        : `${API_BASE_URL}/hierarchy/cities`;
+      const response = await fetch(url);
       if (!response.ok) return [];
       const json = await response.json();
       return json.success ? json.data : [];

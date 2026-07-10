@@ -10,18 +10,9 @@ CREATE TABLE IF NOT EXISTS users (
     phone VARCHAR(30) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     date_of_birth DATE NULL,
-    profile_image_url VARCHAR(255) NULL,
-    gender VARCHAR(10) NULL,
     role VARCHAR(20) DEFAULT 'customer' NOT NULL,
-    email_verified BOOLEAN DEFAULT FALSE,
-    status VARCHAR(20) DEFAULT 'active',
-    last_login_at TIMESTAMP NULL,
-    last_password_change TIMESTAMP NULL,
-    is_active BOOLEAN DEFAULT TRUE,
-    is_deleted BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS user_addresses (

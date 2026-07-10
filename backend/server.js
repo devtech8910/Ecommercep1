@@ -32,10 +32,18 @@ app.use(async (req, res, next) => {
     const token = authHeader.split(' ')[1];
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
-      req.userId = decoded.userId;
+      // Validate that decoded userId exists in database
+      const userCheck = await query('SELECT id FROM users WHERE id = $1;', [decoded.userId]);
+      if (userCheck.rows.length > 0) {
+        req.userId = decoded.userId;
+      } else {
+        const result = await query('SELECT id FROM users ORDER BY id LIMIT 1;');
+        req.userId = result.rows[0] ? result.rows[0].id : 1;
+      }
     } catch (err) {
       console.warn('JWT verify failed, falling back to mock user:', err.message);
-      req.userId = 1;
+      const result = await query('SELECT id FROM users ORDER BY id LIMIT 1;');
+      req.userId = result.rows[0] ? result.rows[0].id : 1;
     }
   } else {
     // Default fallback to first user in database (if exists), otherwise default to 1

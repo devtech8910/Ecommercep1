@@ -1,119 +1,240 @@
 import React, { useState } from 'react';
 import type { Address } from '../types/location.types';
-import { formatFullAddress } from '../utils/addressFormatter';
 
 interface AddressCardProps {
   address: Address;
   onSelect?: (address: Address) => void;
   onEdit: (address: Address) => void;
-  onDelete: (id: string) => Promise<void>;
-  onMakeDefault: (id: string) => Promise<void>;
+  onDelete: (id: string) => void;
+  onMakeDefault: (id: string) => void;
 }
 
-/**
- * AddressCard — Individual saved address card view showing formatted addresses and CRUD triggers.
- */
 export const AddressCard: React.FC<AddressCardProps> = ({
   address,
   onSelect,
   onEdit,
   onDelete,
-  onMakeDefault
+  onMakeDefault,
 }) => {
-  const [deleting, setDeleting] = useState(false);
-  const [settingDefault, setSettingDefault] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteHovered, setDeleteHovered] = useState(false);
 
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!window.confirm('Are you sure you want to delete this address?')) return;
-    setDeleting(true);
-    try {
-      await onDelete(address.id);
-    } catch (err) {
-      alert('Failed to delete address.');
-    } finally {
-      setDeleting(false);
+  const formatAddress = (): string => {
+    const parts = [
+      address.houseNumber,
+      address.building,
+      address.street,
+      address.area,
+      address.city,
+      address.state,
+    ].filter(Boolean);
+
+    let result = parts.join(', ');
+    if (address.pincode) {
+      result += ` - ${address.pincode}`;
     }
+    return result;
   };
 
-  const handleSetDefault = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setSettingDefault(true);
-    try {
-      await onMakeDefault(address.id);
-    } catch (err) {
-      alert('Failed to set default address.');
-    } finally {
-      setSettingDefault(false);
-    }
+  const isDefault = address.isDefault;
+
+  const cardStyle: React.CSSProperties = {
+    padding: '16px 20px',
+    borderRadius: '14px',
+    border: '1.5px solid',
+    borderColor: hovered || isDefault ? '#c7d2fe' : '#e5e7eb',
+    backgroundColor: isDefault ? '#faf5ff' : '#ffffff',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    boxShadow: hovered ? '0 2px 8px rgba(99,102,241,0.08)' : 'none',
   };
 
-  const typeEmoji = address.addressType === 'work' ? '💼' : '🏠';
-  const typeLabel = address.addressType === 'work' ? 'Work' : 'Home';
+  const badgeStyle: React.CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '3px 10px',
+    borderRadius: '20px',
+    fontSize: '11px',
+    fontWeight: 600,
+    backgroundColor: '#f3f4f6',
+    color: '#374151',
+  };
+
+  const defaultBadgeStyle: React.CSSProperties = {
+    ...badgeStyle,
+    backgroundColor: '#6366f1',
+    color: '#ffffff',
+    marginLeft: '8px',
+  };
+
+  const actionBtnStyle: React.CSSProperties = {
+    fontSize: '12px',
+    padding: '6px 12px',
+    borderRadius: '8px',
+    border: '1px solid #e5e7eb',
+    backgroundColor: 'transparent',
+    cursor: 'pointer',
+    color: '#6b7280',
+    transition: 'all 0.15s',
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't trigger select if clicking action buttons area
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-actions]')) return;
+    if (onSelect) onSelect(address);
+  };
 
   return (
     <div
-      onClick={() => onSelect && onSelect(address)}
-      className={`p-5 rounded-2xl border transition-all duration-200 text-left group
-        ${onSelect ? 'cursor-pointer' : ''}
-        ${address.isDefault
-          ? 'border-indigo-600/30 bg-indigo-600/5 shadow-md shadow-indigo-600/5'
-          : 'border-black/10 bg-black/5 hover:border-black/20 hover:bg-black/10'
-        }`}
+      style={cardStyle}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={handleCardClick}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-2">
-          {/* Badge */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm">{typeEmoji}</span>
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">{typeLabel}</span>
-            {address.isDefault && (
-              <span className="text-[10px] bg-indigo-600/10 text-indigo-600 border border-indigo-600/20 px-2 py-0.5 rounded-md font-semibold">
-                Default
-              </span>
-            )}
-          </div>
-
-          <h3 className="text-sm font-bold text-slate-900">{address.fullName}</h3>
-          <p className="text-xs text-slate-600 leading-relaxed font-medium">
-            {formatFullAddress(address)}
-          </p>
-          <p className="text-xs text-slate-500 font-semibold">
-            📞 {address.mobile} {address.alternateMobile && `| Alt: ${address.alternateMobile}`}
-          </p>
-        </div>
-
-        {/* Action Panel */}
-        <div className="flex flex-col gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(address);
-            }}
-            className="px-3 py-1.5 text-[11px] font-bold rounded-lg border border-black/10 text-slate-700 hover:text-slate-900 hover:border-black/30 transition-all cursor-pointer bg-white"
-          >
-            Edit
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="px-3 py-1.5 text-[11px] font-bold rounded-lg border border-red-500/20 text-red-600 hover:text-red-700 hover:border-red-500/40 transition-all cursor-pointer bg-white"
-          >
-            {deleting ? '…' : 'Delete'}
-          </button>
-        </div>
+      {/* Top row: type badge + default badge */}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <span style={badgeStyle}>
+          {address.addressType === 'home' ? '🏠 Home' : '💼 Work'}
+        </span>
+        {isDefault && (
+          <span style={defaultBadgeStyle}>Default</span>
+        )}
       </div>
 
-      {/* Set Default Address trigger */}
-      {!address.isDefault && (
-        <button
-          onClick={handleSetDefault}
-          disabled={settingDefault}
-          className="mt-4 w-full py-2 text-center text-xs font-semibold rounded-xl border border-black/5 text-slate-500 hover:text-slate-700 hover:border-black/10 transition-all cursor-pointer bg-white"
+      {/* Name */}
+      <div
+        style={{
+          fontSize: '15px',
+          fontWeight: 700,
+          color: '#111827',
+          marginTop: '10px',
+        }}
+      >
+        {address.fullName}
+      </div>
+
+      {/* Address text */}
+      <div
+        style={{
+          fontSize: '13px',
+          color: '#6b7280',
+          lineHeight: 1.5,
+          marginTop: '4px',
+        }}
+      >
+        {formatAddress()}
+      </div>
+
+      {/* Phone */}
+      {address.mobile && (
+        <div
+          style={{
+            fontSize: '12px',
+            color: '#9ca3af',
+            marginTop: '6px',
+          }}
         >
-          {settingDefault ? 'Updating default…' : 'Set as default address'}
-        </button>
+          📞 {address.mobile}
+        </div>
       )}
+
+      {/* Action buttons row */}
+      <div
+        data-actions="true"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          marginTop: '12px',
+        }}
+      >
+        <button
+          style={actionBtnStyle}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(address);
+          }}
+        >
+          ✏️ Edit
+        </button>
+
+        {!confirmDelete ? (
+          <button
+            style={{
+              ...actionBtnStyle,
+              color: deleteHovered ? '#ef4444' : '#6b7280',
+              borderColor: deleteHovered ? '#fecaca' : '#e5e7eb',
+            }}
+            onMouseEnter={() => setDeleteHovered(true)}
+            onMouseLeave={() => setDeleteHovered(false)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setConfirmDelete(true);
+            }}
+          >
+            🗑️ Delete
+          </button>
+        ) : (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '12px',
+              color: '#6b7280',
+            }}
+          >
+            <span>Delete this address?</span>
+            <button
+              style={{
+                ...actionBtnStyle,
+                color: '#ffffff',
+                backgroundColor: '#ef4444',
+                borderColor: '#ef4444',
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(address.id);
+              }}
+            >
+              Yes
+            </button>
+            <button
+              style={actionBtnStyle}
+              onClick={(e) => {
+                e.stopPropagation();
+                setConfirmDelete(false);
+              }}
+            >
+              No
+            </button>
+          </div>
+        )}
+
+        {/* Set as default — only if not already default */}
+        {!isDefault && (
+          <button
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#6366f1',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              marginLeft: 'auto',
+              padding: '4px 0',
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onMakeDefault(address.id);
+            }}
+          >
+            Set as default
+          </button>
+        )}
+      </div>
     </div>
   );
 };

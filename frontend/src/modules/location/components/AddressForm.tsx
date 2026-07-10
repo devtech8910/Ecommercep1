@@ -1,66 +1,67 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { LocationService } from '../services/locationService';
-import type { LocationEntity } from '../services/locationService';
+import React, { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { MapPicker } from './MapPicker';
-import { DistanceAlert } from './DistanceAlert';
-import { AccuracyBadge } from './AccuracyBadge';
 import type { AddressFormData, Coordinates } from '../types/location.types';
-import { calculateDistance } from '../utils/distance';
-import { AutocompleteInput } from './AutocompleteInput';
 
 interface AddressFormProps {
+  mode: 'gps' | 'away';
+  gpsCoords?: { lat: number; lng: number } | null;
+  gpsAddress?: {
+    formattedAddress: string;
+    address: {
+      houseNumber: string;
+      building: string;
+      street: string;
+      area: string;
+      city: string;
+      state: string;
+      country: string;
+      pincode: string;
+    };
+  } | null;
   initialData?: Partial<AddressFormData>;
-  gpsCoords: Coordinates | null;
   onSubmit: (data: AddressFormData) => Promise<void>;
   onCancel: () => void;
-  submitting?: boolean;
-  formMode?: 'gps' | 'away';
 }
 
 export const AddressForm: React.FC<AddressFormProps> = ({
-  initialData,
+  mode,
   gpsCoords,
+  gpsAddress,
+  initialData,
   onSubmit,
-  onCancel,
-  submitting = false,
-  formMode = 'away'
+  onCancel
 }) => {
+  // Map preview coordinates (for GPS mode)
   const [mapCenter, setMapCenter] = useState<Coordinates>(
-    gpsCoords || { lat: 20.5937, lng: 78.9629 }
+    gpsCoords || (initialData?.latitude && initialData?.longitude 
+      ? { lat: initialData.latitude, lng: initialData.longitude } 
+      : { lat: 20.5937, lng: 78.9629 }) // India center
   );
-  const [accuracy, setAccuracy] = useState<string>('APPROXIMATE');
-  const [isAway, setIsAway] = useState(false);
-  
-  // Rule 1, 2, 11: Relational State
-  const [countries, setCountries] = useState<LocationEntity[]>([]);
-  const [states, setStates] = useState<LocationEntity[]>([]);
 
-  useEffect(() => {
-    if (!gpsCoords) {
-      setIsAway(true);
-      return;
-    }
-    const dist = calculateDistance(gpsCoords.lat, gpsCoords.lng, mapCenter.lat, mapCenter.lng);
-    setIsAway(dist > 100);
-  }, [gpsCoords, mapCenter]);
+  // States & Districts JSON Dataset State
+  const [statesData, setStatesData] = useState<Record<string, string[]>>({});
+  const [loadingDataset, setLoadingDataset] = useState(true);
 
-  // Load initial countries
-  useEffect(() => {
-    LocationService.fetchCountries().then(setCountries);
-  }, []);
+  // India Post PIN Code states
+  const [postOffices, setPostOffices] = useState<string[]>([]);
+  const [loadingPincode, setLoadingPincode] = useState(false);
+  const [pincodeError, setPincodeError] = useState('');
+
+  // GPS auto-prefill tracker
+  const [gpsPrefilled, setGpsPrefilled] = useState(false);
 
   const {
     register,
     handleSubmit,
     setValue,
     watch,
-    control,
-    formState: { errors }
+    formState: { errors, isSubmitting }
   } = useForm<AddressFormData>({
     defaultValues: {
       fullName: '',
       mobile: '',
+      alternateMobile: '',
       houseNumber: '',
       building: '',
       street: '',
@@ -69,7 +70,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
       city: '',
       state: '',
       country: 'India',
-      countryId: 1, // Default India ID
+      countryId: 1,
       pincode: '',
       latitude: mapCenter.lat,
       longitude: mapCenter.lng,
@@ -79,485 +80,627 @@ export const AddressForm: React.FC<AddressFormProps> = ({
     }
   });
 
-  const watchedCountryId = watch('countryId');
-  const watchedStateId = watch('stateId');
-  const watchedCityId = watch('cityId');
-  const watchedAreaId = watch('areaId');
-  const watchedStreetId = watch('streetId');
-  
   const watchedState = watch('state');
   const watchedCity = watch('city');
-  const watchedArea = watch('area');
-  const watchedStreet = watch('street');
-  const watchedHouse = watch('houseNumber');
-  const watchedBuilding = watch('building');
-  const watchedPin = watch('pincode');
+  const watchedPincode = watch('pincode');
+  const watchedAddressType = watch('addressType');
 
-  // Fetch states when country changes
+  // Load States and Districts dataset dynamically from GitHub source URL
   useEffect(() => {
-    if (watchedCountryId) {
-      LocationService.fetchStates(watchedCountryId).then(setStates);
-    } else {
-      setStates([]);
-    }
-  }, [watchedCountryId]);
-
-  // Smart Map Update for Pincode
-  useEffect(() => {
-    if (watchedPin && watchedPin.length === 6) {
-      LocationService.geocode({ pincode: watchedPin, city: watchedCity, state: watchedState, country: 'India' })
-        .then((res) => {
-          if (res) {
-            setMapCenter({ lat: res.latitude, lng: res.longitude });
-          }
-        });
-    }
-  }, [watchedPin, watchedCity, watchedState]);
-
-  // Smart Map Update for House Number
-  useEffect(() => {
-    if (!watchedHouse || watchedHouse.length < 2) return;
-    const timeout = setTimeout(() => {
-      LocationService.geocode({ 
-         houseNumber: watchedHouse, 
-         street: watchedStreet, 
-         area: watchedArea, 
-         city: watchedCity, 
-         state: watchedState, 
-         pincode: watchedPin, 
-         country: 'India' 
-      }).then((res) => {
-        if (res) {
-          setMapCenter({ lat: res.latitude, lng: res.longitude });
+    fetch('https://raw.githubusercontent.com/sab99r/Indian-States-And-Districts/master/states-and-districts.json')
+      .then((res) => {
+        if (!res.ok) throw new Error('Network response not ok');
+        return res.json();
+      })
+      .then((data) => {
+        if (data && Array.isArray(data.states)) {
+          const mapped: Record<string, string[]> = {};
+          data.states.forEach((item: any) => {
+            if (item.state && Array.isArray(item.districts)) {
+              mapped[item.state] = item.districts;
+            }
+          });
+          setStatesData(mapped);
+        } else if (data && typeof data === 'object') {
+          setStatesData(data);
         }
+        setLoadingDataset(false);
+      })
+      .catch((err) => {
+        console.error('Failed to dynamically fetch states-and-districts JSON:', err);
+        setLoadingDataset(false);
       });
-    }, 1000);
-    return () => clearTimeout(timeout);
-  }, [watchedHouse, watchedStreet, watchedArea, watchedCity, watchedState, watchedPin]);
+  }, []);
 
-  // Rule 6: Reset child fields when parent changes
-  const resetCityAndBelow = useCallback(() => {
-    setValue('city', '');
-    setValue('cityId', undefined);
-    setValue('area', '');
-    setValue('areaId', undefined);
-    setValue('street', '');
-    setValue('streetId', undefined);
-    setValue('pincode', '');
-  }, [setValue]);
-
-  const resetAreaAndBelow = useCallback(() => {
-    setValue('area', '');
-    setValue('areaId', undefined);
-    setValue('street', '');
-    setValue('streetId', undefined);
-    setValue('pincode', '');
-  }, [setValue]);
-
-  const resetStreetAndBelow = useCallback(() => {
-    setValue('street', '');
-    setValue('streetId', undefined);
-  }, [setValue]);
-
-  // State selection handler
-  const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const stateIdStr = e.target.value;
-    const st = states.find(s => s.id.toString() === stateIdStr);
-    
-    // Rule 6: Clear all children
-    resetCityAndBelow();
-    
-    if (st) {
-      setValue('stateId', st.id);
-      setValue('state', st.name);
-      setMapCenter({ lat: st.lat, lng: st.lng });
-      setValue('latitude', st.lat);
-      setValue('longitude', st.lng);
-    } else {
-      setValue('stateId', undefined);
-      setValue('state', '');
+  // Update map coordinates in GPS mode when props change
+  useEffect(() => {
+    if (mode === 'gps' && gpsCoords) {
+      setMapCenter(gpsCoords);
+      setValue('latitude', gpsCoords.lat);
+      setValue('longitude', gpsCoords.lng);
     }
-  };
+  }, [mode, gpsCoords, setValue]);
 
-  const handleCitySelect = (entity: LocationEntity) => {
-    if (watchedCityId !== entity.id) resetAreaAndBelow();
-    setValue('cityId', entity.id);
-    setMapCenter({ lat: entity.lat, lng: entity.lng });
-    setValue('latitude', entity.lat);
-    setValue('longitude', entity.lng);
-  };
+  // Automatically prefill detected GPS location fields once statesData loads
+  useEffect(() => {
+    if (mode === 'gps' && gpsAddress && !loadingDataset && !gpsPrefilled) {
+      const state = gpsAddress.address.state;
+      const district = gpsAddress.address.city;
+      const pincode = gpsAddress.address.pincode;
+      const area = gpsAddress.address.area;
+      const street = gpsAddress.address.street;
 
-  const handleAreaSelect = (entity: LocationEntity) => {
-    if (watchedAreaId !== entity.id) resetStreetAndBelow();
-    setValue('areaId', entity.id);
-    if (entity.pincode) setValue('pincode', entity.pincode);
-    setMapCenter({ lat: entity.lat, lng: entity.lng });
-    setValue('latitude', entity.lat);
-    setValue('longitude', entity.lng);
-  };
+      // 4. After detecting the State, call populateDistricts(state) to populate the District dropdown
+      const populateDistricts = (stateName: string) => {
+        if (!stateName) return;
+        const matchedState = Object.keys(statesData).find(
+          (s) => s.toLowerCase() === stateName.toLowerCase()
+        );
+        if (matchedState) {
+          setValue('state', matchedState);
+        } else {
+          setValue('state', stateName);
+        }
+      };
 
-  const handleStreetSelect = (entity: LocationEntity) => {
-    setValue('streetId', entity.id);
-    setMapCenter({ lat: entity.lat, lng: entity.lng });
-    setValue('latitude', entity.lat);
-    setValue('longitude', entity.lng);
-  };
+      // 5. Automatically set the form values only in GPS mode
+      setValue('state', state);
+      populateDistricts(state);
 
-  // Rule 15: Delivery Validation
-  const onSubmitHandler = async (data: AddressFormData) => {
-    // Strict validation
-    if (!data.countryId || !data.stateId || !data.cityId || !data.areaId || !data.streetId) {
-      alert("Invalid hierarchy. Please select valid locations from the suggestions dropdowns.");
-      return;
+      // Set detected district value in dropdown
+      const matchedState = Object.keys(statesData).find(
+        (s) => s.toLowerCase() === state.toLowerCase()
+      );
+      if (matchedState && district) {
+        const stateDistricts = statesData[matchedState] || [];
+        let matchedDistrict = stateDistricts.find(
+          (d) => d.toLowerCase() === district.toLowerCase()
+        );
+        if (!matchedDistrict) {
+          matchedDistrict = stateDistricts.find(
+            (d) => d.toLowerCase().includes(district.toLowerCase()) || 
+                   district.toLowerCase().includes(d.toLowerCase())
+          );
+        }
+
+        if (matchedDistrict) {
+          setValue('city', matchedDistrict);
+          setValue('district' as any, matchedDistrict);
+        } else {
+          setStatesData((prev) => ({
+            ...prev,
+            [matchedState]: [...(prev[matchedState] || []), district]
+          }));
+          setValue('city', district);
+          setValue('district' as any, district);
+        }
+      } else {
+        setValue('city', district);
+        setValue('district' as any, district);
+      }
+
+      setValue('pincode', pincode);
+      setValue('area', area);
+      setValue('street', street);
+
+      if (gpsAddress.address.houseNumber) {
+        setValue('houseNumber', gpsAddress.address.houseNumber);
+      }
+      if (gpsAddress.address.building) {
+        setValue('building', gpsAddress.address.building);
+      }
+
+      setGpsPrefilled(true);
     }
+  }, [mode, gpsAddress, loadingDataset, gpsPrefilled, statesData, setValue]);
+
+  // Handle Form Submission
+  const onFormSubmit = async (data: AddressFormData) => {
+    data.latitude = mapCenter.lat;
+    data.longitude = mapCenter.lng;
     await onSubmit(data);
   };
 
-  return (
-    <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-4 text-slate-800">
-      {formMode === 'gps' ? (
-        <div className="space-y-4">
-          <div className="p-5 rounded-2xl bg-indigo-600/5 border border-indigo-500/20 space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-indigo-700 uppercase tracking-widest">
-                📍 Current Location (Converted to Text)
-              </h4>
-              <span className="text-[10px] bg-emerald-500/10 text-emerald-700 px-2 py-0.5 rounded font-semibold">
-                Resolved via GPS
-              </span>
-            </div>
-            
-            <div className="space-y-1 text-slate-800">
-              <p className="text-sm font-bold text-slate-900">
-                {[watchedHouse, watchedBuilding].filter(Boolean).join(', ') || 'House details not detected'}
-              </p>
-              <p className="text-xs text-slate-600 font-semibold">
-                {[watchedStreet, watchedArea].filter(Boolean).join(', ') || 'Street details not detected'}
-              </p>
-              <p className="text-xs text-slate-500 font-semibold">
-                {watchedCity}, {watchedState} - {watchedPin}
-              </p>
-            </div>
+  // State Change handler to reset District
+  const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedState = e.target.value;
+    setValue('state', selectedState);
+    setValue('city', ''); // Reset district selection to empty (Select District)
+  };
 
-            <div style={{ pointerEvents: 'none', opacity: 0.85 }}>
-              <MapPicker center={mapCenter} onLocationChange={() => {}} />
-            </div>
-            <AccuracyBadge accuracy={accuracy} />
+  // Pincode API matcher
+  const handlePincodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, ''); // Numeric only
+    setValue('pincode', val);
+    setPincodeError('');
+
+    if (val.length === 6) {
+      setLoadingPincode(true);
+      fetch(`https://api.postalpincode.in/pincode/${val}`)
+        .then((res) => {
+          if (!res.ok) throw new Error('API fetch failed');
+          return res.json();
+        })
+        .then((data) => {
+          setLoadingPincode(false);
+          if (data && data[0] && data[0].Status === 'Success' && Array.isArray(data[0].PostOffice)) {
+            const list = data[0].PostOffice;
+            const stateFromApi = list[0].State;
+            const districtFromApi = list[0].District;
+
+            // 1. Match State case-insensitively
+            const matchedState = stateNames.find((st) => st.toLowerCase() === stateFromApi.toLowerCase());
+            if (matchedState) {
+              setValue('state', matchedState);
+
+              // 2. Match District case-insensitively or substring
+              const stateDistricts = statesData[matchedState] || [];
+              let matchedDistrict = stateDistricts.find(
+                (d) => d.toLowerCase() === districtFromApi.toLowerCase()
+              );
+              if (!matchedDistrict) {
+                // Substring match
+                matchedDistrict = stateDistricts.find(
+                  (d) => d.toLowerCase().includes(districtFromApi.toLowerCase()) || 
+                         districtFromApi.toLowerCase().includes(d.toLowerCase())
+                );
+              }
+
+              // Set district values
+              if (matchedDistrict) {
+                setValue('city', matchedDistrict);
+              } else {
+                setStatesData((prev) => ({
+                  ...prev,
+                  [matchedState]: [...(prev[matchedState] || []), districtFromApi]
+                }));
+                setValue('city', districtFromApi);
+              }
+            }
+
+            // 3. Set Post Offices
+            const poNames = list.map((po: any) => po.Name).sort();
+            setPostOffices(poNames);
+            if (poNames.length === 1) {
+              setValue('area', poNames[0]);
+            } else {
+              setValue('area', ''); // User must choose
+            }
+          } else {
+            setPincodeError('No post offices found for this PIN code.');
+            setPostOffices([]);
+          }
+        })
+        .catch((err) => {
+          setLoadingPincode(false);
+          console.error(err);
+          setPincodeError('Error fetching PIN code details. Please try again.');
+          setPostOffices([]);
+        });
+    } else {
+      setPostOffices([]);
+    }
+  };
+
+  // Extract keys representing state names sorted alphabetically
+  const stateNames = Object.keys(statesData).sort();
+  const districtList = watchedState ? statesData[watchedState] || [] : [];
+
+  // Determine if auto-detected GPS location is missing District or Pincode
+  const showDetectedWarning = mode === 'gps' && gpsAddress && (!gpsAddress.address.city || !gpsAddress.address.pincode);
+
+  return (
+    <form onSubmit={handleSubmit(onFormSubmit)} style={{ padding: '4px', fontFamily: "'Inter', -apple-system, sans-serif" }}>
+      
+      {/* ── MAP CONTAINER (GPS Mode Only) ── */}
+      {mode === 'gps' && (
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b7280', display: 'block', marginBottom: '8px' }}>
+            📍 Location Preview (Map)
+          </label>
+          <div style={{ height: '200px', borderRadius: '16px', overflow: 'hidden', border: '1.5px solid #e5e7eb' }}>
+            <MapPicker
+              center={mapCenter}
+              onLocationChange={() => {}}
+              height={200}
+              interactive={false}
+            />
           </div>
         </div>
-      ) : (
-        <>
-          {isAway && (
-            <div className="p-4 rounded-xl bg-indigo-600/5 border border-indigo-600/20 text-xs text-indigo-700 flex items-start gap-2.5">
-              <span className="text-base leading-none">💡</span>
-              <div>
-                <p className="font-bold mb-0.5">Strict Location Entry</p>
-                <p className="text-slate-500 font-medium">Please select your exact delivery location from the verified dropdown suggestions. The map will update automatically.</p>
-              </div>
-            </div>
-          )}
-
-          {/* ── Address Fields ─────────────────────────────────────── */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-                Country
-              </label>
-              <select
-                {...register('countryId', { required: 'Country is required.' })}
-                className="w-full bg-black/10 border border-black/10 rounded-xl px-4 py-3 text-sm text-slate-500 outline-none cursor-not-allowed"
-                disabled
-              >
-                {countries.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-                State *
-              </label>
-              <select
-                value={watchedStateId || ''}
-                onChange={handleStateChange}
-                className={`w-full bg-black/5 border rounded-xl px-4 py-3 text-sm text-slate-800 outline-none transition-all focus:border-indigo-600 focus:bg-white
-                  ${errors.stateId ? 'border-red-500/50 bg-red-500/5' : 'border-black/10'}`}
-              >
-                <option value="">Select State</option>
-                {states.map((st) => (
-                  <option key={st.id} value={st.id}>
-                    {st.name}
-                  </option>
-                ))}
-              </select>
-              {errors.stateId && (
-                <p className="text-xs text-red-600 mt-1">Please select a State.</p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <AutocompleteInput
-              label="City *"
-              placeholder="e.g. Bengaluru"
-              value={watchedCity}
-              disabled={!watchedStateId}
-              error={errors.cityId ? "Please select a valid City from suggestions." : undefined}
-              registerProps={register('city', { required: true })}
-              onChange={(val) => setValue('city', val)}
-              onSelect={handleCitySelect}
-              fetchSuggestions={(q, signal) => LocationService.searchHierarchy('city', { state: watchedState }, q, signal)}
-            />
-            <div>
-              <AutocompleteInput
-                label="Pin Code *"
-                placeholder="e.g. 560038"
-                value={watchedPin}
-                disabled={!watchedCityId}
-                error={errors.pincode?.message}
-                registerProps={register('pincode', {
-                  required: 'PIN code is required.',
-                  pattern: { value: /^\d{6}$/, message: 'Must be a 6-digit number.' }
-                })}
-                onChange={(val) => setValue('pincode', val)}
-                onSelect={(entity) => setValue('pincode', entity.pincode || entity.name)}
-                fetchSuggestions={async (q, signal) => {
-                  const results = await LocationService.fetchPincodesForCity(watchedCity, signal);
-                  // Filter client-side based on what they're typing
-                  return results.filter(r => r.name.includes(q));
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <AutocompleteInput
-              label="Area/Locality/Village *"
-              placeholder="e.g. Indiranagar"
-              value={watchedArea}
-              disabled={!watchedCityId}
-              error={errors.areaId ? "Please select a valid Area from suggestions." : undefined}
-              registerProps={register('area', { required: true })}
-              onChange={(val) => setValue('area', val)}
-              onSelect={handleAreaSelect}
-              fetchSuggestions={(q, signal) => LocationService.searchHierarchy('area', { state: watchedState, city: watchedCity }, q, signal)}
-            />
-            <AutocompleteInput
-              label="Street Name/Road *"
-              placeholder="e.g. 100 Feet Road"
-              value={watchedStreet}
-              disabled={!watchedAreaId}
-              error={errors.streetId ? "Please select a valid Street from suggestions." : undefined}
-              registerProps={register('street', { required: true })}
-              onChange={(val) => setValue('street', val)}
-              onSelect={handleStreetSelect}
-              fetchSuggestions={(q, signal) => LocationService.searchHierarchy('street', { state: watchedState, city: watchedCity, area: watchedArea }, q, signal)}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-                House/Flat Number *
-              </label>
-              <input
-                type="text"
-                {...register('houseNumber', { required: 'House/Flat number is required.' })}
-                disabled={!watchedStreetId}
-                className={`w-full border rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-black/30 outline-none transition-all
-                  ${!watchedStreetId ? 'bg-black/10 cursor-not-allowed opacity-60' : 'bg-black/5 focus:border-indigo-600 focus:bg-white'}
-                  ${errors.houseNumber ? 'border-red-500/50 bg-red-500/5' : 'border-black/10'}`}
-                placeholder="e.g. Flat 402 / D-12"
-              />
-              {errors.houseNumber && (
-                <p className="text-xs text-red-600 mt-1">{errors.houseNumber.message}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-                Apartment/Building Name (Optional)
-              </label>
-              <input
-                type="text"
-                {...register('building')}
-                disabled={!watchedStreetId}
-                className={`w-full border border-black/10 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-black/30 outline-none transition-all
-                  ${!watchedStreetId ? 'bg-black/10 cursor-not-allowed opacity-60' : 'bg-black/5 focus:border-indigo-600 focus:bg-white'}`}
-                placeholder="e.g. Signature Towers"
-              />
-            </div>
-          </div>
-          
-          <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-                Landmark (Optional)
-              </label>
-              <input
-                type="text"
-                {...register('landmark')}
-                disabled={!watchedStreetId}
-                className={`w-full border border-black/10 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-black/30 outline-none transition-all
-                  ${!watchedStreetId ? 'bg-black/10 cursor-not-allowed opacity-60' : 'bg-black/5 focus:border-indigo-600 focus:bg-white'}`}
-                placeholder="e.g. Near Metro Station"
-              />
-          </div>
-
-          {/* ── Mini Map Container ── */}
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between">
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Confirm Location on Map
-              </label>
-            </div>
-            {/* Disabled manual map marker repositioning to enforce strict hierarchical location picking */}
-            <MapPicker center={mapCenter} onLocationChange={() => {}} />
-            <AccuracyBadge accuracy={accuracy} />
-            <DistanceAlert gpsCoords={gpsCoords} markerCoords={mapCenter} />
-          </div>
-        </>
       )}
 
-      {/* ── Contact Details ──────────────────────────── */}
-      <div className="border-t border-black/5 pt-4">
-        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
-          Contact Information
-        </h4>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-              Full Name *
-            </label>
+      {/* ── GPS RESOLVED ADDRESS DETAILS (SCRIPT) ── */}
+      {mode === 'gps' && gpsAddress && (
+        <div style={{
+          padding: '20px',
+          borderRadius: '16px',
+          border: '1.5px solid #e0e7ff',
+          backgroundColor: '#f8fafc',
+          marginBottom: '24px',
+          fontFamily: "'Inter', -apple-system, sans-serif"
+        }}>
+          <span style={{ fontSize: '11px', fontWeight: 700, color: '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '14px' }}>
+            🛰️ Auto-Detected Address Components
+          </span>
+          <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '10px 16px', fontSize: '13px', lineHeight: 1.5 }}>
+            <span style={{ color: '#6b7280', fontWeight: 600 }}>Pincode:</span>
+            <span style={{ color: '#1f2937', fontWeight: 500 }}>{gpsAddress.address.pincode}</span>
+
+            <span style={{ color: '#6b7280', fontWeight: 600 }}>Area / Village:</span>
+            <span style={{ color: '#1f2937', fontWeight: 500 }}>{gpsAddress.address.area}</span>
+
+            <span style={{ color: '#6b7280', fontWeight: 600 }}>District:</span>
+            <span style={{ color: '#1f2937', fontWeight: 500 }}>{gpsAddress.address.city}</span>
+
+            <span style={{ color: '#6b7280', fontWeight: 600 }}>State:</span>
+            <span style={{ color: '#1f2937', fontWeight: 500 }}>{gpsAddress.address.state}</span>
+
+            <span style={{ color: '#6b7280', fontWeight: 600 }}>Country:</span>
+            <span style={{ color: '#1f2937', fontWeight: 500 }}>{gpsAddress.address.country}</span>
+          </div>
+        </div>
+      )}
+
+      {/* ── USER FRIENDLY WARNING IF GPS MISSED DISTRICT OR PINCODE ── */}
+      {showDetectedWarning && (
+        <div style={{
+          padding: '12px 16px',
+          borderRadius: '12px',
+          backgroundColor: '#fffbeb',
+          border: '1.5px solid #fef3c7',
+          color: '#b45309',
+          fontSize: '13px',
+          fontWeight: 500,
+          marginBottom: '20px',
+          lineHeight: 1.4
+        }}>
+          ⚠️ District or PIN code could not be determined from the GPS location. Please verify or enter it manually.
+        </div>
+      )}
+
+      {/* ── AWAY MODE: ADDRESS SELECTION FIELDS ── */}
+      {mode === 'away' && (
+        <div style={{ marginBottom: '24px' }}>
+        {/* Country */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={labelStyle}>Country</label>
+          <input
+            type="text"
+            value="India 🇮🇳"
+            disabled
+            style={{ ...inputStyle, opacity: 0.6, cursor: 'not-allowed', backgroundColor: '#f3f4f6' }}
+          />
+        </div>
+
+        {/* Pincode */}
+        <div style={{ marginBottom: '16px', position: 'relative' }}>
+          <label style={labelStyle}>
+            Pincode * {loadingPincode && <span style={{ color: '#6366f1', fontSize: '11px', textTransform: 'none' }}>(Fetching details...)</span>}
+          </label>
+          <input
+            type="text"
+            placeholder="Enter 6-digit PIN code"
+            value={watchedPincode || ''}
+            {...register('pincode', {
+              required: mode === 'away' ? 'Pincode is required' : false,
+              onChange: handlePincodeChange
+            })}
+            maxLength={6}
+            style={inputStyle}
+            autoComplete="off"
+          />
+          {pincodeError && <p style={errorStyle}>{pincodeError}</p>}
+          {errors.pincode && <p style={errorStyle}>{errors.pincode.message}</p>}
+        </div>
+
+        {/* State Selection Dropdown */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={labelStyle}>State *</label>
+          {loadingDataset ? (
+            <select disabled style={{ ...selectStyle, opacity: 0.7 }}>
+              <option>Loading States...</option>
+            </select>
+          ) : (
+            <select
+              value={watchedState || ''}
+              {...register('state', {
+                required: mode === 'away' ? 'State is required' : false,
+                onChange: handleStateChange
+              })}
+              style={selectStyle}
+            >
+              <option value="">Select State</option>
+              {stateNames.map((st) => (
+                <option key={st} value={st}>
+                  {st}
+                </option>
+              ))}
+            </select>
+          )}
+          {errors.state && <p style={errorStyle}>{errors.state.message}</p>}
+        </div>
+
+        {/* District Selection Dropdown */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={labelStyle}>District *</label>
+          {!watchedState ? (
+            <select disabled style={{ ...selectStyle, opacity: 0.6, cursor: 'not-allowed', backgroundColor: '#f3f4f6' }}>
+              <option value="">Please select a state first</option>
+            </select>
+          ) : (
+            <select
+              value={watchedCity || ''}
+              {...register('city', {
+                required: mode === 'away' ? 'District is required' : false
+              })}
+              style={selectStyle}
+            >
+              <option value="">Select District</option>
+              {districtList.sort().map((dist) => (
+                <option key={dist} value={dist}>
+                  {dist}
+                </option>
+              ))}
+            </select>
+          )}
+          {errors.city && <p style={errorStyle}>{errors.city.message}</p>}
+        </div>
+
+        {/* Post Office / Area/Locality Dropdown if multiple post offices, else input text */}
+        {postOffices.length > 1 ? (
+          <div style={{ marginBottom: '16px' }}>
+            <label style={labelStyle}>Post Office / Locality *</label>
+            <select
+              value={watch('area') || ''}
+              {...register('area', {
+                required: mode === 'away' ? 'Post Office / Locality is required' : false
+              })}
+              style={selectStyle}
+            >
+              <option value="">Select Post Office</option>
+              {postOffices.map((po) => (
+                <option key={po} value={po}>
+                  {po}
+                </option>
+              ))}
+            </select>
+            {errors.area && <p style={errorStyle}>{errors.area.message}</p>}
+          </div>
+        ) : (
+          <div style={{ marginBottom: '16px' }}>
+            <label style={labelStyle}>Area / Locality / Village *</label>
             <input
               type="text"
-              {...register('fullName', {
-                required: 'Full name is required.',
-                minLength: { value: 3, message: 'Minimum 3 characters.' },
-                maxLength: { value: 100, message: 'Maximum 100 characters.' }
+              placeholder="Enter Area / Locality / Village"
+              {...register('area', {
+                required: mode === 'away' ? 'Area / Locality / Village is required' : false
               })}
-              className={`w-full bg-black/5 border rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-black/30 outline-none transition-all focus:border-indigo-600 focus:bg-white
-                ${errors.fullName ? 'border-red-500/50 bg-red-500/5' : 'border-black/10'}`}
-              placeholder="e.g. Purna Sai"
+              style={inputStyle}
+              autoComplete="off"
             />
-            {errors.fullName && (
-              <p className="text-xs text-red-600 mt-1">{errors.fullName.message}</p>
-            )}
+            {errors.area && <p style={errorStyle}>{errors.area.message}</p>}
           </div>
+        )}
 
+        {/* Street Name & House Details */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-              Mobile Number *
-            </label>
+            <label style={labelStyle}>Street Name / Road *</label>
             <input
-              type="tel"
-              maxLength={10}
-              {...register('mobile', {
-                required: 'Mobile number is required.',
-                pattern: { value: /^\d{10}$/, message: 'Must be exactly 10 digits.' }
-              })}
-              className={`w-full bg-black/5 border rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-black/30 outline-none transition-all focus:border-indigo-600 focus:bg-white
-                ${errors.mobile ? 'border-red-500/50 bg-red-500/5' : 'border-black/10'}`}
-              placeholder="98765 43210"
+              type="text"
+              placeholder="Street name"
+              {...register('street', { required: mode === 'away' ? 'Street name / Road is required' : false })}
+              style={inputStyle}
             />
-            {errors.mobile && (
-              <p className="text-xs text-red-600 mt-1">{errors.mobile.message}</p>
-            )}
+            {errors.street && <p style={errorStyle}>{errors.street.message}</p>}
           </div>
+          <div>
+            <label style={labelStyle}>House / Flat No.</label>
+            <input
+              type="text"
+              placeholder="House number"
+              {...register('houseNumber')}
+              style={inputStyle}
+            />
+          </div>
+        </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-              Alternative Mobile Number
-            </label>
-            <input
-              type="tel"
-              maxLength={10}
-              {...register('alternateMobile', {
-                pattern: { value: /^\d{10}$/, message: 'Must be exactly 10 digits.' }
-              })}
-              className={`w-full bg-black/5 border rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-black/30 outline-none transition-all focus:border-indigo-600 focus:bg-white
-                ${errors.alternateMobile ? 'border-red-500/50 bg-red-500/5' : 'border-black/10'}`}
-              placeholder="e.g. 98765 11111"
-            />
-            {errors.alternateMobile && (
-              <p className="text-xs text-red-600 mt-1">{errors.alternateMobile.message}</p>
-            )}
-          </div>
+        {/* Landmark */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={labelStyle}>Landmark (Optional)</label>
+          <input
+            type="text"
+            placeholder="e.g. Near Apollo Hospital"
+            {...register('landmark')}
+            style={inputStyle}
+          />
         </div>
       </div>
+      )}
 
-      {/* ── Address Type & Default Options ──────────────────────── */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t border-black/5 pt-4">
-        <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-            Save Address As
-          </label>
-          <div className="flex gap-2">
-            <Controller
-              name="addressType"
-              control={control}
-              render={({ field }) => (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => field.onChange('home')}
-                    className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all border
-                      ${field.value === 'home'
-                        ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                        : 'bg-black/5 border-black/10 text-slate-600 hover:bg-black/10'
-                      }`}
-                  >
-                    🏠 Home
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => field.onChange('work')}
-                    className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all border
-                      ${field.value === 'work'
-                        ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                        : 'bg-black/5 border-black/10 text-slate-600 hover:bg-black/10'
-                      }`}
-                  >
-                    💼 Work
-                  </button>
-                </>
-              )}
+      {/* ── BOTH MODES: CONTACT & TYPE DETAILS ── */}
+      <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '20px', marginTop: '20px' }}>
+        <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#111827', marginBottom: '16px' }}>
+          Contact Info & Type
+        </h3>
+
+        {/* Full Name */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={labelStyle}>Full Name *</label>
+          <input
+            type="text"
+            placeholder="Recipient's Name"
+            {...register('fullName', { required: 'Full name is required' })}
+            style={inputStyle}
+          />
+          {errors.fullName && <p style={errorStyle}>{errors.fullName.message}</p>}
+        </div>
+
+        {/* Mobile Numbers */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+          <div>
+            <label style={labelStyle}>Mobile Number *</label>
+            <input
+              type="tel"
+              placeholder="Mobile number"
+              {...register('mobile', { required: 'Mobile number is required' })}
+              style={inputStyle}
+            />
+            {errors.mobile && <p style={errorStyle}>{errors.mobile.message}</p>}
+          </div>
+          <div>
+            <label style={labelStyle}>Alt Mobile (Optional)</label>
+            <input
+              type="tel"
+              placeholder="Alt mobile"
+              {...register('alternateMobile')}
+              style={inputStyle}
             />
           </div>
         </div>
 
-        <label className="flex items-center gap-3 cursor-pointer group mt-4 md:mt-6">
+        {/* Address Type Toggle */}
+        <div style={{ marginBottom: '20px' }}>
+          <label style={labelStyle}>Address Type</label>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              type="button"
+              onClick={() => setValue('addressType', 'home')}
+              style={{
+                flex: 1,
+                padding: '12px 20px',
+                borderRadius: '12px',
+                border: watchedAddressType === 'home' ? '1.5px solid #6366f1' : '1.5px solid #e5e7eb',
+                fontWeight: 700,
+                fontSize: '13px',
+                cursor: 'pointer',
+                backgroundColor: watchedAddressType === 'home' ? 'rgba(99, 102, 241, 0.06)' : '#ffffff',
+                color: watchedAddressType === 'home' ? '#6366f1' : '#4b5563',
+                boxShadow: watchedAddressType === 'home' ? '0 2px 6px rgba(99, 102, 241, 0.08)' : 'none',
+                transition: 'all 0.2s'
+              }}
+            >
+              🏠 Home
+            </button>
+            <button
+              type="button"
+              onClick={() => setValue('addressType', 'work')}
+              style={{
+                flex: 1,
+                padding: '12px 20px',
+                borderRadius: '12px',
+                border: watchedAddressType === 'work' ? '1.5px solid #6366f1' : '1.5px solid #e5e7eb',
+                fontWeight: 700,
+                fontSize: '13px',
+                cursor: 'pointer',
+                backgroundColor: watchedAddressType === 'work' ? 'rgba(99, 102, 241, 0.06)' : '#ffffff',
+                color: watchedAddressType === 'work' ? '#6366f1' : '#4b5563',
+                boxShadow: watchedAddressType === 'work' ? '0 2px 6px rgba(99, 102, 241, 0.08)' : 'none',
+                transition: 'all 0.2s'
+              }}
+            >
+              💼 Work
+            </button>
+          </div>
+        </div>
+
+        {/* Set as Default Checkbox */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
           <input
             type="checkbox"
+            id="isDefault"
             {...register('isDefault')}
-            className="w-4 h-4 rounded border-black/20 bg-black/5 text-indigo-600 focus:ring-indigo-500"
+            style={{ width: '16px', height: '16px', cursor: 'pointer' }}
           />
-          <span className="text-sm text-slate-600 group-hover:text-slate-800 transition-colors">
-            Set as default delivery address
-          </span>
-        </label>
-      </div>
+          <label htmlFor="isDefault" style={{ fontSize: '13px', color: '#374151', fontWeight: 500, cursor: 'pointer' }}>
+            Make default delivery address
+          </label>
+        </div>
 
-      {/* ── Action Buttons ──────────────────────────────────────── */}
-      <div className="flex gap-3 pt-4 border-t border-black/5">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="flex-1 py-3 rounded-xl border border-black/10 text-sm text-slate-600 hover:text-slate-900 hover:border-black/30 hover:bg-black/5 transition-all font-semibold"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={submitting}
-          className={`flex-1 py-3 rounded-xl text-sm font-semibold text-white transition-all
-            ${submitting
-              ? 'bg-indigo-700/50 cursor-wait'
-              : 'bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-500/30'
-            }`}
-        >
-          {submitting ? 'Saving Address…' : 'Save Address'}
-        </button>
+        {/* Actions Buttons */}
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            type="button"
+            onClick={onCancel}
+            style={cancelButtonStyle}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            style={saveButtonStyle}
+          >
+            {isSubmitting ? 'Saving Address...' : 'Save & Confirm'}
+          </button>
+        </div>
       </div>
     </form>
   );
+};
+
+// ── SHARED STYLES ──
+const labelStyle: React.CSSProperties = {
+  fontSize: '11px',
+  fontWeight: 600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  color: '#6b7280',
+  marginBottom: '6px',
+  display: 'block'
+};
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '12px 16px',
+  fontSize: '14px',
+  border: '1.5px solid #e5e7eb',
+  borderRadius: '12px',
+  backgroundColor: '#f9fafb',
+  color: '#111827',
+  outline: 'none',
+  transition: 'all 0.2s'
+};
+
+const selectStyle: React.CSSProperties = {
+  ...inputStyle,
+  appearance: 'none',
+  backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%236b7280\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'right 16px center',
+  backgroundSize: '16px'
+};
+
+const saveButtonStyle: React.CSSProperties = {
+  flex: 2,
+  backgroundColor: '#6366f1',
+  color: '#ffffff',
+  padding: '14px 28px',
+  borderRadius: '12px',
+  fontWeight: 700,
+  fontSize: '14px',
+  border: 'none',
+  cursor: 'pointer',
+  transition: 'background-color 0.2s'
+};
+
+const cancelButtonStyle: React.CSSProperties = {
+  flex: 1,
+  backgroundColor: 'transparent',
+  color: '#6b7280',
+  padding: '14px',
+  borderRadius: '12px',
+  fontWeight: 600,
+  fontSize: '14px',
+  border: '1.5px solid #e5e7eb',
+  cursor: 'pointer',
+  transition: 'all 0.2s'
+};
+
+const errorStyle: React.CSSProperties = {
+  fontSize: '11px',
+  color: '#ef4444',
+  marginTop: '4px',
+  margin: '4px 0 0 0',
+  fontWeight: 500
 };

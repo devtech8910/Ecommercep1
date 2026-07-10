@@ -10,8 +10,12 @@ export function useGeolocation() {
 
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
-      setStatus('error');
-      setError('Geolocation is not supported by your browser.');
+      // Fallback to IP Geolocation immediately if browser doesn't support geolocation
+      setStatus('loading');
+      fetchIPFallback(
+        () => setStatus('error'),
+        (msg) => setError(msg)
+      );
       return;
     }
 
@@ -28,49 +32,55 @@ export function useGeolocation() {
         setStatus('success');
       },
       (geoError) => {
-        // If high accuracy times out, try low accuracy fallback (which works instantly on desktops)
-        if (geoError.code === geoError.TIMEOUT) {
-          console.warn('High accuracy timed out, retrying with low accuracy...');
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              setCoords({
-                latitude: pos.coords.latitude,
-                longitude: pos.coords.longitude,
-                accuracy: pos.coords.accuracy
-              });
-              setStatus('success');
-            },
-            (err) => {
-              console.warn('Fallback low accuracy geolocation failed:', err);
-              if (err.code === err.PERMISSION_DENIED) {
-                setStatus('denied');
-                setError('Location permission denied. Please enter address manually.');
-              } else {
-                setStatus('error');
-                setError(err.message || 'Unable to retrieve location coordinates.');
-              }
-            },
-            {
-              enableHighAccuracy: false,
-              timeout: 10000,
-              maximumAge: 60000
+        console.warn('Browser geolocation failed. Trying IP-based location fallback...', geoError.message);
+        
+        // Fallback to IP-based Geolocation if browser permission denied, timed out, or unavailable
+        fetchIPFallback(
+          () => {
+            if (geoError.code === geoError.PERMISSION_DENIED) {
+              setStatus('denied');
+              setError('Location permission denied. Please enter address manually.');
+            } else {
+              setStatus('error');
+              setError(geoError.message || 'Unable to retrieve location coordinates.');
             }
-          );
-        } else if (geoError.code === geoError.PERMISSION_DENIED) {
-          setStatus('denied');
-          setError('Location permission denied. Please enter address manually.');
-        } else {
-          setStatus('error');
-          setError(geoError.message || 'Unable to retrieve location coordinates.');
-        }
+          },
+          (msg) => setError(msg)
+        );
       },
       {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
+        enableHighAccuracy: false, // Disables active hardware GPS query on desktops for instant return
+        timeout: 8000,             // 8 seconds timeout
+        maximumAge: 300000         // 5 minutes cache
       }
     );
   }, []);
+
+  const fetchIPFallback = (onFailure: () => void, onErrorMsg: (msg: string) => void) => {
+    fetch('https://ipapi.co/json/')
+      .then((res) => {
+        if (!res.ok) throw new Error('IP Geolocation API failed');
+        return res.json();
+      })
+      .then((ipData) => {
+        if (ipData && ipData.latitude && ipData.longitude) {
+          console.log('📍 Location detected successfully via IP fallback:', ipData);
+          setCoords({
+            latitude: ipData.latitude,
+            longitude: ipData.longitude,
+            accuracy: 15000 // Approximate
+          });
+          setStatus('success');
+        } else {
+          throw new Error('Invalid coordinates returned from IP Geolocation.');
+        }
+      })
+      .catch((err) => {
+        console.error('IP Geolocation fallback failed:', err);
+        onFailure();
+        onErrorMsg('Unable to retrieve location. Please type manually.');
+      });
+  };
 
   return {
     status,
