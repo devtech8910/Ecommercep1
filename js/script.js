@@ -77,6 +77,117 @@ const $$ = (selector, context = document) => context.querySelectorAll(selector);
 })();
 
 /* ============================================================
+   AUTH UI & NAVBAR USER STATE CONTROLLER
+   ============================================================ */
+function updateAuthUI() {
+  const nameEl = document.getElementById('mobile-user-name');
+  const mobileLinksList = document.querySelector('.mobile-links');
+  let adminItem = document.getElementById('mobile-admin-item');
+
+  // Desktop Navbar Auth Elements
+  const loginBtn = document.getElementById('login-btn');
+  const signupBtn = document.getElementById('signup-btn');
+  const navActions = document.querySelector('.nav-actions');
+  let desktopUserContainer = document.getElementById('desktop-user-container');
+
+  const isInPages = window.location.pathname.includes('/pages/');
+  const adminUrl = isInPages ? 'admin.html' : 'pages/admin.html';
+  const ordersUrl = isInPages ? 'orders.html' : 'pages/orders.html';
+
+  try {
+    const rawUser = localStorage.getItem('dtf_user') || localStorage.getItem('user');
+    if (rawUser) {
+      const user = JSON.parse(rawUser);
+      const name = user.full_name || user.name || user.username || user.email?.split('@')[0] || 'User';
+
+      // 1. Mobile Greeting
+      if (nameEl) nameEl.textContent = `Hey ${name}`;
+
+      // Check Admin role
+      const isAdmin = (user.role && user.role.toLowerCase() === 'admin') ||
+                      user.is_admin === true ||
+                      (user.email && user.email.toLowerCase().includes('admin')) ||
+                      (user.username && user.username.toLowerCase() === 'admin');
+
+      // 2. Mobile Admin Link
+      if (isAdmin) {
+        if (!adminItem && mobileLinksList) {
+          adminItem = document.createElement('li');
+          adminItem.id = 'mobile-admin-item';
+          adminItem.innerHTML = `<a href="${adminUrl}" class="mobile-link" style="color: #fbbf24; font-weight: 800; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 10px 14px; margin-top: 6px; display: block; text-decoration: none;">🛠️ Admin Dashboard</a>`;
+          mobileLinksList.appendChild(adminItem);
+        } else if (adminItem) {
+          adminItem.style.display = 'block';
+          const a = adminItem.querySelector('a');
+          if (a) a.href = adminUrl;
+        }
+      } else if (adminItem) {
+        adminItem.style.display = 'none';
+      }
+
+      // 3. Desktop Header Navigation (Hide Login/Signup, Show User Pill)
+      if (loginBtn) loginBtn.style.display = 'none';
+      if (signupBtn) signupBtn.style.display = 'none';
+
+      if (navActions) {
+        if (!desktopUserContainer) {
+          desktopUserContainer = document.createElement('div');
+          desktopUserContainer.id = 'desktop-user-container';
+          desktopUserContainer.style.display = 'inline-flex';
+          desktopUserContainer.style.alignItems = 'center';
+          desktopUserContainer.style.gap = '8px';
+
+          const hamburger = document.getElementById('hamburger');
+          if (hamburger) {
+            navActions.insertBefore(desktopUserContainer, hamburger);
+          } else {
+            navActions.appendChild(desktopUserContainer);
+          }
+        }
+
+        desktopUserContainer.style.display = 'inline-flex';
+        desktopUserContainer.innerHTML = `
+          ${isAdmin ? `<a href="${adminUrl}" class="btn btn-ghost" style="color: #fbbf24; font-weight: 800; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 99px; padding: 6px 14px; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;">🛠️ Admin</a>` : ''}
+          <a href="${ordersUrl}" class="btn btn-ghost" style="font-weight: 700; background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25); border-radius: 99px; padding: 6px 14px; color: #6366f1; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;">👤 ${name}</a>
+          <button type="button" id="desktop-logout-btn" class="btn btn-ghost" style="font-weight: 700; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; border-radius: 99px; padding: 6px 12px; font-size: 12px; cursor: pointer;" title="Logout">Logout</button>
+        `;
+
+        const desktopLogout = document.getElementById('desktop-logout-btn');
+        if (desktopLogout) {
+          desktopLogout.onclick = () => {
+            localStorage.removeItem('dtf_user');
+            localStorage.removeItem('dtf_token');
+            localStorage.removeItem('user');
+            alert('Logged out successfully!');
+            window.location.reload();
+          };
+        }
+      }
+
+    } else {
+      // Logged Out State
+      if (nameEl) nameEl.textContent = 'Hey Guest';
+      if (adminItem) adminItem.style.display = 'none';
+
+      if (loginBtn) loginBtn.style.display = '';
+      if (signupBtn) signupBtn.style.display = '';
+      if (desktopUserContainer) desktopUserContainer.style.display = 'none';
+    }
+  } catch (err) {
+    console.warn('Auth UI update error:', err);
+    if (nameEl) nameEl.textContent = 'Hey Guest';
+    if (adminItem) adminItem.style.display = 'none';
+    if (loginBtn) loginBtn.style.display = '';
+    if (signupBtn) signupBtn.style.display = '';
+    if (desktopUserContainer) desktopUserContainer.style.display = 'none';
+  }
+}
+
+/* Run Auth UI update on script load & DOM ready */
+updateAuthUI();
+document.addEventListener('DOMContentLoaded', updateAuthUI);
+
+/* ============================================================
    MOBILE MENU — HAMBURGER TOGGLE
    ============================================================ */
 (function initMobileMenu() {
@@ -86,26 +197,9 @@ const $$ = (selector, context = document) => context.querySelectorAll(selector);
 
   let isOpen = false;
 
-  function updateGreeting() {
-    const nameEl = document.getElementById('mobile-user-name');
-    if (!nameEl) return;
-    try {
-      const rawUser = localStorage.getItem('dtf_user');
-      if (rawUser) {
-        const user = JSON.parse(rawUser);
-        const name = user.full_name || user.name || user.username || user.email?.split('@')[0] || 'User';
-        nameEl.textContent = `Hey ${name}`;
-      } else {
-        nameEl.textContent = 'Hey Guest';
-      }
-    } catch {
-      nameEl.textContent = 'Hey Guest';
-    }
-  }
-
   function openMenu() {
     isOpen = true;
-    updateGreeting();
+    updateAuthUI();
     hamburger.classList.add('open');
     mobileMenu.classList.add('open');
     hamburger.setAttribute('aria-expanded', 'true');
@@ -134,7 +228,8 @@ const $$ = (selector, context = document) => context.querySelectorAll(selector);
     logoutBtn.addEventListener('click', () => {
       localStorage.removeItem('dtf_user');
       localStorage.removeItem('dtf_token');
-      updateGreeting();
+      localStorage.removeItem('user');
+      updateAuthUI();
       closeMenu();
       alert('Logged out successfully!');
       window.location.reload();
@@ -142,7 +237,7 @@ const $$ = (selector, context = document) => context.querySelectorAll(selector);
   }
 
   // Initial greeting update
-  updateGreeting();
+  updateAuthUI();
 
   // Close on Escape key
   document.addEventListener('keydown', (e) => {

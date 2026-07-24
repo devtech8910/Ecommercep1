@@ -98,31 +98,47 @@ router.get('/analytics', async (req, res) => {
       WHERE ${timeframeWhere};
     `);
 
-    // Calculate real category distribution from orders JSONB items
+    // Calculate category distribution dynamically from orders or catalog products
     const categoryRes = await query(`
-      SELECT p.category, SUM((item->>'price')::numeric * (item->>'quantity')::int) as revenue
+      SELECT LOWER(p.category) as category, SUM((item->>'price')::numeric * (item->>'quantity')::int) as revenue
       FROM orders, jsonb_array_elements(items) as item
       JOIN products p ON (item->>'pid')::int = p.pid
       WHERE orders.status != 'Cancelled'
-      GROUP BY p.category;
+      GROUP BY LOWER(p.category);
     `);
 
     const categoryColors = { "mens": '#6366f1', "womens": '#ec4899', "kids": '#f59e0b' };
-    const categoryLabels = { "mens": "Men's Wear", "womens": "Women's Wear", "kids": "Kids Wear" };
-    
-    let totalCatRev = 0;
-    categoryRes.rows.forEach(r => totalCatRev += parseFloat(r.revenue) || 0);
+    let totalCatVal = 0;
+    const catMap = { mens: 0, womens: 0, kids: 0 };
 
-    const categoryTrend = categoryRes.rows.map(r => {
-      const catKey = r.category || 'mens';
-      const rev = parseFloat(r.revenue) || 0;
-      const share = totalCatRev > 0 ? Math.round((rev / totalCatRev) * 100) : 0;
-      return {
-        category: categoryLabels[catKey] || catKey,
-        share,
-        color: categoryColors[catKey] || '#6366f1'
-      };
-    });
+    if (categoryRes.rows.length > 0) {
+      categoryRes.rows.forEach(r => {
+        const catKey = (r.category || 'mens').toLowerCase();
+        const val = parseFloat(r.revenue) || 0;
+        if (catMap[catKey] !== undefined) catMap[catKey] += val;
+        totalCatVal += val;
+      });
+    } else {
+      // Fallback: Compute category shares directly from Products in Database
+      const prodCatRes = await query(`
+        SELECT LOWER(category) as category, COUNT(*) as count
+        FROM products
+        GROUP BY LOWER(category);
+      `);
+
+      prodCatRes.rows.forEach(r => {
+        const catKey = (r.category || 'mens').toLowerCase();
+        const count = parseInt(r.count, 10) || 0;
+        if (catMap[catKey] !== undefined) catMap[catKey] += count;
+        totalCatVal += count;
+      });
+    }
+
+    const categoryTrend = [
+      { category: "Men's Wear", catKey: "mens", share: totalCatVal > 0 ? Math.round((catMap.mens / totalCatVal) * 100) : 0, color: categoryColors.mens },
+      { category: "Women's Wear", catKey: "womens", share: totalCatVal > 0 ? Math.round((catMap.womens / totalCatVal) * 100) : 0, color: categoryColors.womens },
+      { category: "Kids Wear", catKey: "kids", share: totalCatVal > 0 ? Math.round((catMap.kids / totalCatVal) * 100) : 0, color: categoryColors.kids }
+    ];
 
     res.status(200).json({
       success: true,
@@ -133,11 +149,7 @@ router.get('/analytics', async (req, res) => {
         totalOrders: parseInt(statsRes.rows[0].total_orders, 10),
         avgOrderValue: Math.round(parseFloat(statsRes.rows[0].avg_order_value))
       },
-      categoryTrend: categoryTrend.length > 0 ? categoryTrend : [
-        { category: "Men's Wear", share: 45, color: '#6366f1' },
-        { category: "Women's Wear", share: 38, color: '#ec4899' },
-        { category: "Kids Wear", share: 17, color: '#f59e0b' }
-      ]
+      categoryTrend
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -329,14 +341,21 @@ router.put('/products/:id', async (req, res) => {
 router.delete('/products/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const checkProduct = await query('SELECT pid FROM products WHERE pid = $1;', [id]);
+    const checkProduct = await query('SELECT pid, title FROM products WHERE pid = $1;', [id]);
     if (checkProduct.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Product not found.' });
     }
 
+    const productTitle = checkProduct.rows[0].title;
+
+    // Clean up FK-dependent rows before deleting the product
+    try { await query('DELETE FROM stock_movements WHERE product_id = $1;', [id]); } catch (e) { /* ignore if table missing */ }
+    try { await query('DELETE FROM order_items WHERE product_id = $1;', [id]); } catch (e) { /* ignore if table missing */ }
+
     await query('DELETE FROM products WHERE pid = $1;', [id]);
-    res.status(200).json({ success: true, message: 'Product deleted successfully.' });
+    res.status(200).json({ success: true, message: `"${productTitle}" deleted successfully.` });
   } catch (err) {
+    console.error('Delete product error:', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });

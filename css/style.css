@@ -2916,6 +2916,8 @@ iframe {
   top: calc(var(--nav-height) + var(--nav-top-offset) + 8px);
   left: var(--nav-side-offset);
   right: var(--nav-side-offset);
+  max-width: var(--container-max);
+  margin: 0 auto;
   z-index: 999;
   height: 48px;
   background: rgba(255, 255, 255, 0.65);

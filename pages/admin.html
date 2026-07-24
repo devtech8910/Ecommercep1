@@ -787,16 +787,11 @@
             </div>
           </div>
 
-          <!-- Image upload limit block -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center bg-surface-container-low/40 p-4 border border-outline-variant/5 rounded-xl">
-            <div class="md:col-span-1">
-              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-1.5 block">Number of Images *</label>
-              <input type="number" id="image-count-limit" value="1" min="1" max="5" class="w-full p-2.5 text-xs text-center border border-outline-variant/20 rounded-xl bg-surface-container-low text-on-surface outline-none" required />
-            </div>
-            <div class="md:col-span-2 text-[10px] text-on-surface-variant/70 leading-relaxed">
-              💡 Enter how many images you want to add for this product. You can customize their order in the Sequence Panel below.
-            </div>
+          <!-- Real-Time Price Validation Warning Message -->
+          <div id="mrp-price-error-msg" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1.5px solid rgba(239, 68, 68, 0.4); color: #f87171; padding: 10px 14px; border-radius: 12px; font-size: 11.5px; font-weight: 700; margin-top: -6px;">
+            ⚠️ MRP must be greater than or equal to Special Offer Price!
           </div>
+
 
           <!-- Dynamic Slots for Image Uploads -->
           <div id="image-slots-container" class="flex flex-col gap-3"></div>
@@ -1629,14 +1624,22 @@ void main() {
 
           function updateCategoryCounts() {
             const countAll = cachedProducts.length;
-            const countMens = cachedProducts.filter(p => p.category === 'mens').length;
-            const countWomens = cachedProducts.filter(p => p.category === 'womens').length;
-            const countKids = cachedProducts.filter(p => p.category === 'kids').length;
+            const countMens = cachedProducts.filter(p => (p.category || '').toLowerCase() === 'mens').length;
+            const countWomens = cachedProducts.filter(p => (p.category || '').toLowerCase() === 'womens').length;
+            const countKids = cachedProducts.filter(p => (p.category || '').toLowerCase() === 'kids').length;
 
             document.getElementById('count-all').textContent = countAll;
             document.getElementById('count-mens').textContent = countMens;
             document.getElementById('count-womens').textContent = countWomens;
             document.getElementById('count-kids').textContent = countKids;
+
+            // Sync Category Trends progress bars with live catalog distribution
+            const trends = [
+              { category: "Men's Wear", share: countAll > 0 ? Math.round((countMens / countAll) * 100) : 0, color: '#6366f1' },
+              { category: "Women's Wear", share: countAll > 0 ? Math.round((countWomens / countAll) * 100) : 0, color: '#ec4899' },
+              { category: "Kids Wear", share: countAll > 0 ? Math.round((countKids / countAll) * 100) : 0, color: '#f59e0b' }
+            ];
+            renderCategoryTrends(trends);
           }
 
           // Fetch products catalog list
@@ -1691,16 +1694,18 @@ void main() {
 
               // Delete click
               tr.querySelector('.delete-btn').addEventListener('click', async () => {
-                if (confirm(`Are you sure you want to delete "${p.title}"?`)) {
+                if (confirm(`⚠️ Are you sure you want to permanently delete "${p.title}"?\n\nThis action cannot be undone.`)) {
                   try {
                     const res = await fetch(`http://localhost:5000/admin/products/${p.id}`, {
                       method: 'DELETE',
                       headers: { 'Authorization': `Bearer ${user.token}` }
                     });
-                    if (!res.ok) throw new Error('Delete request failed.');
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Delete request failed.');
+                    alert(`✅ ${data.message || 'Product deleted successfully.'}`);
                     fetchProducts();
                   } catch (err) {
-                    alert(err.message);
+                    alert(`❌ Delete failed: ${err.message}`);
                   }
                 }
               });
@@ -1765,44 +1770,54 @@ void main() {
               slot.style.display = 'flex';
               slot.style.flexDirection = 'column';
               slot.style.gap = '8px';
-              slot.style.background = 'rgba(0,0,0,0.015)';
-              slot.style.padding = '12px';
-              slot.style.borderRadius = '12px';
-              slot.style.border = '1px solid rgba(0,0,0,0.03)';
+              slot.style.background = 'rgba(255,255,255,0.03)';
+              slot.style.padding = '14px';
+              slot.style.borderRadius = '14px';
+              slot.style.border = '1px solid rgba(255,255,255,0.1)';
               slot.style.boxSizing = 'border-box';
 
               // Header of slot
               const isMain = index === 0;
-              const titleText = isMain ? `Image #${index + 1} (🌟 Main Thumbnail)` : `Image #${index + 1} (Alternate Angle)`;
+              const titleText = isMain ? `Image #${index + 1} (🌟 Main Cover Thumbnail)` : `Image #${index + 1} (Gallery Angle)`;
+
+              const canMoveLeft = index > 0;
+              const canMoveRight = index < activeImagesList.length - 1;
 
               slot.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                  <span style="font-size: 11px; font-weight: 700; color: ${isMain ? '#6366f1' : 'var(--text-muted)'}; text-transform: uppercase;">${titleText}</span>
-                  <div style="display: flex; gap: 6px;">
-                    <button type="button" class="move-up-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; border: 1px solid var(--glass-border); background: #ffffff; border-radius: 4px; cursor: pointer; color: var(--text-primary);" ${index === 0 ? 'disabled' : ''}>◀ Move Left</button>
-                    <button type="button" class="move-down-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; border: 1px solid var(--glass-border); background: #ffffff; border-radius: 4px; cursor: pointer; color: var(--text-primary);" ${index === activeImagesList.length - 1 ? 'disabled' : ''}>Move Right ▶</button>
+                  <span style="font-size: 11.5px; font-weight: 800; color: ${isMain ? '#818cf8' : '#94a3b8'}; text-transform: uppercase; letter-spacing: 0.05em;">${titleText}</span>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" class="move-up-btn" data-index="${index}" style="padding: 6px 14px !important; font-size: 11.5px !important; font-weight: 800 !important; border: 1.5px solid ${canMoveLeft ? '#6366f1 !important' : 'rgba(255,255,255,0.15) !important'}; background: ${canMoveLeft ? '#4f46e5 !important' : 'rgba(255,255,255,0.06) !important'}; color: ${canMoveLeft ? '#ffffff !important' : '#64748b !important'}; border-radius: 8px !important; cursor: ${canMoveLeft ? 'pointer !important' : 'not-allowed !important'}; opacity: ${canMoveLeft ? '1 !important' : '0.4 !important'}; transition: all 0.2s !important; display: inline-flex !important; align-items: center !important; gap: 4px !important;" ${canMoveLeft ? '' : 'disabled'}>
+                      ◀ Move Left
+                    </button>
+                    <button type="button" class="move-down-btn" data-index="${index}" style="padding: 6px 14px !important; font-size: 11.5px !important; font-weight: 800 !important; border: 1.5px solid ${canMoveRight ? '#6366f1 !important' : 'rgba(255,255,255,0.15) !important'}; background: ${canMoveRight ? '#4f46e5 !important' : 'rgba(255,255,255,0.06) !important'}; color: ${canMoveRight ? '#ffffff !important' : '#64748b !important'}; border-radius: 8px !important; cursor: ${canMoveRight ? 'pointer !important' : 'not-allowed !important'}; opacity: ${canMoveRight ? '1 !important' : '0.4 !important'}; transition: all 0.2s !important; display: inline-flex !important; align-items: center !important; gap: 4px !important;" ${canMoveRight ? '' : 'disabled'}>
+                      Move Right ▶
+                    </button>
+                    ${activeImagesList.length > 1 ? `
+                      <button type="button" class="remove-slot-btn" data-index="${index}" style="padding: 6px 12px !important; font-size: 11px !important; font-weight: 800 !important; border: 1px solid rgba(239, 68, 68, 0.4) !important; background: rgba(239, 68, 68, 0.15) !important; color: #f87171 !important; border-radius: 8px !important; cursor: pointer !important; transition: all 0.2s !important; margin-left: 4px !important;" title="Remove this image slot">
+                        🗑️ Remove
+                      </button>
+                    ` : ''}
                   </div>
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center;">
                   <!-- Thumbnail preview -->
-                  <div style="width: 50px; height: 62px; background: #fafafa; border: 1px solid rgba(0,0,0,0.08); border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                    ${item.src ? `<img src="${item.src}" style="width: 100%; height: 100%; object-fit: cover;" />` : `<span style="font-size: 18px; color: #ccc;">🖼️</span>`}
+                  <div style="width: 54px; height: 66px; background: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    ${item.src ? `<img src="${item.src}" style="width: 100%; height: 100%; object-fit: cover;" />` : `<span style="font-size: 20px;">🖼️</span>`}
                   </div>
                   <!-- URL input -->
-                  <input type="text" class="slot-url-input" data-index="${index}" placeholder="Paste URL or choose file..." value="${item.src.startsWith('data:') ? '[Cropped Local Image]' : item.src}" style="flex: 1; padding: 8px 12px; font-size: 13px; border: 1.5px solid var(--glass-border); border-radius: 8px; outline: none; background-color: var(--bg-elevated); color: var(--text-primary);" ${item.src.startsWith('data:') ? 'disabled' : ''} />
+                  <input type="text" class="slot-url-input" data-index="${index}" placeholder="Paste Image URL or click File button..." value="${item.src.startsWith('data:') ? '[Cropped Local Image]' : item.src}" style="flex: 1; padding: 10px 14px; font-size: 13px; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px; outline: none; background-color: #0f172a; color: #ffffff;" ${item.src.startsWith('data:') ? 'disabled' : ''} />
                   <!-- File Selector button -->
-                  <button type="button" class="slot-file-btn" data-index="${index}" style="padding: 8px 12px; font-size: 12px; font-weight: 700; border: 1.5px solid #6366f1; background: transparent; color: #6366f1; border-radius: 8px; cursor: pointer;">📁 File</button>
+                  <button type="button" class="slot-file-btn" data-index="${index}" style="padding: 10px 14px; font-size: 12px; font-weight: 700; border: 1.5px solid #6366f1; background: rgba(99,102,241,0.1); color: #818cf8; border-radius: 10px; cursor: pointer; white-space: nowrap;">📁 Choose File</button>
                   <input type="file" class="slot-file-input" data-index="${index}" accept="image/*, .heic, .heif" style="display: none;" />
                 </div>
               `;
 
               // Event listeners
-              // URL input update
               const urlInput = slot.querySelector('.slot-url-input');
               urlInput.addEventListener('input', (e) => {
                 activeImagesList[index].src = e.target.value.trim();
                 activeImagesList[index].filename = "";
-                // Live update preview
                 const thumb = slot.querySelector('img');
                 if (thumb) {
                   thumb.src = e.target.value.trim();
@@ -1813,25 +1828,36 @@ void main() {
 
               // Swap Left
               const moveUp = slot.querySelector('.move-up-btn');
-              moveUp.addEventListener('click', () => {
-                if (index > 0) {
+              if (moveUp && canMoveLeft) {
+                moveUp.addEventListener('click', () => {
                   const temp = activeImagesList[index];
                   activeImagesList[index] = activeImagesList[index - 1];
                   activeImagesList[index - 1] = temp;
                   renderSlots();
-                }
-              });
+                });
+              }
 
               // Swap Right
               const moveDown = slot.querySelector('.move-down-btn');
-              moveDown.addEventListener('click', () => {
-                if (index < activeImagesList.length - 1) {
+              if (moveDown && canMoveRight) {
+                moveDown.addEventListener('click', () => {
                   const temp = activeImagesList[index];
                   activeImagesList[index] = activeImagesList[index + 1];
                   activeImagesList[index + 1] = temp;
                   renderSlots();
-                }
-              });
+                });
+              }
+
+              // Remove Slot
+              const removeBtn = slot.querySelector('.remove-slot-btn');
+              if (removeBtn) {
+                removeBtn.addEventListener('click', () => {
+                  if (activeImagesList.length > 1) {
+                    activeImagesList.splice(index, 1);
+                    renderSlots();
+                  }
+                });
+              }
 
               // File trigger button
               const fileBtn = slot.querySelector('.slot-file-btn');
@@ -1859,34 +1885,36 @@ void main() {
                       toType: 'image/jpeg',
                       quality: 0.8
                     });
-                    targetFile = new File([convertedBlob], file.name.replace(/\.[^/.]+$/, ".jpg"), { type: 'image/jpeg' });
-                    originalFilename = targetFile.name;
-                  } catch (err) {
-                    alert('HEIC image conversion failed. Please try standard formats.');
-                    console.error(err);
+                    const finalBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                    targetFile = new File([finalBlob], file.name.replace(/\.(heic|heif)$/i, '.jpg'), { type: 'image/jpeg' });
+                  } catch (heicErr) {
+                    alert('⚠️ Could not process HEIC file. Please select JPG/PNG.');
+                    fileBtn.textContent = '📁 Choose File';
+                    fileBtn.disabled = false;
                     return;
                   } finally {
-                    fileBtn.textContent = '📁 File';
+                    fileBtn.textContent = '📁 Choose File';
                     fileBtn.disabled = false;
                   }
                 }
 
                 const reader = new FileReader();
-                reader.onload = function(event) {
-                  resetCropper();
+                reader.onload = (event) => {
                   cropperTarget.src = event.target.result;
                   cropperWrapper.style.display = 'flex';
                   cropperActions.style.display = 'flex';
 
+                  if (cropperInstance) cropperInstance.destroy();
+
                   cropperInstance = new Cropper(cropperTarget, {
                     aspectRatio: 3 / 4,
                     viewMode: 1,
-                    dragMode: 'move',
-                    autoCropArea: 1,
-                    restore: false,
-                    guides: true,
-                    center: true,
-                    highlight: false,
+                    autoCropArea: 0.9,
+                    responsive: true,
+                    background: false,
+                    zoomable: true,
+                    scalable: true,
+                    movable: true,
                     cropBoxMovable: true,
                     cropBoxResizable: true,
                     toggleDragModeOnDblclick: false
@@ -1897,23 +1925,30 @@ void main() {
 
               slotsContainer.appendChild(slot);
             });
+
+            // Append "+ Add Another Image" button at the bottom of slots container
+            const addMoreDiv = document.createElement('div');
+            addMoreDiv.style.marginTop = '4px';
+            addMoreDiv.innerHTML = `
+              <button type="button" class="add-image-bottom-btn" style="width: 100%; padding: 12px; font-size: 13px; font-weight: 700; color: #818cf8; background: rgba(99, 102, 241, 0.1); border: 1.5px dashed rgba(99, 102, 241, 0.4); border-radius: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                ➕ Add Another Image
+              </button>
+            `;
+            addMoreDiv.querySelector('.add-image-bottom-btn').addEventListener('click', () => {
+              activeImagesList.push({ src: "", filename: "" });
+              renderSlots();
+            });
+            slotsContainer.appendChild(addMoreDiv);
           }
 
-          // Change number of images listener
-          imageCountInput.addEventListener('change', () => {
-            let val = parseInt(imageCountInput.value, 10);
-            if (isNaN(val) || val < 1) val = 1;
-            if (val > 5) val = 5;
-            imageCountInput.value = val;
-
-            while (activeImagesList.length < val) {
+          // Top "+ Add Image" button listener
+          const addImageSlotBtn = document.getElementById('add-image-slot-btn');
+          if (addImageSlotBtn) {
+            addImageSlotBtn.addEventListener('click', () => {
               activeImagesList.push({ src: "", filename: "" });
-            }
-            while (activeImagesList.length > val) {
-              activeImagesList.pop();
-            }
-            renderSlots();
-          });
+              renderSlots();
+            });
+          }
 
           // Cancel Crop click
           cropCancelBtn.addEventListener('click', () => {
@@ -1947,7 +1982,7 @@ void main() {
 
             // Set default slot
             activeImagesList = [{ src: "", filename: "" }];
-            imageCountInput.value = 1;
+            if (imageCountInput) imageCountInput.value = 1;
 
             const categoryInput = document.getElementById('product-category-input');
             const oldLabel = document.getElementById('category-indicator-lbl');
@@ -2001,7 +2036,7 @@ void main() {
               const imgs = (product.image_url || '').split(',').map(url => url.trim()).filter(Boolean);
               if (imgs.length > 0) {
                 activeImagesList = imgs.map(url => ({ src: url, filename: "" }));
-                imageCountInput.value = imgs.length;
+                if (imageCountInput) imageCountInput.value = imgs.length;
               }
 
               // Populate sizes & stocks
@@ -2225,6 +2260,33 @@ void main() {
             previewModal.style.display = 'none';
           });
 
+          // Real-Time MRP vs Offer Price Constraint Validator
+          const mrpInput = document.getElementById('product-mrp-input');
+          const priceInput = document.getElementById('product-price-input');
+          const mrpPriceError = document.getElementById('mrp-price-error-msg');
+
+          function validateMrpVsPrice() {
+            if (!mrpInput || !priceInput) return true;
+            const mrpVal = parseFloat(mrpInput.value);
+            const priceVal = parseFloat(priceInput.value);
+
+            if (!isNaN(mrpVal) && !isNaN(priceVal) && mrpVal < priceVal) {
+              if (mrpPriceError) {
+                mrpPriceError.style.display = 'block';
+                mrpPriceError.innerHTML = `⚠️ <b>Pricing Error:</b> MRP (₹${mrpVal.toLocaleString('en-IN')}) cannot be less than Special Offer Price (₹${priceVal.toLocaleString('en-IN')}). Set MRP ≥ Offer Price!`;
+              }
+              mrpInput.style.borderColor = '#ef4444';
+              return false;
+            } else {
+              if (mrpPriceError) mrpPriceError.style.display = 'none';
+              mrpInput.style.borderColor = '';
+              return true;
+            }
+          }
+
+          if (mrpInput) mrpInput.addEventListener('input', validateMrpVsPrice);
+          if (priceInput) priceInput.addEventListener('input', validateMrpVsPrice);
+
           // Submit handler
           productForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -2236,6 +2298,15 @@ void main() {
             const titleDescription = document.getElementById('product-title-desc-input').value.trim();
             const mrp = parseFloat(document.getElementById('product-mrp-input').value);
             const price = parseFloat(document.getElementById('product-price-input').value);
+
+            // Constraint Enforcement: MRP >= Offer Price
+            if (!isNaN(mrp) && !isNaN(price) && mrp < price) {
+              modalError.style.display = 'block';
+              modalError.innerHTML = `⚠️ <b>Pricing Invalid:</b> MRP (₹${mrp.toLocaleString('en-IN')}) must be greater than or equal to Special Offer Price (₹${price.toLocaleString('en-IN')})!`;
+              mrpInput.style.borderColor = '#ef4444';
+              mrpInput.focus();
+              return;
+            }
             
             // Build sizes and sizeStock dynamically from checkboxes
             const selectedSizes = [];
