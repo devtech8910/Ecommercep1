@@ -217,23 +217,44 @@
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
 
-        /* Global No-Scrollbar Rule (Hides both vertical and horizontal scrollbars) */
-        html, body, *, *::before, *::after {
-            scrollbar-width: none !important;
-            -ms-overflow-style: none !important;
+        /* Custom Theme-Matched Desktop Scrollbars (≥ 769px) */
+        @media (min-width: 769px) {
+            html, body, * {
+                scrollbar-width: thin !important;
+                scrollbar-color: #6366f1 rgba(10, 10, 20, 0.6) !important;
+            }
+            ::-webkit-scrollbar {
+                width: 6px !important;
+                height: 6px !important;
+                display: block !important;
+            }
+            ::-webkit-scrollbar-track {
+                background: rgba(10, 10, 20, 0.6) !important;
+                border-radius: 99px !important;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: linear-gradient(180deg, #6366f1, #4f46e5) !important;
+                border-radius: 99px !important;
+                box-shadow: 0 0 10px rgba(99, 102, 241, 0.4) !important;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: linear-gradient(180deg, #818cf8, #6366f1) !important;
+                box-shadow: 0 0 14px rgba(99, 102, 241, 0.8) !important;
+            }
         }
-        ::-webkit-scrollbar {
-            width: 0px !important;
-            height: 0px !important;
-            display: none !important;
-            background: transparent !important;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent !important;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: transparent !important;
-            border: none !important;
+
+        /* Mobile (< 769px): Hide scrollbars completely for smooth touch */
+        @media (max-width: 768px) {
+            html, body, *, *::before, *::after {
+                scrollbar-width: none !important;
+                -ms-overflow-style: none !important;
+            }
+            ::-webkit-scrollbar {
+                width: 0px !important;
+                height: 0px !important;
+                display: none !important;
+                background: transparent !important;
+            }
         }
     </style>
   </head>
