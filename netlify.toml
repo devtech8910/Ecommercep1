@@ -1,0 +1,16 @@
+# Netlify Build Configuration for DevTech Fashion E-Commerce
+[build]
+  publish = "."
+  command = ""
+
+# Serve static pages directly
+[[redirects]]
+  from = "/pages/*"
+  to = "/pages/:splat"
+  status = 200
+
+# Single Page Navigation Fallback
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
