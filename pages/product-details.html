@@ -85,18 +85,12 @@
           top: 24px;
           max-height: calc(100vh - 48px);
           overflow-y: auto;
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255,255,255,0.1) transparent;
+          scrollbar-width: none !important;
+          -ms-overflow-style: none !important;
         }
         .info-col::-webkit-scrollbar {
-          width: 4px;
-        }
-        .info-col::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .info-col::-webkit-scrollbar-thumb {
-          background-color: rgba(255,255,255,0.1);
-          border-radius: 10px;
+          display: none !important;
+          width: 0px !important;
         }
       }
 
@@ -606,19 +600,13 @@
         overflow-x: auto;
         padding-bottom: 16px;
         scroll-behavior: smooth;
-        scrollbar-width: thin;
-        scrollbar-color: var(--glass-border) transparent;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
       }
 
       #recommendations-carousel::-webkit-scrollbar {
-        height: 6px;
-      }
-      #recommendations-carousel::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      #recommendations-carousel::-webkit-scrollbar-thumb {
-        background-color: var(--glass-border);
-        border-radius: 10px;
+        display: none !important;
+        height: 0px !important;
       }
 
       #react-address-picker-root {

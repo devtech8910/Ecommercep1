@@ -98,14 +98,29 @@
 
 
 /* ============================================================
-   RESET & BASE
+   GLOBAL SCROLLBAR HIDING SYSTEM (SLEEK NO-SCROLLBAR LOOK)
+   Hides both vertical & horizontal scrollbars globally
+   while preserving 100% smooth scrolling functionality.
    ============================================================ */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+html, body, *, *::before, *::after {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE & Edge */
+}
+
+::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  display: none !important;
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent !important;
+  border: none !important;
 }
 
 html {

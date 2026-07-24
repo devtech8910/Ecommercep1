@@ -216,6 +216,25 @@
         .delay-1 { animation-delay: 0.1s; }
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
+
+        /* Global No-Scrollbar Rule (Hides both vertical and horizontal scrollbars) */
+        html, body, *, *::before, *::after {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+        ::-webkit-scrollbar {
+            width: 0px !important;
+            height: 0px !important;
+            display: none !important;
+            background: transparent !important;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent !important;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: transparent !important;
+            border: none !important;
+        }
     </style>
   </head>
   <body class="bg-background text-on-background min-h-screen font-body-md overflow-x-hidden relative">
