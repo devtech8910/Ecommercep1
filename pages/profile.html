@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Edit your DevTech Fashion account details and manage your profile settings." />
+    <title>Edit Profile — DevTech Fashion</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/animations.css" />
+    <link rel="stylesheet" href="../css/responsive.css" />
+  </head>
+  <body class="auth-page">
+    <!-- Noise overlay -->
+    <div class="noise-overlay" aria-hidden="true"></div>
+
+    <!-- Ambient light orbs -->
+    <div class="ambient-container" aria-hidden="true">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <!-- ========================================
+         MAIN PROFILE SECTION
+    ========================================= -->
+    <main class="auth-main-container" style="padding-top: 80px !important; padding-bottom: var(--space-12);">
+      <div class="auth-card-wrapper fade-in-up">
+        <div class="auth-card glass-card">
+          <!-- Card Header -->
+          <div class="auth-card-header">
+            <span class="auth-subtitle">Account Management</span>
+            <h1 class="auth-title">Edit Profile</h1>
+            <p class="auth-description">Update your personal account details below.</p>
+          </div>
+
+          <!-- Profile Form -->
+          <form class="auth-form" id="profile-page-form" novalidate>
+            <div id="profile-error-banner" style="display: none; padding: 12px 16px; border-radius: 12px; background-color: #fef2f2; border: 1.5px solid #fee2e2; color: #ef4444; font-size: 13px; font-weight: 500; margin-bottom: 16px; line-height: 1.4;"></div>
+            <div id="profile-success-banner" style="display: none; padding: 12px 16px; border-radius: 12px; background-color: #f0fdf4; border: 1.5px solid #dcfce7; color: #16a34a; font-size: 13px; font-weight: 500; margin-bottom: 16px; line-height: 1.4;"></div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+              <div class="form-group-input" style="margin-bottom: 0;">
+                <label for="firstName" class="form-label-input">First Name *</label>
+                <input type="text" id="firstName" class="glass-input-field" required />
+              </div>
+              <div class="form-group-input" style="margin-bottom: 0;">
+                <label for="lastName" class="form-label-input">Last Name *</label>
+                <input type="text" id="lastName" class="glass-input-field" required />
+              </div>
+            </div>
+
+            <div class="form-group-input">
+              <label for="email" class="form-label-input">Email Address *</label>
+              <input type="email" id="email" class="glass-input-field" required />
+            </div>
+
+            <div class="form-group-input">
+              <label for="phone" class="form-label-input">Mobile Number *</label>
+              <div class="phone-input-row">
+                <div class="country-picker-wrapper">
+                  <select class="glass-select" id="country-code" aria-label="Country Code" disabled style="pointer-events: none; opacity: 1; background: transparent;">
+                    <option value="+91">🇮🇳 +91</option>
+                  </select>
+                </div>
+                <div class="input-wrapper flex-grow">
+                  <input
+                    type="tel"
+                    id="phone"
+                    class="glass-input-field"
+                    placeholder="98765 43210"
+                    pattern="[0-9]{10}"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group-input" style="margin-bottom: 24px;">
+              <label for="dob" class="form-label-input">Date of Birth</label>
+              <input type="date" id="dob" class="glass-input-field" />
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary btn-full" id="profile-submit-btn">
+              <span id="profile-submit-text">Save Changes</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <!-- OTP Verification Modal Overlay -->
+    <div id="otp-verify-modal" style="position: fixed; inset: 0; z-index: 99999; display: none; align-items: center; justify-content: center; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(8px); padding: 20px; font-family: 'Inter', -apple-system, sans-serif;">
+      <div style="background: #ffffff; border-radius: 24px; width: 100%; max-width: 440px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); overflow: hidden; animation: modalFadeIn 0.3s ease-out;">
+        <div style="padding: 24px 24px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.06);">
+          <h2 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--text-primary);">🔐 Verify Changes</h2>
+          <button id="close-otp-modal" style="background: rgba(0,0,0,0.05); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-muted); font-weight: bold;">&times;</button>
+        </div>
+        <div style="padding: 24px;">
+          <p style="margin: 0 0 16px; font-size: 13px; color: var(--text-muted); line-height: 1.5;">To verify changes to your email or mobile number, enter the OTP verification code(s) sent (check your terminal console logs).</p>
+          <div id="otp-modal-error" style="display: none; padding: 10px 14px; border-radius: 10px; background-color: #fef2f2; border: 1px solid #fee2e2; color: #ef4444; font-size: 13px; margin-bottom: 14px; font-weight: 500;"></div>
+          
+          <!-- Email OTP Section -->
+          <div id="email-otp-group" style="margin-bottom: 16px; display: none;">
+            <label style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px; display: block;">Email OTP (sent to <span id="target-new-email"></span>)</label>
+            <input type="text" id="email-otp-input" placeholder="6-digit code" maxLength="6" style="width: 100%; padding: 12px 16px; font-size: 15px; font-weight: 700; text-align: center; letter-spacing: 0.1em; border: 1.5px solid var(--glass-border); border-radius: 12px; background-color: var(--bg-elevated); outline: none; color: var(--text-primary);" />
+          </div>
+
+          <!-- Phone OTP Section -->
+          <div id="phone-otp-group" style="margin-bottom: 20px; display: none;">
+            <label style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px; display: block;">Mobile OTP (sent to <span id="target-new-phone"></span>)</label>
+            <input type="text" id="phone-otp-input" placeholder="6-digit code" maxLength="6" style="width: 100%; padding: 12px 16px; font-size: 15px; font-weight: 700; text-align: center; letter-spacing: 0.1em; border: 1.5px solid var(--glass-border); border-radius: 12px; background-color: var(--bg-elevated); outline: none; color: var(--text-primary);" />
+          </div>
+
+          <button id="confirm-otp-btn" style="width: 100%; padding: 14px; background: #6366f1; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; color: #ffffff; cursor: pointer; box-shadow: 0 4px 12px rgba(99,102,241,0.25);">Confirm & Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="../js/script.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const rawUser = localStorage.getItem('dtf_user');
+        if (!rawUser) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        let user;
+        try {
+          user = JSON.parse(rawUser);
+        } catch (e) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        if (!user || !user.token) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        const errorBanner = document.getElementById('profile-error-banner');
+        const successBanner = document.getElementById('profile-success-banner');
+        const form = document.getElementById('profile-page-form');
+        const submitBtn = document.getElementById('profile-submit-btn');
+        const submitText = document.getElementById('profile-submit-text');
+
+        // Store original values to track modifications
+        let originalEmail = '';
+        let originalPhone = '';
+
+        // Load profile data
+        fetch('http://localhost:5000/auth/profile', {
+          headers: { 'Authorization': `Bearer ${user.token}` }
+        })
+        .then(res => res.json())
+        .then(json => {
+          if (json.success && json.data) {
+            const u = json.data;
+            document.getElementById('firstName').value = u.first_name || '';
+            document.getElementById('lastName').value = u.last_name || '';
+            document.getElementById('email').value = u.email || '';
+            let displayPhoneNum = u.phone || '';
+            if (displayPhoneNum.startsWith('+91')) {
+              displayPhoneNum = displayPhoneNum.replace('+91', '');
+            }
+            document.getElementById('phone').value = displayPhoneNum;
+            document.getElementById('dob').value = u.date_of_birth ? u.date_of_birth.substring(0, 10) : '';
+            
+            // Record original state
+            originalEmail = u.email || '';
+            originalPhone = displayPhoneNum;
+          } else {
+            alert('Failed to load user profile data.');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Failed to load profile. Please verify your connection.');
+        });
+
+        // Submit form handler
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          errorBanner.style.display = 'none';
+          successBanner.style.display = 'none';
+
+          const firstName = document.getElementById('firstName').value.trim();
+          const lastName = document.getElementById('lastName').value.trim();
+          const email = document.getElementById('email').value.trim();
+          const phone = document.getElementById('phone').value.trim();
+          const dob = document.getElementById('dob').value || null;
+
+          // Local Validation Checks
+          const errors = [];
+          if (!firstName) errors.push('First name is required.');
+          if (!lastName) errors.push('Last name is required.');
+          
+          const isEmailChanged = email !== originalEmail;
+          const isPhoneChanged = phone !== originalPhone;
+
+          if (isEmailChanged && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            errors.push('Please enter a valid email address.');
+          }
+          if (isPhoneChanged && !/^\d{10}$/.test(phone)) {
+            errors.push('Mobile number must be exactly 10 digits.');
+          }
+
+          if (errors.length > 0) {
+            errorBanner.innerHTML = errors.join('<br>');
+            errorBanner.style.display = 'block';
+            return;
+          }
+
+          // OTP FLOW IF SENSITIVE CREDENTIALS CHANGED
+          if (isEmailChanged || isPhoneChanged) {
+            submitBtn.disabled = true;
+            submitText.textContent = 'Requesting OTP...';
+
+            try {
+              let emailOtpCode = '';
+              let phoneOtpCode = '';
+
+              if (isEmailChanged) {
+                const res = await fetch('http://localhost:5000/auth/send-verification-otp', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
+                  body: JSON.stringify({ type: 'email', value: email })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.errors ? data.errors.join(' ') : 'Email OTP failed.');
+                emailOtpCode = data.devOtp || '';
+              }
+
+              if (isPhoneChanged) {
+                const res = await fetch('http://localhost:5000/auth/send-verification-otp', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
+                  body: JSON.stringify({ type: 'phone', value: `+91${phone}` })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.errors ? data.errors.join(' ') : 'Mobile OTP failed.');
+                phoneOtpCode = data.devOtp || '';
+              }
+
+              // DEV MODE: Show OTPs as alert popups
+              let otpMsg = '🔐 DEV MODE — Your OTP codes:\n\n';
+              if (emailOtpCode) otpMsg += `📧 Email OTP: ${emailOtpCode}\n`;
+              if (phoneOtpCode) otpMsg += `📱 Mobile OTP: ${phoneOtpCode}\n`;
+              alert(otpMsg);
+
+              // Display OTP modal and configure inputs
+              const otpModal = document.getElementById('otp-verify-modal');
+              const emailGroup = document.getElementById('email-otp-group');
+              const phoneGroup = document.getElementById('phone-otp-group');
+              
+              document.getElementById('email-otp-input').value = '';
+              document.getElementById('phone-otp-input').value = '';
+              document.getElementById('otp-modal-error').style.display = 'none';
+
+              if (isEmailChanged) {
+                document.getElementById('target-new-email').textContent = email;
+                emailGroup.style.display = 'block';
+              } else {
+                emailGroup.style.display = 'none';
+              }
+
+              if (isPhoneChanged) {
+                document.getElementById('target-new-phone').textContent = phone;
+                phoneGroup.style.display = 'block';
+              } else {
+                phoneGroup.style.display = 'none';
+              }
+
+              otpModal.style.display = 'flex';
+            } catch (err) {
+              errorBanner.textContent = err.message;
+              errorBanner.style.display = 'block';
+            } finally {
+              submitBtn.disabled = false;
+              submitText.textContent = 'Save Changes';
+            }
+          } else {
+            // NORMAL NO-OTP UPDATE
+            submitBtn.disabled = true;
+            submitText.textContent = 'Saving Changes...';
+
+            fetch('http://localhost:5000/auth/update-profile', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
+              body: JSON.stringify({ firstName, lastName, email, phone: `+91${phone}`, dob, password: null })
+            })
+            .then(async (res) => {
+              const data = await res.json();
+              if (!res.ok || !data.success) throw new Error(data.errors ? data.errors.join(' ') : 'Save failed.');
+              return data.data;
+            })
+            .then((updatedUser) => {
+              user.name = `${updatedUser.first_name} ${updatedUser.last_name}`;
+              localStorage.setItem('dtf_user', JSON.stringify(user));
+              
+              successBanner.textContent = '✅ Profile updated successfully!';
+              successBanner.style.display = 'block';
+              setTimeout(() => { window.location.href = '../index.html'; }, 1000);
+            })
+            .catch(err => {
+              errorBanner.textContent = err.message;
+              errorBanner.style.display = 'block';
+            })
+            .finally(() => {
+              submitBtn.disabled = false;
+              submitText.textContent = 'Save Changes';
+            });
+          }
+        });
+
+        // OTP Modal Close Handlers
+        document.getElementById('close-otp-modal').addEventListener('click', () => {
+          document.getElementById('otp-verify-modal').style.display = 'none';
+        });
+
+        // Confirm OTP submission
+        document.getElementById('confirm-otp-btn').addEventListener('click', () => {
+          const firstName = document.getElementById('firstName').value.trim();
+          const lastName = document.getElementById('lastName').value.trim();
+          const email = document.getElementById('email').value.trim();
+          const phone = document.getElementById('phone').value.trim();
+          const dob = document.getElementById('dob').value || null;
+
+          const isEmailChanged = email !== originalEmail;
+          const isPhoneChanged = phone !== originalPhone;
+
+          const emailOtp = document.getElementById('email-otp-input').value.trim();
+          const phoneOtp = document.getElementById('phone-otp-input').value.trim();
+          const modalError = document.getElementById('otp-modal-error');
+          const confirmBtn = document.getElementById('confirm-otp-btn');
+
+          modalError.style.display = 'none';
+
+          if (isEmailChanged && (!emailOtp || emailOtp.length !== 6)) {
+            modalError.textContent = 'Please enter a valid 6-digit email OTP.';
+            modalError.style.display = 'block';
+            return;
+          }
+          if (isPhoneChanged && (!phoneOtp || phoneOtp.length !== 6)) {
+            modalError.textContent = 'Please enter a valid 6-digit mobile OTP.';
+            modalError.style.display = 'block';
+            return;
+          }
+
+          confirmBtn.disabled = true;
+          confirmBtn.textContent = 'Verifying OTP...';
+
+          fetch('http://localhost:5000/auth/verify-and-update-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
+            body: JSON.stringify({ firstName, lastName, email, phone: `+91${phone}`, dob, emailOtp, phoneOtp })
+          })
+          .then(async (res) => {
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.errors ? data.errors.join(' ') : 'OTP verification failed.');
+            return data.data;
+          })
+          .then((updatedUser) => {
+            user.name = `${updatedUser.first_name} ${updatedUser.last_name}`;
+            user.email = updatedUser.email;
+            localStorage.setItem('dtf_user', JSON.stringify(user));
+
+            document.getElementById('otp-verify-modal').style.display = 'none';
+            successBanner.textContent = '✅ Profile verified and updated successfully!';
+            successBanner.style.display = 'block';
+            
+            setTimeout(() => { window.location.href = '../index.html'; }, 1000);
+          })
+          .catch((err) => {
+            modalError.textContent = err.message;
+            modalError.style.display = 'block';
+          })
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Confirm & Save Changes';
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

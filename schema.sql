@@ -22,6 +22,8 @@ CREATE TABLE users (
     date_of_birth DATE,
     password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(20) DEFAULT 'customer',
+    phn_verified BOOLEAN DEFAULT FALSE,
+    email_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -42,9 +44,7 @@ CREATE TABLE user_addresses (
     pincode VARCHAR(10) NOT NULL,
     latitude DECIMAL(9,6) NOT NULL,
     longitude DECIMAL(9,6) NOT NULL,
-    formatted_address TEXT,
-    accuracy VARCHAR(50),
-    verified BOOLEAN DEFAULT FALSE,
+
     address_type VARCHAR(20) DEFAULT 'home', -- 'home' or 'work'
     is_default BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -62,7 +62,7 @@ CREATE TABLE categories (
 
 -- 4. Create Products Table
 CREATE TABLE products (
-    id SERIAL PRIMARY KEY,
+    pid SERIAL PRIMARY KEY,
     category_id INT REFERENCES categories(id) ON DELETE SET NULL,
     title VARCHAR(150) NOT NULL,
     description TEXT,
@@ -80,14 +80,14 @@ CREATE TABLE orders (
     address_id INT REFERENCES user_addresses(id) ON DELETE SET NULL, -- Links specific address used
     total_amount DECIMAL(10, 2) NOT NULL,
     status VARCHAR(50) DEFAULT 'pending', -- pending, processing, shipped, delivered, cancelled
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    placed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 6. Create Order Items Table
 CREATE TABLE order_items (
     id SERIAL PRIMARY KEY,
     order_id INT REFERENCES orders(id) ON DELETE CASCADE,
-    product_id INT REFERENCES products(id) ON DELETE SET NULL,
+    product_id INT REFERENCES products(pid) ON DELETE SET NULL,
     quantity INT NOT NULL CHECK (quantity > 0),
     price_at_purchase DECIMAL(10, 2) NOT NULL
 );
@@ -96,7 +96,7 @@ CREATE TABLE order_items (
 CREATE TABLE wishlists (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
-    product_id INT REFERENCES products(id) ON DELETE CASCADE,
+    product_id INT REFERENCES products(pid) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, product_id)
 );

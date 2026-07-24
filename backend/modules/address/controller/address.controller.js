@@ -72,9 +72,6 @@ export async function saveAddress(req, res) {
       pincode: sanitize(req.body.pincode || '000000'),
       latitude: parseFloat(req.body.latitude) || 20.5937,
       longitude: parseFloat(req.body.longitude) || 78.9629,
-      formattedAddress: sanitize(req.body.formattedAddress || ''),
-      accuracy: sanitize(req.body.accuracy || 'ROOFTOP'),
-      verified: !!req.body.verified,
       addressType: sanitize(req.body.addressType || 'home'),
       isDefault: !!req.body.isDefault
     };
@@ -116,9 +113,6 @@ export async function updateAddress(req, res) {
       pincode: sanitize(req.body.pincode || '000000'),
       latitude: parseFloat(req.body.latitude) || 20.5937,
       longitude: parseFloat(req.body.longitude) || 78.9629,
-      formattedAddress: sanitize(req.body.formattedAddress || ''),
-      accuracy: sanitize(req.body.accuracy || 'ROOFTOP'),
-      verified: !!req.body.verified,
       addressType: sanitize(req.body.addressType || 'home'),
       isDefault: !!req.body.isDefault
     };

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Cart — DevTech Fashion</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/animations.css" />
+    <link rel="stylesheet" href="../css/responsive.css" />
+
+    <style>
+      body {
+        background-color: #0a0a14;
+        color: #f0f0f5;
+        font-family: 'Inter', sans-serif;
+      }
+      .cart-glass-card {
+        background: rgba(18, 18, 34, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 28px;
+        backdrop-filter: blur(28px) saturate(180%);
+        padding: 40px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(99, 102, 241, 0.12);
+      }
+      .cart-item-row {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1.5px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        transition: all 0.2s ease;
+      }
+      .cart-item-row:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(99, 102, 241, 0.3);
+      }
+      .summary-box {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1.5px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+      }
+      .btn-gradient-indigo {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: #ffffff;
+        border: none;
+        border-radius: 14px;
+        font-weight: 800;
+        font-size: 14.5px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+      }
+      .btn-gradient-indigo:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 26px rgba(99, 102, 241, 0.5);
+      }
+      .qty-control-btn {
+        width: 28px;
+        height: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #ffffff;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        transition: all 0.2s ease;
+      }
+      .qty-control-btn:hover {
+        background: rgba(99, 102, 241, 0.3);
+        border-color: #6366f1;
+      }
+    </style>
+  </head>
+  <body class="auth-page">
+    <!-- Noise overlay -->
+    <div class="noise-overlay" aria-hidden="true"></div>
+
+    <!-- Ambient light orbs -->
+    <div class="ambient-container" aria-hidden="true">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <!-- ========================================
+         MAIN CART SECTION
+    ========================================= -->
+    <main class="auth-main-container" style="padding-top: 60px !important; padding-bottom: var(--space-12); max-width: 1100px; margin: 0 auto; width: 100%; box-sizing: border-box; padding: 0 20px;">
+      
+      <div class="auth-card-wrapper fade-in-up" style="max-width: 100%;">
+        <div class="cart-glass-card">
+          <!-- Header -->
+          <div style="text-align: left; margin-bottom: 32px;">
+            <span style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #818cf8; display: block; margin-bottom: 4px;">Your Checkout Bag</span>
+            <h1 style="font-family: var(--font-display); font-size: 32px; font-weight: 800; color: #ffffff; margin: 0 0 6px;">Shopping Cart</h1>
+            <p style="font-size: 14px; color: #94a3b8; margin: 0; line-height: 1.5;">Review items added to your checkout request.</p>
+          </div>
+
+          <!-- Two Column Cart Layout -->
+          <div id="cart-columns" style="display: flex; gap: 32px; flex-wrap: wrap; width: 100%;">
+            
+            <!-- Left Side: Item list -->
+            <div id="cart-items-column" style="flex: 2; min-width: 320px; display: flex; flex-direction: column; gap: 16px;">
+              <!-- Dynamic items render here -->
+            </div>
+
+            <!-- Right Side: Order summary -->
+            <div id="cart-summary-column" style="flex: 1; min-width: 290px;">
+              <div class="summary-box">
+                <h3 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0 0 20px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 14px;">Order Summary</h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 13.5px; color: #cbd5e1;">
+                    <span>Price Subtotal</span>
+                    <span id="summary-subtotal" style="color: #ffffff; font-weight: 700;">₹0</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 13.5px; color: #cbd5e1;">
+                    <span>GST / Sales Tax (18%)</span>
+                    <span id="summary-tax" style="color: #ffffff; font-weight: 700;">₹0</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 13.5px; color: #cbd5e1;">
+                    <span>Delivery Charges</span>
+                    <span id="summary-delivery" style="color: #ffffff; font-weight: 700;">₹150</span>
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; font-size: 16.5px; font-weight: 800; color: #ffffff; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; margin-bottom: 24px;">
+                  <span>Total Amount</span>
+                  <span id="summary-total" style="color: #818cf8;">₹0</span>
+                </div>
+
+                <button id="checkout-btn" class="btn-gradient-indigo" style="width: 100%; padding: 15px;">
+                  🛍️ Place Order Request
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Empty State -->
+          <div id="cart-empty" style="display: none; text-align: center; padding: 50px 20px;">
+            <div style="font-size: 54px; margin-bottom: 16px;">🛍️</div>
+            <h3 style="font-size: 22px; font-weight: 800; color: #ffffff; margin: 0 0 8px;">Your Cart is Empty</h3>
+            <p style="font-size: 14px; color: #94a3b8; margin: 0 0 28px; line-height: 1.5;">Looks like you haven't added anything to your checkout bag yet.</p>
+            <a href="../index.html" class="btn-gradient-indigo" style="display: inline-flex; align-items: center; justify-content: center; padding: 14px 32px; text-decoration: none; border-radius: 99px;">Browse Products</a>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <!-- Order Confirmed Modal -->
+    <div id="order-confirmed-modal" style="position: fixed; inset: 0; z-index: 99999; display: none; align-items: center; justify-content: center; background-color: rgba(10, 10, 20, 0.85); backdrop-filter: blur(14px); padding: 20px; font-family: 'Inter', -apple-system, sans-serif;">
+      <div style="background: #141424; border-radius: 28px; width: 100%; max-width: 420px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.12); overflow: hidden; padding: 36px; text-align: center;">
+        <div style="font-size: 60px; margin-bottom: 18px;">🎉</div>
+        <h2 style="margin: 0 0 8px; font-size: 22px; font-weight: 800; color: #ffffff;">Order Scheduled Successfully!</h2>
+        <p style="margin: 0 0 24px; font-size: 13.5px; color: #94a3b8; line-height: 1.6;">Thank you for shopping with DevTech Fashion. Your order request has been registered and is being processed.</p>
+        <button id="close-confirmed-btn" class="btn-gradient-indigo" style="width: 100%; padding: 14px;">Back to Shopping</button>
+      </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="../js/script.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        document.documentElement.setAttribute('data-theme', 'dark');
+
+        const columns = document.getElementById('cart-columns');
+        const itemsColumn = document.getElementById('cart-items-column');
+        const emptyState = document.getElementById('cart-empty');
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const confirmedModal = document.getElementById('order-confirmed-modal');
+
+        // Helper to load cart from localStorage
+        function loadCart() {
+          try {
+            const raw = localStorage.getItem('dtf_cart');
+            return JSON.parse(raw) || [];
+          } catch {
+            return [];
+          }
+        }
+
+        // Helper to save cart to localStorage
+        function saveCart(items) {
+          localStorage.setItem('dtf_cart', JSON.stringify(items));
+          window.dispatchEvent(new Event('dtf:cart:updated'));
+        }
+
+        function calculateTotals(items) {
+          let subtotal = 0;
+          items.forEach(item => {
+            const price = parseFloat(item.price || 0);
+            const qty = parseInt(item.quantity || 1, 10);
+            subtotal += price * qty;
+          });
+
+          const tax = Math.round(subtotal * 0.18);
+          const delivery = subtotal > 0 ? 150 : 0;
+          const total = subtotal + tax + delivery;
+
+          document.getElementById('summary-subtotal').textContent = `₹${subtotal.toLocaleString('en-IN')}`;
+          document.getElementById('summary-tax').textContent = `₹${tax.toLocaleString('en-IN')}`;
+          document.getElementById('summary-delivery').textContent = `₹${delivery.toLocaleString('en-IN')}`;
+          document.getElementById('summary-total').textContent = `₹${total.toLocaleString('en-IN')}`;
+        }
+
+        function render() {
+          const items = loadCart();
+          itemsColumn.innerHTML = '';
+
+          if (items.length === 0) {
+            columns.style.display = 'none';
+            emptyState.style.display = 'block';
+            return;
+          }
+
+          columns.style.display = 'flex';
+          emptyState.style.display = 'none';
+
+          calculateTotals(items);
+
+          items.forEach((item, index) => {
+            const itemRow = document.createElement('div');
+            itemRow.className = 'cart-item-row';
+
+            itemRow.innerHTML = `
+              <div style="width: 80px; height: 96px; border-radius: 14px; overflow: hidden; background: #1e1e30; flex-shrink: 0; position: relative;">
+                <img src="${item.image || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop'}" style="width: 100%; height: 100%; object-fit: cover;" alt="${item.title || 'Product'}" />
+              </div>
+              <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #ffffff;">${item.title || 'Classic Product'}</h4>
+                <p style="margin: 0; font-size: 14px; font-weight: 800; color: #818cf8;">₹${parseFloat(item.price || 0).toLocaleString('en-IN')}</p>
+                
+                <!-- Quantity selector -->
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;">
+                  <button class="qty-control-btn dec-btn">-</button>
+                  <span style="font-size: 13.5px; font-weight: 700; width: 22px; text-align: center; color: #ffffff;">${item.quantity || 1}</span>
+                  <button class="qty-control-btn inc-btn">+</button>
+                </div>
+              </div>
+              <button class="remove-item-btn" style="border: none; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); cursor: pointer; font-size: 16px; padding: 10px; border-radius: 12px; color: #ef4444; transition: all 0.2s;">
+                🗑️
+              </button>
+            `;
+
+            // Dec qty
+            itemRow.querySelector('.dec-btn').addEventListener('click', () => {
+              const updated = loadCart();
+              if ((updated[index].quantity || 1) > 1) {
+                updated[index].quantity -= 1;
+                saveCart(updated);
+                render();
+              }
+            });
+
+            // Inc qty
+            itemRow.querySelector('.inc-btn').addEventListener('click', () => {
+              const updated = loadCart();
+              updated[index].quantity = (updated[index].quantity || 1) + 1;
+              saveCart(updated);
+              render();
+            });
+
+            // Remove item
+            itemRow.querySelector('.remove-item-btn').addEventListener('click', () => {
+              const updated = loadCart();
+              updated.splice(index, 1);
+              saveCart(updated);
+              render();
+            });
+
+            itemsColumn.appendChild(itemRow);
+          });
+        }
+
+        // Checkout Button logic
+        checkoutBtn.addEventListener('click', async () => {
+          const rawUser = localStorage.getItem('dtf_user');
+          if (!rawUser) {
+            alert('🔐 Please log in to complete your checkout process.');
+            window.location.href = 'login.html';
+            return;
+          }
+
+          let userData;
+          try {
+            userData = JSON.parse(rawUser);
+          } catch {
+            alert('🔐 Please log in again.');
+            window.location.href = 'login.html';
+            return;
+          }
+
+          const token = userData.token || '';
+          const items = loadCart();
+
+          if (items.length === 0) return;
+
+          let subtotal = 0;
+          items.forEach(item => {
+            const price = parseFloat(item.price || 0);
+            const qty = parseInt(item.quantity || 1, 10);
+            subtotal += price * qty;
+          });
+          const tax = Math.round(subtotal * 0.18);
+          const delivery = subtotal > 0 ? 150 : 0;
+          const totalAmount = subtotal + tax + delivery;
+
+          checkoutBtn.disabled = true;
+          checkoutBtn.textContent = '⏳ Placing Order...';
+
+          try {
+            const res = await fetch('http://localhost:5000/orders', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                items: items.map(item => ({
+                  title: item.title || 'Product',
+                  price: item.price,
+                  quantity: item.quantity || 1,
+                  size: item.size || '',
+                  image: item.image || ''
+                })),
+                totalAmount,
+                deliveryAddress: ''
+              })
+            });
+
+            const data = await res.json();
+
+            if (data.success && data.order) {
+              const localOrders = JSON.parse(localStorage.getItem('dtf_orders') || '[]');
+              localOrders.unshift(data.order);
+              localStorage.setItem('dtf_orders', JSON.stringify(localOrders));
+            }
+          } catch (err) {
+            console.error('Order API error (saving locally):', err);
+            const localOrders = JSON.parse(localStorage.getItem('dtf_orders') || '[]');
+            localOrders.unshift({
+              id: Date.now(),
+              total_amount: totalAmount,
+              status: 'Processing',
+              items: items,
+              created_at: new Date().toISOString()
+            });
+            localStorage.setItem('dtf_orders', JSON.stringify(localOrders));
+          }
+
+          checkoutBtn.disabled = false;
+          checkoutBtn.textContent = '🛍️ Place Order Request';
+          confirmedModal.style.display = 'flex';
+        });
+
+        document.getElementById('close-confirmed-btn').addEventListener('click', () => {
+          confirmedModal.style.display = 'none';
+          localStorage.removeItem('dtf_cart');
+          window.dispatchEvent(new Event('dtf:cart:updated'));
+          window.location.href = 'orders.html';
+        });
+
+        render();
+        window.addEventListener('storage', render);
+      });
+    </script>
+  </body>
+</html>

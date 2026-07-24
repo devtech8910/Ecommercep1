@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { handleGeocode, handleReverseGeocode, handleAutocomplete } from '../controller/location.controller.js';
+import { handleGeocode, handleReverseGeocode, handleAutocomplete, handleNominatimReverse } from '../controller/location.controller.js';
 
 import * as HierarchyController from '../controller/hierarchy.controller.js';
 
@@ -9,6 +9,7 @@ const router = Router();
 router.post('/geocode', handleGeocode);
 router.post('/reverse', handleReverseGeocode);
 router.post('/autocomplete', handleAutocomplete);
+router.get('/nominatim-reverse', handleNominatimReverse);
 
 // Hierarchy Endpoints
 router.get('/hierarchy/countries', HierarchyController.getCountries);

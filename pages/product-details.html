@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product Details — DevTech Fashion</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/animations.css" />
+    <link rel="stylesheet" href="../css/responsive.css" />
+  </head>
+  <body class="auth-page">
+    <!-- Noise overlay -->
+    <div class="noise-overlay" aria-hidden="true"></div>
+
+    <!-- Ambient light orbs -->
+    <div class="ambient-container" aria-hidden="true">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <!-- ========================================
+         MAIN DETAILS SECTION
+    ========================================= -->
+    <main style="padding-top: 40px; padding-bottom: 80px; max-width: 1100px; margin: 0 auto; width: 100%; box-sizing: border-box; padding-left: 20px; padding-right: 20px; display: flex; flex-direction: column; gap: 40px;">
+      
+      <!-- Top Layout Card -->
+      <div class="fade-in-up" style="width: 100%;">
+        <div class="glass-card" style="width: 100%; box-sizing: border-box; padding: 40px; display: flex; gap: 40px; flex-wrap: wrap; transform: none;">
+          
+          <!-- LEFT COLUMN: Image Gallery & Overlays -->
+          <div style="flex: 1.2; min-width: 320px; display: flex; flex-direction: column; gap: 16px;">
+            <div style="position: relative; width: 100%; padding-top: 125%; background: #fafafa; border-radius: 20px; overflow: hidden; border: 1.5px solid rgba(255,255,255,0.6); box-shadow: 0 8px 32px rgba(0,0,0,0.04);">
+              
+              <!-- Media Carousel Images -->
+              <div id="image-carousel-container" style="position: absolute; inset: 0; display: flex; transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);">
+                <!-- Imgs populate dynamically -->
+              </div>
+
+              <!-- Carousel Controls -->
+              <button id="carousel-prev" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); border: none; background: rgba(255,255,255,0.9); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5; box-shadow: 0 4px 16px rgba(0,0,0,0.12); transition: all 0.2s ease; color: var(--text-primary);" aria-label="Previous image">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button id="carousel-next" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); border: none; background: rgba(255,255,255,0.9); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5; box-shadow: 0 4px 16px rgba(0,0,0,0.12); transition: all 0.2s ease; color: var(--text-primary);" aria-label="Next image">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+
+              <!-- Bottom-Left Rating Overlay -->
+              <button id="rating-scroll-btn" style="position: absolute; bottom: 16px; left: 16px; border: none; background: rgba(17, 24, 39, 0.9); backdrop-filter: blur(8px); padding: 8px 14px; border-radius: 99px; color: #ffffff; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; z-index: 5; display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.2s;">
+                <span id="rating-badge-val">4.2</span>
+                <span style="color: #fbbf24;">★</span>
+              </button>
+
+              <!-- Top-Right Action Overlays -->
+              <div style="position: absolute; top: 16px; right: 16px; display: flex; flex-direction: column; gap: 10px; z-index: 5;">
+                <button id="share-product-btn" style="border: none; background: rgba(255, 255, 255, 0.9); width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);" title="Share Product">
+                  🔗
+                </button>
+                <button id="wishlist-toggle-btn" style="border: none; background: rgba(255, 255, 255, 0.9); width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);" title="Save to Wishlist">
+                  🤍
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Dots Indicators -->
+            <div id="carousel-dots" style="display: flex; gap: 6px; justify-content: center;">
+              <!-- Dots populate dynamically -->
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: Product Configurator -->
+          <div style="flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 20px; font-family: 'Inter', sans-serif;">
+            
+            <!-- Brand & Title -->
+            <div>
+              <span id="product-brand" style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #6366f1; letter-spacing: 0.05em;">DEVTECH LUXURY</span>
+              <h1 id="product-title" style="font-size: 26px; font-weight: 800; color: var(--text-primary); margin: 4px 0 8px; font-family: 'Outfit', sans-serif;">Midnight Blue Tuxedo</h1>
+              
+              <!-- Product Bullet Snippets -->
+              <ul id="product-snippets" style="margin: 0; padding: 0 0 0 16px; font-size: 13px; color: var(--text-muted); line-height: 1.6; display: flex; flex-direction: column; gap: 4px;">
+                <li>Slim fit designer cut with premium wool blend finish.</li>
+                <li>Satin peak lapels with matching satin-covered buttons.</li>
+                <li>Includes fully-lined jacket and customizable flat-front trousers.</li>
+              </ul>
+            </div>
+
+            <!-- Pricing, Savings & Urgency -->
+            <div style="background: rgba(0,0,0,0.02); border-radius: 16px; padding: 20px; border: 1px solid rgba(0,0,0,0.04);">
+              <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;">
+                <span id="product-price" style="font-size: 24px; font-weight: 800; color: var(--text-primary);">₹24,999</span>
+                <span id="product-mrp" style="font-size: 15px; text-decoration: line-through; color: var(--text-muted);">₹35,712</span>
+                <span id="product-discount" style="font-size: 13px; font-weight: 700; color: #10b981; background: rgba(16,185,129,0.1); padding: 2px 8px; border-radius: 6px;">30% OFF</span>
+              </div>
+              
+              <!-- Savings Tracker -->
+              <div id="savings-tracker" style="font-size: 12px; font-weight: 600; color: #10b981; margin-top: 6px;">
+                🎉 You save ₹10,713
+              </div>
+
+              <!-- Stock & Urgency signal -->
+              <div style="margin-top: 14px;">
+                <span id="stock-urgency-badge" style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 8px;">
+                  <!-- Dynamic status badge -->
+                </span>
+              </div>
+            </div>
+
+            <!-- Size Selector -->
+            <div>
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; display: block; margin-bottom: 8px;">Select size</label>
+              <div style="display: flex; gap: 10px;">
+                <button type="button" class="size-btn" data-size="S" style="width: 44px; height: 44px; font-size: 12px; font-weight: 700; border-radius: 10px; border: 1.5px solid var(--glass-border); background: #ffffff; cursor: pointer; transition: all 0.2s;">S</button>
+                <button type="button" class="size-btn" data-size="M" style="width: 44px; height: 44px; font-size: 12px; font-weight: 700; border-radius: 10px; border: 1.5px solid var(--glass-border); background: #ffffff; cursor: pointer; transition: all 0.2s;">M</button>
+                <button type="button" class="size-btn" data-size="L" style="width: 44px; height: 44px; font-size: 12px; font-weight: 700; border-radius: 10px; border: 1.5px solid var(--glass-border); background: #ffffff; cursor: pointer; transition: all 0.2s;">L</button>
+                <button type="button" class="size-btn" data-size="XL" style="width: 44px; height: 44px; font-size: 12px; font-weight: 700; border-radius: 10px; border: 1.5px solid var(--glass-border); background: #ffffff; cursor: pointer; transition: all 0.2s; position: relative;" disabled>
+                  XL
+                  <span style="position: absolute; top: 50%; left: 0; right: 0; height: 1.5px; background: #ef4444; transform: rotate(-45deg);"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Coupons Dropdown menu -->
+            <div id="coupons-section" style="border-top: 1px solid rgba(0,0,0,0.06); padding-top: 16px;">
+              <button type="button" id="coupons-dropdown-btn" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 10px 0; background: transparent; border: none; font-size: 13px; font-weight: 700; color: var(--text-secondary); cursor: pointer;">
+                <span>🎟️ Applicable Coupons</span>
+                <span id="coupons-chevron" style="transition: transform 0.2s;">▼</span>
+              </button>
+              <div id="coupons-list" style="display: none; flex-direction: column; gap: 10px; padding: 10px 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(99,102,241,0.04); border: 1.5px dashed rgba(99,102,241,0.2); border-radius: 10px;">
+                  <div>
+                    <span style="font-size: 12px; font-weight: 800; color: #6366f1; background: rgba(99,102,241,0.1); padding: 2px 6px; border-radius: 4px;">DEVTECH20</span>
+                    <p style="margin: 4px 0 0; font-size: 11px; color: var(--text-muted);">Get 20% discount on order requests.</p>
+                  </div>
+                  <button type="button" class="apply-coupon-btn" data-code="DEVTECH20" style="padding: 6px 12px; font-size: 11px; font-weight: 700; border: none; background: #6366f1; color: white; border-radius: 6px; cursor: pointer;">Apply</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Delivery Details & zip validator -->
+            <div style="border-top: 1px solid rgba(0,0,0,0.06); padding-top: 16px;">
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; display: block; margin-bottom: 8px;">Delivery Details</label>
+              
+              <!-- React Address Picker Mount Point -->
+              <div id="react-address-picker-root" style="margin-bottom: 8px; text-align: left;"></div>
+
+              <!-- Pincode Response / Expected Delivery -->
+              <div id="pincode-response" style="font-size: 12px; margin-top: 10px; display: none; font-weight: 600; text-align: left;"></div>
+            </div>
+
+            <!-- Buy Now CTA -->
+            <button id="buy-now-cta" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #ff9f00, #ff6f00); border: none; border-radius: 12px; color: white; font-weight: 800; font-size: 15px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(255,159,0,0.25); margin-top: 15px; display: block; outline: none; border: none; font-family: 'Inter', sans-serif;">
+              ⚡ Buy Now
+            </button>
+
+            <!-- Add to Cart CTA -->
+            <button id="add-to-cart-cta" style="width: 100%; padding: 14px; background: #6366f1; border: none; border-radius: 12px; color: white; font-weight: 800; font-size: 15px; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 12px rgba(99,102,241,0.25); margin-top: 10px; font-family: 'Inter', sans-serif;">
+              🛒 Add To Shopping Bag
+            </button>
+
+            <!-- Logistics Badges -->
+            <div style="display: flex; gap: 16px; justify-content: space-around; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 16px; margin-top: 10px; flex-wrap: wrap;">
+              <div style="text-align: center; font-family: 'Inter', sans-serif;">
+                <div style="font-size: 20px;">🔄</div>
+                <div id="logistics-replacement" style="font-size: 10px; font-weight: 700; color: var(--text-secondary); margin-top: 4px;">7-Day Replacement</div>
+              </div>
+              <div style="text-align: center; font-family: 'Inter', sans-serif;">
+                <div style="font-size: 20px;">💵</div>
+                <div id="logistics-cod" style="font-size: 10px; font-weight: 700; color: var(--text-secondary); margin-top: 4px;">COD Available</div>
+              </div>
+              <div style="text-align: center; font-family: 'Inter', sans-serif;">
+                <div style="font-size: 20px;">🛡️</div>
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-secondary); margin-top: 4px;">Brand Assured</div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ========================================
+           SECONDARY CONTENT (BELOW THE FOLD)
+      ========================================= -->
+      <div class="fade-in-up" style="margin-top: 40px; display: flex; flex-direction: column; gap: 40px;">
+        
+        <!-- Product Deep Dive: Highlights & Description -->
+        <div class="glass-card" style="padding: 40px; font-family: 'Inter', sans-serif; transform: none;">
+          <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0 0 24px; font-family: 'Outfit', sans-serif;">Product Deep Dive</h2>
+          
+          <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+            <!-- Highlights Grid -->
+            <div style="flex: 1; min-width: 280px;">
+              <h3 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px;">Highlights</h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px;">
+                <div style="border-bottom: 1px solid rgba(0,0,0,0.04); padding-bottom: 8px;">
+                  <span style="color: var(--text-muted); display: block; font-size: 11px;">Fabric</span>
+                  <span id="spec-fabric" style="font-weight: 600; color: var(--text-secondary);">Wool Blend</span>
+                </div>
+                <div style="border-bottom: 1px solid rgba(0,0,0,0.04); padding-bottom: 8px;">
+                  <span style="color: var(--text-muted); display: block; font-size: 11px;">Fit</span>
+                  <span id="spec-fit" style="font-weight: 600; color: var(--text-secondary);">Slim Fit</span>
+                </div>
+                <div style="border-bottom: 1px solid rgba(0,0,0,0.04); padding-bottom: 8px;">
+                  <span style="color: var(--text-muted); display: block; font-size: 11px;">Pattern</span>
+                  <span id="spec-pattern" style="font-weight: 600; color: var(--text-secondary);">Solid</span>
+                </div>
+                <div style="border-bottom: 1px solid rgba(0,0,0,0.04); padding-bottom: 8px;">
+                  <span style="color: var(--text-muted); display: block; font-size: 11px;">Suitable For</span>
+                  <span id="spec-suitable" style="font-weight: 600; color: var(--text-secondary);">Formal Wear</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div style="flex: 1.2; min-width: 280px; border-left: 1.5px solid rgba(0,0,0,0.04); padding-left: 20px;">
+              <h3 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px;">Description</h3>
+              <p id="product-description-text" style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                Designed for discerning gentlemen, this luxury tailoring piece balances classic elegance with contemporary tailoring aesthetics. Made with attention to detail, the fabric drape creates an outstanding formal posture. Ideal for exclusive events, weddings, and premium dinners.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Social Proof & Feedback (Ratings & Reviews) -->
+        <div id="ratings-reviews-section" class="glass-card" style="padding: 40px; font-family: 'Inter', sans-serif; transform: none;">
+          <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0 0 24px; font-family: 'Outfit', sans-serif;">Customer Reviews</h2>
+          
+          <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+            
+            <!-- Rating Breakdown progress bars -->
+            <div style="flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 16px;">
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="font-size: 48px; font-weight: 800; color: var(--text-primary);">4.2</div>
+                <div>
+                  <div style="font-size: 18px; color: #fbbf24;">★★★★☆</div>
+                  <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Average store rating (142 reviews)</span>
+                </div>
+              </div>
+
+              <!-- Star Rating Progress Bars -->
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 12px;">
+                  <span style="width: 12px; font-weight: 700;">5</span>
+                  <div style="flex: 1; height: 6px; background: rgba(0,0,0,0.04); border-radius: 99px; overflow: hidden;">
+                    <div style="width: 65%; height: 100%; background: #10b981; border-radius: 99px;"></div>
+                  </div>
+                  <span style="width: 24px; text-align: right; color: var(--text-muted); font-weight: 600;">65%</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 12px;">
+                  <span style="width: 12px; font-weight: 700;">4</span>
+                  <div style="flex: 1; height: 6px; background: rgba(0,0,0,0.04); border-radius: 99px; overflow: hidden;">
+                    <div style="width: 20%; height: 100%; background: #10b981; border-radius: 99px;"></div>
+                  </div>
+                  <span style="width: 24px; text-align: right; color: var(--text-muted); font-weight: 600;">20%</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 12px;">
+                  <span style="width: 12px; font-weight: 700;">3</span>
+                  <div style="flex: 1; height: 6px; background: rgba(0,0,0,0.04); border-radius: 99px; overflow: hidden;">
+                    <div style="width: 10%; height: 100%; background: #fbbf24; border-radius: 99px;"></div>
+                  </div>
+                  <span style="width: 24px; text-align: right; color: var(--text-muted); font-weight: 600;">10%</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 12px;">
+                  <span style="width: 12px; font-weight: 700;">2</span>
+                  <div style="flex: 1; height: 6px; background: rgba(0,0,0,0.04); border-radius: 99px; overflow: hidden;">
+                    <div style="width: 3%; height: 100%; background: #f59e0b; border-radius: 99px;"></div>
+                  </div>
+                  <span style="width: 24px; text-align: right; color: var(--text-muted); font-weight: 600;">3%</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 12px;">
+                  <span style="width: 12px; font-weight: 700;">1</span>
+                  <div style="flex: 1; height: 6px; background: rgba(0,0,0,0.04); border-radius: 99px; overflow: hidden;">
+                    <div style="width: 2%; height: 100%; background: #ef4444; border-radius: 99px;"></div>
+                  </div>
+                  <span style="width: 24px; text-align: right; color: var(--text-muted); font-weight: 600;">2%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Review Items list -->
+            <div style="flex: 1.5; min-width: 280px; display: flex; flex-direction: column; gap: 20px;">
+              
+              <!-- Review 1 -->
+              <div style="border-bottom: 1.5px solid rgba(0,0,0,0.04); padding-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 12px; font-weight: 800; color: #fbbf24;">★★★★★</span>
+                  <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">Purna C. — 2 days ago</span>
+                </div>
+                <h4 style="margin: 0 0 4px; font-size: 13px; font-weight: 700; color: var(--text-primary);">Absolutely Perfect Fit!</h4>
+                <p style="margin: 0; font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">The fabric quality is outstanding and details look very premium. True value for money.</p>
+              </div>
+
+              <!-- Review 2 -->
+              <div style="border-bottom: 1.5px solid rgba(0,0,0,0.04); padding-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 12px; font-weight: 800; color: #fbbf24;">★★★★☆</span>
+                  <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">Aditya K. — 1 week ago</span>
+                </div>
+                <h4 style="margin: 0 0 4px; font-size: 13px; font-weight: 700; color: var(--text-primary);">Premium Materials</h4>
+                <p style="margin: 0; font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">Great product. Fits exactly as expected. Fast shipping and replacement logistics were reliable.</p>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Discovery & Recommendations (Similar products) -->
+        <div>
+          <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0 0 16px; font-family: 'Outfit', sans-serif;">Similar Products</h3>
+          <div id="recommendations-carousel" style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 12px; scroll-behavior: smooth;">
+            <!-- Populate recommended items dynamically -->
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- Custom JavaScript -->
+    <script src="../js/script.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', async () => {
+        
+        // --- Fetch URL Product Info ---
+        const params = new URLSearchParams(window.location.search);
+        const idParam = params.get('id');
+        const titleParam = params.get('title') || '';
+
+        console.log('[ProductDetails] URL params - id:', idParam, 'title:', titleParam);
+
+        // Show loading state and clear static placeholders
+        document.getElementById('product-title').textContent = 'Loading...';
+        document.getElementById('product-brand').textContent = '';
+        document.getElementById('product-snippets').innerHTML = '';
+
+        async function initProductDetails() {
+          let liveProduct = null;
+
+          // ── Primary: fetch by ID using dedicated endpoint ──
+          if (idParam) {
+            try {
+              console.log('[ProductDetails] Fetching by ID:', idParam);
+              const res = await fetch(`http://localhost:5000/products/${idParam}`);
+              const data = await res.json();
+              console.log('[ProductDetails] ID fetch response:', res.status, data);
+              if (res.ok && data.success && data.product) {
+                liveProduct = data.product;
+                console.log('[ProductDetails] Found product by ID:', liveProduct.title);
+              }
+            } catch (e) {
+              console.warn('[ProductDetails] Product ID fetch error:', e);
+            }
+          }
+
+          // ── Fallback: search across all products by title ──
+          if (!liveProduct) {
+            try {
+              console.log('[ProductDetails] Fetching all products for fallback...');
+              const res = await fetch('http://localhost:5000/products?_t=' + Date.now());
+              const data = await res.json();
+              console.log('[ProductDetails] All products response:', res.status, data.products ? data.products.length : 0, 'products');
+              if (res.ok && data.success && data.products.length > 0) {
+                // Try match by ID first (from all products list)
+                if (idParam) {
+                  liveProduct = data.products.find(p => String(p.id) === String(idParam)) || null;
+                  if (liveProduct) console.log('[ProductDetails] Matched by ID from all-products list:', liveProduct.title);
+                }
+                // Then try match by title
+                if (!liveProduct && titleParam) {
+                  liveProduct = data.products.find(p => p.title.toLowerCase() === titleParam.toLowerCase()) || null;
+                  if (liveProduct) console.log('[ProductDetails] Matched by title:', liveProduct.title);
+                }
+                // Last resort: if only one product exists, show it
+                if (!liveProduct && data.products.length === 1) {
+                  liveProduct = data.products[0];
+                  console.log('[ProductDetails] Single product fallback:', liveProduct.title);
+                }
+              }
+            } catch (e) {
+              console.warn('[ProductDetails] All-products fetch error:', e);
+            }
+          }
+
+          // ── If product still not found, show error ──
+          if (!liveProduct) {
+            document.getElementById('product-title').textContent = 'Product Not Found';
+            document.getElementById('product-brand').textContent = 'Please go back and select a product.';
+            document.getElementById('product-price').textContent = '';
+            document.getElementById('product-mrp').textContent = '';
+            document.getElementById('product-discount').textContent = '';
+            document.getElementById('savings-tracker').textContent = '';
+            document.getElementById('coupons-section').style.display = 'none';
+            return;
+          }
+
+          // ── Map live DB row to product object ──
+          const imagesArray = liveProduct.image_url
+            ? liveProduct.image_url.split(',').map(url => url.trim()).filter(Boolean)
+            : ['https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop'];
+
+          const snippetsArray = liveProduct.title_description
+            ? liveProduct.title_description.split('.').map(s => s.trim()).filter(s => s.length > 2)
+            : (liveProduct.description ? [liveProduct.description] : ['Premium quality product assured.']);
+
+          const product = {
+            id: liveProduct.id,
+            title: liveProduct.title,
+            brand: liveProduct.brand || 'DevTech Luxury',
+            price: parseFloat(liveProduct.price) || 0,
+            mrp: parseFloat(liveProduct.mrp) || parseFloat(liveProduct.price) * 1.3 || 0,
+            category: liveProduct.category,
+            images: imagesArray,
+            snippets: snippetsArray,
+            specifications: {
+              fabric: liveProduct.fabric || 'Cotton',
+              fit: liveProduct.fit || 'Regular Fit',
+              pattern: liveProduct.pattern || 'Solid',
+              suitable: liveProduct.suitable_for || 'Casual'
+            },
+            description: liveProduct.description || 'No description provided.',
+            sizes: liveProduct.sizes ? liveProduct.sizes.split(',').map(s => s.trim()).filter(Boolean) : ['S', 'M', 'L'],
+            sizeStock: liveProduct.size_stock || 'S:10, M:10, L:10',
+            couponApplicable: liveProduct.coupon_applicable !== false,
+            replacementAllowed: liveProduct.replacement_allowed !== false,
+            replacementDays: liveProduct.replacement_days || 7,
+            codAvailable: liveProduct.cod_available !== false
+          };
+
+          // ── Populate all fields ──
+          // Dynamic category back button
+          const backBtn = document.getElementById('back-to-category-btn');
+          if (backBtn && product.category) {
+            const cat = product.category.toLowerCase();
+            let catPage = '../index.html';
+            let catLabel = 'Back to Home';
+
+
+
+            backBtn.href = catPage;
+            backBtn.innerHTML = `
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+              ${catLabel}
+            `;
+          }
+
+          document.getElementById('product-brand').textContent = product.brand;
+          document.getElementById('product-title').textContent = product.title;
+          // ── Populate and Format Prices & Discounts ──
+          const priceVal = parseFloat(product.price);
+          const mrpVal = parseFloat(product.mrp);
+
+          document.getElementById('product-price').textContent = `₹${priceVal.toLocaleString('en-IN')}`;
+
+          const discountBadge = document.getElementById('product-discount');
+          const mrpSpan = document.getElementById('product-mrp');
+          const savingsTracker = document.getElementById('savings-tracker');
+
+          if (mrpVal > priceVal) {
+            mrpSpan.style.display = 'inline';
+            mrpSpan.textContent = `₹${mrpVal.toLocaleString('en-IN')}`;
+
+            const discPercent = Math.round(((mrpVal - priceVal) / mrpVal) * 100);
+            discountBadge.style.display = 'inline';
+            discountBadge.textContent = `${discPercent}% OFF`;
+
+            savingsTracker.style.display = 'block';
+            let savingsMsg = `🎉 You save ₹${(mrpVal - priceVal).toLocaleString('en-IN')}`;
+            if (discPercent > 2) {
+              savingsMsg += ` (✨ Special Price Active — Best Price Applied!)`;
+            }
+            savingsTracker.textContent = savingsMsg;
+          } else {
+            mrpSpan.style.display = 'none';
+            discountBadge.style.display = 'none';
+            savingsTracker.style.display = 'none';
+          }
+
+          // Coupons Section Visibility
+          const couponsSection = document.getElementById('coupons-section');
+          couponsSection.style.display = product.couponApplicable ? 'block' : 'none';
+
+          // Logistics Badge Rendering
+          const replacementEl = document.getElementById('logistics-replacement');
+          if (product.replacementAllowed) {
+            replacementEl.textContent = `${product.replacementDays}-Day Replacement`;
+            replacementEl.previousElementSibling.textContent = '🔄';
+          } else {
+            replacementEl.textContent = 'No Replacement';
+            replacementEl.previousElementSibling.textContent = '🚫';
+          }
+
+          const codEl = document.getElementById('logistics-cod');
+          if (product.codAvailable) {
+            codEl.textContent = 'COD Available';
+            codEl.previousElementSibling.textContent = '💵';
+          } else {
+            codEl.textContent = 'COD Not Available';
+            codEl.previousElementSibling.textContent = '🚫';
+          }
+
+          // Snippets / bullet points
+          const snippetList = document.getElementById('product-snippets');
+          snippetList.innerHTML = '';
+          product.snippets.forEach(s => {
+            const li = document.createElement('li');
+            li.textContent = s;
+            snippetList.appendChild(li);
+          });
+
+          // Specifications
+          document.getElementById('spec-fabric').textContent = product.specifications.fabric;
+          document.getElementById('spec-fit').textContent = product.specifications.fit;
+          document.getElementById('spec-pattern').textContent = product.specifications.pattern;
+          document.getElementById('spec-suitable').textContent = product.specifications.suitable;
+          document.getElementById('product-description-text').textContent = product.description;
+
+          // --- Image Carousel Logic ---
+          const imgContainer = document.getElementById('image-carousel-container');
+          const dotsContainer = document.getElementById('carousel-dots');
+          let currentSlide = 0;
+
+          function buildCarousel() {
+            imgContainer.innerHTML = '';
+            dotsContainer.innerHTML = '';
+            
+            product.images.forEach((imgSrc, idx) => {
+              const slide = document.createElement('div');
+              slide.style.minWidth = '100%';
+              slide.style.position = 'relative';
+              slide.innerHTML = `<img src="${imgSrc}" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" alt="Slide ${idx}" />`;
+              imgContainer.appendChild(slide);
+
+              const dot = document.createElement('span');
+              dot.style.width = '8px';
+              dot.style.height = '8px';
+              dot.style.borderRadius = '50%';
+              dot.style.background = idx === 0 ? '#6366f1' : '#d1d5db';
+              dot.style.cursor = 'pointer';
+              dot.addEventListener('click', () => gotoSlide(idx));
+              dotsContainer.appendChild(dot);
+            });
+          }
+
+          function gotoSlide(idx) {
+            const totalSlides = product.images.length;
+            if (idx < 0) idx = totalSlides - 1;
+            if (idx >= totalSlides) idx = 0;
+            currentSlide = idx;
+
+            imgContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
+            const dots = dotsContainer.querySelectorAll('span');
+            dots.forEach((dot, dIdx) => {
+              dot.style.background = dIdx === currentSlide ? '#6366f1' : '#d1d5db';
+            });
+          }
+
+          document.getElementById('carousel-prev').addEventListener('click', () => gotoSlide(currentSlide - 1));
+          document.getElementById('carousel-next').addEventListener('click', () => gotoSlide(currentSlide + 1));
+          buildCarousel();
+
+          // --- Share Button ---
+          document.getElementById('share-product-btn').addEventListener('click', () => {
+            if (navigator.share) {
+              navigator.share({
+                title: product.title,
+                text: `Check out ${product.title} on DevTech Fashion!`,
+                url: window.location.href
+              }).catch(console.error);
+            } else {
+              navigator.clipboard.writeText(window.location.href);
+              alert('🔗 Product link copied to clipboard!');
+            }
+          });
+
+          // --- Wishlist Toggle ---
+          const wishlistBtn = document.getElementById('wishlist-toggle-btn');
+          function checkWishlistState() {
+            try {
+              const wish = JSON.parse(localStorage.getItem('dtf_wishlist')) || [];
+              const exists = wish.some(w => w.title === product.title);
+              wishlistBtn.textContent = exists ? '💖' : '🤍';
+            } catch {
+              wishlistBtn.textContent = '🤍';
+            }
+          }
+
+          wishlistBtn.addEventListener('click', () => {
+            const wish = JSON.parse(localStorage.getItem('dtf_wishlist')) || [];
+            const idx = wish.findIndex(w => w.title === product.title);
+            
+            if (idx > -1) {
+              wish.splice(idx, 1);
+              alert('💔 Removed from Wishlist!');
+            } else {
+              wish.push({
+                title: product.title,
+                price: product.price,
+                image: product.images[0]
+              });
+              alert('💖 Added to Wishlist!');
+            }
+            localStorage.setItem('dtf_wishlist', JSON.stringify(wish));
+            window.dispatchEvent(new Event('dtf:wishlist:updated'));
+            checkWishlistState();
+          });
+          checkWishlistState();
+
+          // --- Stock Urgency Signal & size selection ---
+          const urgencyBadge = document.getElementById('stock-urgency-badge');
+          
+          // Parse stock availability
+          const stockMap = {};
+          const stockPairs = product.sizeStock.split(',');
+          stockPairs.forEach(pair => {
+            const parts = pair.split(':');
+            if (parts.length === 2) {
+              stockMap[parts[0].trim().toUpperCase()] = parseInt(parts[1].trim(), 10) || 0;
+            }
+          });
+
+          // Set initial low stock warning for the first size that is in stock
+          let selectedSize = null;
+          
+          // --- Size Selector active toggle ---
+          const sizeContainer = document.querySelector('.size-btn').parentNode;
+          // Build custom sizes list from product sizes
+          sizeContainer.innerHTML = '';
+          const pSizes = product.sizes || ['S', 'M', 'L'];
+          
+          pSizes.forEach((s, idx) => {
+            const sUpper = s.toUpperCase();
+            const stock = (stockMap[sUpper] !== undefined) ? stockMap[sUpper] : 10;
+            const btn = document.createElement('button');
+            btn.className = 'size-btn';
+            btn.textContent = s;
+            
+            if (stock <= 0) {
+              btn.disabled = true;
+              btn.style.cssText = `width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid var(--glass-border); background-color: rgba(0,0,0,0.02); color: var(--text-muted); font-weight: 500; font-size: 13px; cursor: not-allowed; opacity: 0.4; text-decoration: line-through; position: relative;`;
+              btn.innerHTML = `${s}<span style="position: absolute; top: 50%; left: 0; right: 0; height: 1.5px; background: #ef4444; transform: rotate(-45deg);"></span>`;
+            } else {
+              // Select the first in-stock size as default
+              const isDefaultSize = (selectedSize === null);
+              if (isDefaultSize) {
+                selectedSize = sUpper;
+                // Set initial status badge according to stock
+                if (stock > 0 && stock <= 3) {
+                  urgencyBadge.textContent = `⚠️ Only ${stock} left in stock!`;
+                  urgencyBadge.style.color = '#f97316';
+                  urgencyBadge.style.background = 'rgba(249,115,22,0.1)';
+                } else {
+                  urgencyBadge.textContent = '✨ Special Price Active';
+                  urgencyBadge.style.color = '#10b981';
+                  urgencyBadge.style.background = 'rgba(16,185,129,0.1)';
+                }
+              }
+
+              btn.style.cssText = `width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid ${isDefaultSize ? '#6366f1' : 'var(--glass-border)'}; background-color: ${isDefaultSize ? '#6366f1' : 'var(--bg-elevated)'}; color: ${isDefaultSize ? '#ffffff' : 'var(--text-secondary)'}; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s;`;
+              
+              btn.addEventListener('click', () => {
+                selectedSize = sUpper;
+                sizeContainer.querySelectorAll('button').forEach(b => {
+                  if (!b.disabled) {
+                    b.style.borderColor = 'var(--glass-border)';
+                    b.style.backgroundColor = 'var(--bg-elevated)';
+                    b.style.color = 'var(--text-secondary)';
+                  }
+                });
+                btn.style.borderColor = '#6366f1';
+                btn.style.backgroundColor = '#6366f1';
+                btn.style.color = '#ffffff';
+
+                // Update urgency status badge based on selected size stock
+                if (stock > 0 && stock <= 3) {
+                  urgencyBadge.textContent = `⚠️ Only ${stock} left in stock!`;
+                  urgencyBadge.style.color = '#f97316';
+                  urgencyBadge.style.background = 'rgba(249,115,22,0.1)';
+                } else {
+                  urgencyBadge.textContent = '✨ Special Price Active';
+                  urgencyBadge.style.color = '#10b981';
+                  urgencyBadge.style.background = 'rgba(16,185,129,0.1)';
+                }
+              });
+            }
+            sizeContainer.appendChild(btn);
+          });
+
+          if (selectedSize === null) {
+            urgencyBadge.textContent = '🚫 Out of Stock';
+            urgencyBadge.style.color = '#ef4444';
+            urgencyBadge.style.background = 'rgba(239,68,68,0.1)';
+            
+            const addBtn = document.getElementById('add-to-cart-cta');
+            addBtn.disabled = true;
+            addBtn.style.background = '#6b7280';
+            addBtn.style.boxShadow = 'none';
+            addBtn.textContent = '🚫 Out of Stock';
+            
+            const buyBtn = document.getElementById('buy-now-cta');
+            if (buyBtn) {
+              buyBtn.disabled = true;
+              buyBtn.style.background = '#9ca3af';
+              buyBtn.style.boxShadow = 'none';
+              buyBtn.style.cursor = 'not-allowed';
+              buyBtn.textContent = '🚫 Out of Stock';
+            }
+          }
+
+          // --- Coupons Toggle & apply ---
+          const couponsBtn = document.getElementById('coupons-dropdown-btn');
+          const couponsList = document.getElementById('coupons-list');
+          const couponsChevron = document.getElementById('coupons-chevron');
+          
+          couponsBtn.addEventListener('click', () => {
+            const isCollapsed = couponsList.style.display === 'none';
+            couponsList.style.display = isCollapsed ? 'flex' : 'none';
+            couponsChevron.textContent = isCollapsed ? '▲' : '▼';
+          });
+
+          let couponApplied = false;
+          document.querySelectorAll('.apply-coupon-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              if (couponApplied) {
+                alert('Promo code already applied!');
+                return;
+              }
+              const discountAmt = Math.round(product.price * 0.2); // 20% discount
+              const finalPrice = product.price - discountAmt;
+              document.getElementById('product-price').textContent = `₹${finalPrice.toLocaleString('en-IN')}`;
+              document.getElementById('savings-tracker').textContent = `🎉 Coupon DEVTECH20 applied! Saved additional ₹${discountAmt.toLocaleString('en-IN')}`;
+              couponApplied = true;
+              btn.textContent = 'Applied';
+              btn.style.background = '#10b981';
+            });
+          });
+
+          // --- Add to Cart CTA ---
+          document.getElementById('add-to-cart-cta').addEventListener('click', () => {
+            const cart = JSON.parse(localStorage.getItem('dtf_cart')) || [];
+            const existing = cart.findIndex(c => c.title === product.title);
+            
+            if (existing > -1) {
+              cart[existing].quantity = (cart[existing].quantity || 1) + 1;
+            } else {
+              cart.push({
+                title: product.title,
+                price: product.price,
+                image: product.images[0],
+                quantity: 1
+              });
+            }
+
+            localStorage.setItem('dtf_cart', JSON.stringify(cart));
+            window.dispatchEvent(new Event('dtf:cart:updated'));
+            alert(`🛒 ${product.title} added to checkout bag!`);
+          });
+
+          // --- Buy Now CTA ---
+          const buyNowBtn = document.getElementById('buy-now-cta');
+          if (buyNowBtn) {
+            buyNowBtn.addEventListener('click', () => {
+              const cart = JSON.parse(localStorage.getItem('dtf_cart')) || [];
+              const existing = cart.findIndex(c => c.title === product.title);
+              
+              if (existing > -1) {
+                cart[existing].quantity = (cart[existing].quantity || 1) + 1;
+              } else {
+                cart.push({
+                  title: product.title,
+                  price: product.price,
+                  image: product.images[0],
+                  quantity: 1
+                });
+              }
+
+              localStorage.setItem('dtf_cart', JSON.stringify(cart));
+              window.dispatchEvent(new Event('dtf:cart:updated'));
+              window.location.href = 'cart.html';
+            });
+          }
+
+          // --- Recommender Similar items ---
+          const recommender = document.getElementById('recommendations-carousel');
+          recommender.innerHTML = '';
+          
+          // Pull live similar items if possible
+          let localAlternates = [];
+          try {
+            const allRes = await fetch('http://localhost:5000/products?_t=' + Date.now());
+            const allData = await allRes.json();
+            if (allRes.ok && allData.success && allData.products.length > 0) {
+              localAlternates = allData.products.map(lp => ({
+                id: lp.id,
+                title: lp.title,
+                price: parseFloat(lp.price),
+                images: lp.image_url.split(',').map(u => u.trim())
+              }));
+            }
+          } catch {}
+
+          const alternates = localAlternates.filter(p => p.title !== product.title).slice(0, 5);
+          alternates.forEach(p => {
+            const item = document.createElement('div');
+            item.style.minWidth = '180px';
+            item.style.background = 'rgba(255,255,255,0.45)';
+            item.style.border = '1.5px solid rgba(255,255,255,0.6)';
+            item.style.borderRadius = '16px';
+            item.style.overflow = 'hidden';
+            item.style.cursor = 'pointer';
+            item.style.padding = '12px';
+            item.style.display = 'flex';
+            item.style.flexDirection = 'column';
+            item.style.gap = '8px';
+            item.style.boxShadow = '0 8px 32px rgba(0,0,0,0.02)';
+
+            item.innerHTML = `
+              <div style="position: relative; padding-top: 120%; border-radius: 10px; overflow: hidden; background: #fafafa;">
+                <img src="${p.images[0]}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;" alt="${p.title}" />
+              </div>
+              <h4 style="margin: 0; font-size: 13px; font-weight: 700; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.title}</h4>
+              <p style="margin: 0; font-size: 13px; font-weight: 600; color: #4f46e5;">₹${p.price.toLocaleString('en-IN')}</p>
+            `;
+
+            item.addEventListener('click', () => {
+              window.location.href = `product-details?id=${p.id}&title=${encodeURIComponent(p.title)}`;
+            });
+
+            recommender.appendChild(item);
+          });
+        }
+
+        // --- Rating Button Scroll ---
+        document.getElementById('rating-scroll-btn').addEventListener('click', () => {
+          document.getElementById('ratings-reviews-section').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // --- Pincode / Location Display & expected delivery prediction ---
+        const locationDisplayPanel = document.getElementById('location-display-panel');
+        const deliveryLocationTitle = document.getElementById('delivery-location-title');
+        const deliveryLocationSubtitle = document.getElementById('delivery-location-subtitle');
+        const pincodeResp = document.getElementById('pincode-response');
+
+        function calculateExpectedDelivery(pincode) {
+          if (!/^\d{6}$/.test(pincode)) {
+            pincodeResp.textContent = '❌ Invalid PIN code';
+            pincodeResp.style.color = '#ef4444';
+            pincodeResp.style.display = 'block';
+            return;
+          }
+          const delDate = new Date();
+          delDate.setDate(delDate.getDate() + 3);
+          const formattedDate = delDate.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+          pincodeResp.textContent = `Expected delivery by ${formattedDate}`;
+          pincodeResp.style.color = '#10b981';
+          pincodeResp.style.display = 'block';
+        }
+
+        // Load active location
+        function loadActiveLocation() {
+          const activeAddrRaw = localStorage.getItem('dtf_active_address');
+          if (activeAddrRaw) {
+            try {
+              const addr = JSON.parse(activeAddrRaw);
+              if (addr && addr.pincode) {
+                // Update display panel
+                const label = addr.addressType && addr.addressType !== 'guest' ? `Delivering to: ${addr.addressType.toUpperCase()}` : 'Delivering to';
+                deliveryLocationTitle.textContent = `${label} - ${addr.pincode}`;
+                
+                const desc = addr.formattedAddress || `${addr.city || ''}, ${addr.state || ''}`;
+                deliveryLocationSubtitle.textContent = desc.length > 40 ? desc.substring(0, 37) + '...' : desc;
+                
+                calculateExpectedDelivery(addr.pincode);
+              }
+            } catch (err) {
+              console.warn('Failed to parse active address:', err);
+            }
+          } else {
+            deliveryLocationTitle.textContent = 'Select Delivery Location';
+            deliveryLocationSubtitle.textContent = 'Choose address to check delivery speed';
+            pincodeResp.style.display = 'none';
+          }
+        }
+
+        // --- React Address Picker Dev Loader ---
+        fetch('http://localhost:3000/src/main.tsx')
+          .then(() => {
+            const preamble = document.createElement('script');
+            preamble.type = 'module';
+            preamble.innerHTML = `
+              import RefreshRuntime from 'http://localhost:3000/@react-refresh'
+              RefreshRuntime.injectIntoGlobalHook(window)
+              window.$RefreshReg$ = () => {}
+              window.$RefreshSig$ = () => (type) => type
+              window.__vite_plugin_react_preamble_installed__ = true
+            `;
+            document.head.appendChild(preamble);
+
+            const client = document.createElement('script');
+            client.type = 'module';
+            client.src = 'http://localhost:3000/@vite/client';
+            document.body.appendChild(client);
+
+            const main = document.createElement('script');
+            main.type = 'module';
+            main.src = 'http://localhost:3000/src/main.tsx';
+            document.body.appendChild(main);
+          })
+          .catch(() => {
+            console.info('React Address Picker dev server not running.');
+          });
+
+        // Listen for address changes from header
+        window.addEventListener('dtf:address:updated', loadActiveLocation);
+        loadActiveLocation();
+
+        // Start — await so errors surface
+        try {
+          await initProductDetails();
+        } catch (err) {
+          console.error('[ProductDetails] Fatal error:', err);
+          document.getElementById('product-title').textContent = 'Error Loading Product';
+          document.getElementById('product-brand').textContent = err.message;
+          document.getElementById('product-snippets').innerHTML = '';
+        }
+      });
+    </script>
+  </body>
+</html>

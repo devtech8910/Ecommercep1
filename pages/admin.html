@@ -1,0 +1,3182 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard — DevTech Fashion</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&amp;family=EB+Garamond:wght@400;500;600;700&amp;family=Inter:wght@300;400;500;600;700;800&amp;family=Outfit:wght@300;400;500;600;700;800&amp;family=Geist:wght@400;500;600&amp;display=swap" rel="stylesheet" />
+    
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/animations.css" />
+    <link rel="stylesheet" href="../css/responsive.css" />
+    <!-- Cropper.js for image aspect ratio crop adjustment -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <!-- heic2any for HEIC local image compatibility conversion -->
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#07080f",
+                        "secondary": "#fbbf24",
+                        "surface-tint": "#bec3f7",
+                        "surface-variant": "#2c2f5d",
+                        "primary-container": "#1e1b4b",
+                        "tertiary-fixed-dim": "#b8c3ff",
+                        "on-secondary-container": "#fbbf24",
+                        "surface-container-low": "#131529",
+                        "primary-fixed-dim": "#bec3f7",
+                        "surface-bright": "#37393e",
+                        "outline": "#919099",
+                        "inverse-surface": "#e2e2e8",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-container": "#112a81",
+                        "on-secondary-fixed-variant": "#5d4201",
+                        "on-primary-container": "#c7d2fe",
+                        "on-tertiary-container": "#8296f1",
+                        "surface-container": "#1a1c36",
+                        "background": "#0b0c16",
+                        "on-secondary-fixed": "#261900",
+                        "inverse-primary": "#565b89",
+                        "error": "#ffb4ab",
+                        "on-primary": "#282d57",
+                        "on-background": "#e2e2e8",
+                        "surface": "#0f101f",
+                        "surface-container-highest": "#2c2f5d",
+                        "on-tertiary": "#0b267e",
+                        "on-surface": "#e2e2e8",
+                        "on-tertiary-fixed-variant": "#2a3f95",
+                        "primary": "#a5b4fc",
+                        "outline-variant": "rgba(165, 180, 252, 0.1)",
+                        "on-surface-variant": "#c7c5d0",
+                        "error-container": "#93000a",
+                        "secondary-fixed": "#ffdea5",
+                        "tertiary": "#b8c3ff",
+                        "surface-container-high": "#212447",
+                        "on-tertiary-fixed": "#001355",
+                        "secondary-container": "#604403",
+                        "on-error": "#690005",
+                        "secondary-fixed-dim": "#fbbf24",
+                        "on-secondary": "#412d00",
+                        "surface-dim": "#0b0c16",
+                        "inverse-on-surface": "#2f3035",
+                        "on-primary-fixed": "#121741",
+                        "primary-fixed": "#dfe0ff",
+                        "on-primary-fixed-variant": "#3e436f",
+                        "tertiary-fixed": "#dde1ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-padding": "24px",
+                        "sidebar-width": "280px",
+                        "container-margin": "32px",
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "sidebar-collapsed": "80px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["EB Garamond", "Cormorant Garamond", "serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "headline-md": ["EB Garamond", "Cormorant Garamond", "serif"],
+                        "headline-lg-mobile": ["EB Garamond", "Cormorant Garamond", "serif"],
+                        "display-lg": ["EB Garamond", "Cormorant Garamond", "serif"],
+                        "label-caps": ["Outfit", "sans-serif"],
+                        "data-mono": ["Geist", "monospace"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "500" }],
+                        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "data-mono": ["14px", { "lineHeight": "1", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        @media print {
+          #admin-sidebar, #admin-top-navbar, #logged-out-back-btn, #shader-canvas-ANIMATION_16, .print-hidden, .no-print {
+            display: none !important;
+            visibility: hidden !important;
+          }
+
+          body {
+            background: #ffffff !important;
+            color: #000000 !important;
+          }
+
+          /* Printable Invoice Modal active state */
+          body:has(#order-invoice-modal:not(.hidden)) * {
+            visibility: hidden !important;
+          }
+          body:has(#order-invoice-modal:not(.hidden)) #printable-invoice-content,
+          body:has(#order-invoice-modal:not(.hidden)) #printable-invoice-content * {
+            visibility: visible !important;
+          }
+          body:has(#order-invoice-modal:not(.hidden)) #printable-invoice-content {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            padding: 20px !important;
+            margin: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+          }
+          body:has(#order-invoice-modal:not(.hidden)) #order-invoice-modal {
+            background: transparent !important;
+            position: absolute !important;
+            inset: 0 !important;
+            display: block !important;
+            overflow: visible !important;
+            backdrop-filter: none !important;
+          }
+
+          /* General Dashboard Report Print view */
+          #admin-main-content {
+            margin-left: 0 !important;
+            width: 100% !important;
+            display: block !important;
+            color: #000000 !important;
+          }
+
+          .admin-section {
+            display: flex !important;
+            color: #000000 !important;
+          }
+
+          .bg-surface\/40, .bg-surface-container-low\/50, .bg-surface-container-low\/30 {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid #d1d5db !important;
+            box-shadow: none !important;
+          }
+
+          .text-on-surface, .text-on-surface-variant {
+            color: #000000 !important;
+          }
+        }
+
+        @keyframes slideUpFade {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-entrance {
+            opacity: 0;
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+    </style>
+  </head>
+  <body class="bg-background text-on-background min-h-screen font-body-md overflow-x-hidden relative">
+    
+    <!-- Shader Background -->
+    <div class="fixed inset-0 w-full h-full -z-10" style="display:block;">
+      <canvas id="shader-canvas-ANIMATION_16" style="display:block;width:100%;height:100%"></canvas>
+    </div>
+
+    <!-- Logged out back banner -->
+    <div id="logged-out-back-btn" class="fixed top-0 left-0 right-0 z-50 p-6 flex items-center justify-between pointer-events-none">
+      <a href="../index.html" class="pointer-events-auto flex items-center gap-2 text-on-surface-variant hover:text-on-surface font-semibold text-sm bg-surface/80 backdrop-blur-md px-5 py-2.5 rounded-full border border-outline-variant/10 shadow-lg transition-all duration-200">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+        Back to Home
+      </a>
+      <span class="pointer-events-auto font-label-caps font-bold text-sm text-primary bg-surface/80 border border-outline-variant/10 px-5 py-2.5 rounded-full backdrop-blur-md shadow-lg">🔒 Admin Access</span>
+    </div>
+
+    <!-- ACCESS DENIED STATE -->
+    <div id="access-denied-panel" class="hidden fixed inset-0 z-40 flex items-center justify-center p-6 bg-background/50 backdrop-blur-sm">
+      <div class="bg-surface/90 border border-outline-variant/20 rounded-2xl max-w-md w-full p-8 text-center shadow-2xl animate-entrance">
+        <div class="text-5xl mb-6">🚫</div>
+        <h2 class="font-headline-md text-2xl text-on-surface mb-2 font-medium">Access Denied</h2>
+        <p class="text-sm text-on-surface-variant/80 mb-6 leading-relaxed">Administrator privileges are required to view the analytics panel and catalog editing suite.</p>
+        <div class="flex gap-4 justify-center">
+          <a href="../index.html" class="px-6 py-2.5 border border-outline-variant/30 rounded-lg text-on-surface-variant hover:text-on-surface font-label-caps text-xs tracking-wider transition-colors">Go Home</a>
+          <button id="quick-admin-login-btn" class="px-6 py-2.5 bg-primary text-on-primary font-label-caps text-xs tracking-wider rounded-lg hover:bg-primary/90 transition-all font-bold">Login as Admin</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Backdrop (for mobile) -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-background/50 backdrop-blur-sm z-40 hidden transition-opacity duration-300"></div>
+
+    <!-- ==================== SIDEBAR NAVIGATION ==================== -->
+    <nav id="admin-sidebar" class="fixed left-0 top-0 h-full flex flex-col p-6 w-sidebar-width bg-surface/80 backdrop-blur-3xl border-r border-outline-variant/5 shadow-2xl z-50 transition-transform duration-300 ease-in-out -translate-x-full md:translate-x-0 hidden">
+      <!-- Brand Header -->
+      <div class="flex items-center gap-4 mb-12">
+        <div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center overflow-hidden border border-outline-variant/20">
+          <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6u7dREwUplhwb5VL6djMnBqhlXuevOT2izGigNAttYSnZR6LfGI9-cc1k8s6bP48narFktOK4saG8rYBYos35OuxCvcLMlbz2OxadjYueeq5pxUDzM7fy_oyvq--JonyaEdkHAnVKN4XY4HDEya-uhHYvIQilLYWCO4kSduuTSS4dQ8NGu_RM80FxzadN8Uk_BP0qj7TxtulO2r6Z1AYxNNKUMbckR71wU-KNjNLUNj4wi48zC1GV"/>
+        </div>
+        <div>
+          <h1 class="font-headline-md text-xl font-medium text-on-surface tracking-tight">DevTech</h1>
+          <p class="font-body-sm text-xs text-on-surface-variant">Executive Panel</p>
+        </div>
+      </div>
+      
+      <!-- Navigation Links -->
+      <div class="flex-1 flex flex-col gap-2">
+        <!-- Overview -->
+        <a class="flex items-center gap-4 bg-primary-container text-on-primary-container rounded-lg px-4 py-3 shadow-[0_20px_40px_rgba(30,27,75,0.3)] scale-[0.98] transition-transform group admin-nav-tab active" data-section="overview-section" href="#">
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+          <span class="font-label-caps text-xs uppercase tracking-wider">Overview</span>
+        </a>
+        <!-- Product Catalog -->
+        <a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 transition-colors hover:bg-surface-variant/50 rounded-lg duration-200 group admin-nav-tab" data-section="catalog-section" href="#">
+          <span class="material-symbols-outlined opacity-70 group-hover:opacity-100 transition-opacity">inventory_2</span>
+          <span class="font-label-caps text-xs uppercase tracking-wider">Catalog</span>
+        </a>
+        <!-- Order Management -->
+        <a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 transition-colors hover:bg-surface-variant/50 rounded-lg duration-200 group admin-nav-tab" data-section="orders-section" href="#">
+          <span class="material-symbols-outlined opacity-70 group-hover:opacity-100 transition-opacity">receipt_long</span>
+          <span class="font-label-caps text-xs uppercase tracking-wider">Orders</span>
+          <span class="unconfirmed-badge bg-error text-on-error font-extrabold text-[10px] px-2 py-0.5 rounded-full ml-auto hidden">0</span>
+        </a>
+        <!-- Stock Alerts -->
+        <a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 transition-colors hover:bg-surface-variant/50 rounded-lg duration-200 group admin-nav-tab" data-section="stock-alerts-section" href="#">
+          <span class="material-symbols-outlined opacity-70 group-hover:opacity-100 transition-opacity">notification_important</span>
+          <span class="font-label-caps text-xs uppercase tracking-wider">Stock Alerts</span>
+          <span class="stock-alert-dot w-2 h-2 bg-error rounded-full ml-auto animate-pulse hidden"></span>
+        </a>
+        <!-- Inventory -->
+        <a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 transition-colors hover:bg-surface-variant/50 rounded-lg duration-200 group admin-nav-tab" data-section="inventory-section" href="#">
+          <span class="material-symbols-outlined opacity-70 group-hover:opacity-100 transition-opacity">history</span>
+          <span class="font-label-caps text-xs uppercase tracking-wider">Inventory</span>
+        </a>
+        <!-- Performance -->
+        <a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 transition-colors hover:bg-surface-variant/50 rounded-lg duration-200 group admin-nav-tab" data-section="performance-section" href="#">
+          <span class="material-symbols-outlined opacity-70 group-hover:opacity-100 transition-opacity">analytics</span>
+          <span class="font-label-caps text-xs uppercase tracking-wider">Performance</span>
+        </a>
+      </div>
+
+      <!-- Storefront CTA -->
+      <div class="mt-8 mb-4">
+        <a href="../index.html" class="w-full flex items-center justify-center bg-primary-container hover:bg-primary/20 text-primary border border-primary/20 font-label-caps text-xs py-3 rounded-lg transition-all duration-300 shadow-[0_10px_30px_rgba(30,27,75,0.2)]">
+          Storefront ➔
+        </a>
+      </div>
+
+      <!-- Footer Links -->
+      <div class="mt-auto border-t border-outline-variant/10 pt-4 flex flex-col gap-2">
+        <a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-2 transition-colors hover:bg-surface-variant/50 rounded-lg duration-200 group" href="#" id="admin-logout-btn">
+          <span class="material-symbols-outlined opacity-70">logout</span>
+          <span class="font-label-caps text-xs uppercase tracking-wider">Logout</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- ==================== MAIN CONTENT WRAPPER ==================== -->
+    <main id="admin-main-content" class="md:ml-sidebar-width min-h-screen flex flex-col relative z-10 w-full md:w-[calc(100%-280px)] hidden">
+      <!-- TopNavBar Component -->
+      <header id="admin-top-navbar" class="sticky top-0 w-full h-20 bg-background/60 backdrop-blur-2xl border-b border-outline-variant/5 z-40 flex justify-between items-center px-8">
+        <!-- Left: Search/Brand (Mobile) -->
+        <div class="flex items-center gap-6">
+          <button id="admin-hamburger-btn" class="md:hidden flex flex-col gap-1 w-8 h-8 justify-center items-center bg-transparent border-none cursor-pointer outline-none z-50">
+            <span class="admin-ham-line w-6 h-0.5 bg-on-surface rounded-full transition-all duration-300"></span>
+            <span class="admin-ham-line w-6 h-0.5 bg-on-surface rounded-full transition-all duration-300"></span>
+            <span class="admin-ham-line w-6 h-0.5 bg-on-surface rounded-full transition-all duration-300"></span>
+          </button>
+          <div class="md:hidden font-headline-md text-xl font-medium text-on-surface">DevTech Panel</div>
+          <div class="hidden md:flex items-center gap-3 bg-surface-container-low/50 border border-outline-variant/10 rounded-full px-4 py-2 focus-within:border-primary/50 transition-colors w-64">
+            <span class="material-symbols-outlined text-on-surface-variant text-sm">search</span>
+            <input class="bg-transparent border-none outline-none text-xs text-on-surface placeholder:text-on-surface-variant/40 w-full focus:ring-0 p-0" placeholder="Search operations..." type="text"/>
+          </div>
+        </div>
+        
+        <!-- Right: Profile & Badges -->
+        <div class="flex items-center gap-3">
+          <button id="admin-print-dashboard-btn" class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/20 text-xs font-bold rounded-lg transition-all cursor-pointer shadow-sm">
+            <span class="material-symbols-outlined text-base">print</span>
+            <span class="hidden sm:inline">Print Report</span>
+          </button>
+          <button class="text-on-surface-variant hover:text-on-surface p-2 rounded-full hover:bg-surface-variant/30 transition-all relative">
+            <span class="material-symbols-outlined text-xl">notifications</span>
+            <span class="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-secondary rounded-full"></span>
+          </button>
+          <div class="h-6 w-px bg-outline-variant/20 mx-1"></div>
+          <div class="w-9 h-9 rounded-full overflow-hidden border border-outline-variant/30 cursor-pointer">
+            <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1RvKfrHCLYeGVLA0dj6x7p2PvWi7IB-EK6j0C0eRg4q1FHbzBybL_fARe2v4Xez39tKNc84HeCMKvEfdc039JloiaL-dBCB9FV5qx8I4lgAsTHM6soKyrn-LmUk4ThJI3-mkVrfjTto4liJBG7mw4cOs3L_enQejXAEAt5U-1CbzvhHDYbsXroByR2F3_v7_VaF2sIL2D5AfRMxEmzbSwjFpEhkS0-h4W_K7JDgTPZ6V419nsLSsK"/>
+          </div>
+        </div>
+      </header>
+
+      <!-- Canvas Content Container -->
+      <div id="dashboard-panel" class="p-container-margin max-w-[1440px] mx-auto w-full flex-1 flex flex-col gap-8">
+        
+        <!-- ==================== 1. OVERVIEW SECTION ==================== -->
+        <div id="overview-section" class="admin-section animate-entrance flex flex-col gap-6">
+          <div class="mb-4">
+            <h2 class="font-headline-lg text-3xl text-on-surface mb-1 font-medium">Welcome Director,</h2>
+            <p class="text-sm text-on-surface-variant/80">Overview statistics and sales trajectory analysis.</p>
+          </div>
+
+          <!-- Stats Cards Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Revenue Card -->
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-6 flex flex-col relative overflow-hidden group hover:border-outline-variant/15 transition-all duration-300">
+              <div class="absolute inset-0 bg-gradient-to-br from-white/[0.01] to-transparent pointer-events-none"></div>
+              <div class="flex justify-between items-start mb-4 relative z-10">
+                <span class="font-label-caps text-xs text-on-surface-variant/80 uppercase tracking-widest font-semibold">Total Revenue</span>
+                <span class="material-symbols-outlined text-secondary opacity-90 text-xl">trending_up</span>
+              </div>
+              <div id="stat-revenue" class="font-headline-md text-3xl text-on-surface mb-2 relative z-10 font-medium">₹0</div>
+              <div class="text-[11px] text-green-400 font-semibold relative z-10 flex items-center gap-1">✨ Transacted sales volume</div>
+            </div>
+
+            <!-- Orders Card -->
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-6 flex flex-col relative overflow-hidden group hover:border-outline-variant/15 transition-all duration-300">
+              <div class="absolute inset-0 bg-gradient-to-br from-white/[0.01] to-transparent pointer-events-none"></div>
+              <div class="flex justify-between items-start mb-4 relative z-10">
+                <span class="font-label-caps text-xs text-on-surface-variant/80 uppercase tracking-widest font-semibold">Total Orders</span>
+                <span class="material-symbols-outlined text-primary opacity-90 text-xl">shopping_bag</span>
+              </div>
+              <div id="stat-orders" class="font-headline-md text-3xl text-on-surface mb-2 relative z-10 font-medium font-data-mono">0</div>
+              <div class="text-[11px] text-primary font-semibold relative z-10 flex items-center gap-1">📦 Customer purchases</div>
+            </div>
+
+            <!-- AOV Card -->
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-6 flex flex-col relative overflow-hidden group hover:border-outline-variant/15 transition-all duration-300">
+              <div class="absolute inset-0 bg-gradient-to-br from-white/[0.01] to-transparent pointer-events-none"></div>
+              <div class="flex justify-between items-start mb-4 relative z-10">
+                <span class="font-label-caps text-xs text-on-surface-variant/80 uppercase tracking-widest font-semibold">Avg Order Value</span>
+                <span class="material-symbols-outlined text-primary opacity-90 text-xl">account_balance_wallet</span>
+              </div>
+              <div id="stat-aov" class="font-headline-md text-3xl text-on-surface mb-2 relative z-10 font-medium font-data-mono">₹0</div>
+              <div class="text-[11px] text-yellow-400 font-semibold relative z-10 flex items-center gap-1">📈 Average spending ticket</div>
+            </div>
+          </div>
+
+          <!-- Charts and Activity Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Sales trajectory chart -->
+            <div class="lg:col-span-8 bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-6 flex flex-col min-h-[400px]">
+              <div class="flex justify-between items-center mb-6 border-b border-outline-variant/10 pb-4">
+                <div>
+                  <h3 class="font-label-caps text-xs text-on-surface uppercase tracking-widest font-bold">Periodic Sales Analysis</h3>
+                  <p class="text-[11px] text-on-surface-variant/80 mt-1">Select timeframe to plot transaction records.</p>
+                </div>
+                <div class="flex gap-1 bg-surface-container-low/40 p-1 border border-outline-variant/10 rounded-lg">
+                  <button type="button" class="period-btn px-3 py-1.5 text-[10px] font-bold tracking-wider uppercase rounded-md transition-all duration-200" data-period="day">Day</button>
+                  <button type="button" class="period-btn px-3 py-1.5 text-[10px] font-bold tracking-wider uppercase rounded-md transition-all duration-200" data-period="week">Week</button>
+                  <button type="button" class="period-btn px-3 py-1.5 text-[10px] font-bold tracking-wider uppercase rounded-md transition-all duration-200" data-period="month">Month</button>
+                  <button type="button" class="period-btn px-3 py-1.5 text-[10px] font-bold tracking-wider uppercase rounded-md transition-all duration-200" data-period="year">Year</button>
+                </div>
+              </div>
+              <!-- Dynamic bar viewport -->
+              <div id="chart-viewport" class="flex-1 w-full h-[220px] flex items-end gap-3 pb-2 border-b border-outline-variant/10 min-h-[220px]">
+                <!-- Dynamic bars render here -->
+              </div>
+              <div id="chart-labels" class="flex justify-between text-[9px] text-on-surface-variant/70 font-semibold mt-2 px-1">
+                <!-- Labels render here -->
+              </div>
+            </div>
+
+            <!-- Categories and activity shares -->
+            <div class="lg:col-span-4 bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-6 flex flex-col justify-between">
+              <div>
+                <h3 class="font-label-caps text-xs text-on-surface uppercase tracking-widest font-bold mb-1">Category Trends</h3>
+                <p class="text-[11px] text-on-surface-variant/80 mb-6">Distribution shares based on recent purchases.</p>
+                <div id="categories-container" class="flex flex-col gap-4">
+                  <!-- Categories progress bars render dynamically -->
+                </div>
+              </div>
+              <div class="text-[11px] text-on-surface-variant/70 mt-6 pt-4 border-t border-outline-variant/10 flex items-center gap-1.5">
+                <span>💡</span>
+                <span>Active stock and catalog updates affect shares.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== 2. CATALOG SECTION ==================== -->
+        <div id="catalog-section" class="admin-section animate-entrance flex flex-col gap-6" style="display: none;">
+          <div class="flex justify-between items-center flex-wrap gap-4 border-b border-outline-variant/5 pb-4">
+            <div>
+              <h2 class="font-headline-lg text-2xl text-on-surface mb-1 font-medium">Product Catalog</h2>
+              <p class="text-xs text-on-surface-variant/80">Add, edit, or delete items inside the store catalog.</p>
+            </div>
+            <button id="add-product-btn" class="px-5 py-2.5 bg-primary text-on-primary font-label-caps text-xs tracking-wider rounded-xl hover:bg-primary/90 transition-all font-bold flex items-center gap-1.5 shadow-[0_4px_20px_rgba(165,180,252,0.15)]">
+              ➕ Add New Product
+            </button>
+          </div>
+
+          <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-6">
+            <!-- Category-wise Tabs -->
+            <div class="flex gap-2 border-b border-outline-variant/10 pb-4 mb-6 overflow-x-auto">
+              <button type="button" class="catalog-tab px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 cursor-pointer whitespace-nowrap active" data-cat="all">
+                🛍️ All Categories (<span id="count-all">0</span>)
+              </button>
+              <button type="button" class="catalog-tab px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 cursor-pointer whitespace-nowrap" data-cat="mens">
+                👔 Men's Wear (<span id="count-mens">0</span>)
+              </button>
+              <button type="button" class="catalog-tab px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 cursor-pointer whitespace-nowrap" data-cat="womens">
+                👗 Women's Wear (<span id="count-womens">0</span>)
+              </button>
+              <button type="button" class="catalog-tab px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 cursor-pointer whitespace-nowrap" data-cat="kids">
+                🧸 Kids Wear (<span id="count-kids">0</span>)
+              </button>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto w-full">
+              <table class="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr class="border-b border-outline-variant/15 text-on-surface-variant/80 font-bold uppercase tracking-wider">
+                    <th class="py-4 px-3">Product</th>
+                    <th class="py-4 px-3">Category</th>
+                    <th class="py-4 px-3">Price</th>
+                    <th class="py-4 px-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="product-table-body" class="divide-y divide-outline-variant/5">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== 3. ORDERS SECTION ==================== -->
+        <div id="orders-section" class="admin-section animate-entrance flex flex-col gap-6" style="display: none;">
+          <div class="border-b border-outline-variant/5 pb-4">
+            <h2 class="font-headline-lg text-2xl text-on-surface mb-1 font-medium">Order Management</h2>
+            <p class="text-xs text-on-surface-variant/80">View and update customer shipment and delivery details.</p>
+          </div>
+
+          <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-6">
+            <div class="overflow-x-auto w-full">
+              <table class="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr class="border-b border-outline-variant/15 text-on-surface-variant/80 font-bold uppercase tracking-wider">
+                    <th class="py-4 px-3">Order Info</th>
+                    <th class="py-4 px-3">Customer</th>
+                    <th class="py-4 px-3">Items</th>
+                    <th class="py-4 px-3">Total</th>
+                    <th class="py-4 px-3">Status</th>
+                    <th class="py-4 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="order-table-body" class="divide-y divide-outline-variant/5">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== 4. STOCK ALERTS SECTION ==================== -->
+        <div id="stock-alerts-section" class="admin-section animate-entrance flex flex-col gap-6" style="display: none;">
+          <div class="border-b border-outline-variant/5 pb-4">
+            <h2 class="font-headline-lg text-2xl text-on-surface mb-1 font-medium">🚨 Stock Alerts</h2>
+            <p class="text-xs text-on-surface-variant/80">Real-time inventory health monitoring with color-coded alerts.</p>
+          </div>
+
+          <!-- Summary Cards -->
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-5 text-center hover:border-outline-variant/15 transition-all">
+              <div class="font-label-caps text-[10px] text-on-surface-variant/80 uppercase tracking-widest mb-2">Total Products</div>
+              <div id="sa-total-products" class="font-headline-md text-2xl text-on-surface font-data-mono font-bold">0</div>
+            </div>
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-5 text-center hover:border-outline-variant/15 transition-all">
+              <div class="font-label-caps text-[10px] text-on-surface-variant/80 uppercase tracking-widest mb-2">Total Variants</div>
+              <div id="sa-total-variants" class="font-headline-md text-2xl text-on-surface font-data-mono font-bold">0</div>
+            </div>
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-5 text-center hover:border-outline-variant/15 transition-all">
+              <div class="font-label-caps text-[10px] text-on-surface-variant/80 uppercase tracking-widest mb-2">Total Units</div>
+              <div id="sa-total-units" class="font-headline-md text-2xl text-on-surface font-data-mono font-bold">0</div>
+            </div>
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-5 text-center hover:border-outline-variant/15 transition-all">
+              <div class="font-label-caps text-[10px] text-on-surface-variant/80 uppercase tracking-widest mb-2">Low Stock</div>
+              <div id="sa-low-stock" class="font-headline-md text-2xl text-yellow-400 font-data-mono font-bold">0</div>
+            </div>
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-5 text-center hover:border-outline-variant/15 transition-all">
+              <div class="font-label-caps text-[10px] text-on-surface-variant/80 uppercase tracking-widest mb-2">Out of Stock</div>
+              <div id="sa-out-of-stock" class="font-headline-md text-2xl text-red-400 font-data-mono font-bold">0</div>
+            </div>
+          </div>
+
+          <!-- Inventory Value Row -->
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-5 hover:border-outline-variant/15 transition-all">
+              <div class="font-label-caps text-[10px] text-on-surface-variant/80 uppercase tracking-widest mb-2">Inventory Cost</div>
+              <div id="sa-inv-cost" class="font-headline-md text-xl text-on-surface font-data-mono font-bold">₹0</div>
+              <div class="text-[10px] text-on-surface-variant/60 mt-1">Cost price × units</div>
+            </div>
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-5 hover:border-outline-variant/15 transition-all">
+              <div class="font-label-caps text-[10px] text-on-surface-variant/80 uppercase tracking-widest mb-2">Selling Value</div>
+              <div id="sa-inv-selling" class="font-headline-md text-xl text-green-400 font-data-mono font-bold">₹0</div>
+              <div class="text-[10px] text-on-surface-variant/60 mt-1">MRP × units</div>
+            </div>
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-5 hover:border-outline-variant/15 transition-all">
+              <div class="font-label-caps text-[10px] text-on-surface-variant/80 uppercase tracking-widest mb-2">Potential Profit</div>
+              <div id="sa-inv-profit" class="font-headline-md text-xl text-secondary font-data-mono font-bold">₹0</div>
+              <div class="text-[10px] text-on-surface-variant/60 mt-1">Selling − Cost</div>
+            </div>
+          </div>
+
+          <!-- Alert Table -->
+          <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-6">
+            <h3 class="font-label-caps text-xs text-on-surface uppercase tracking-widest font-bold mb-4">Product Stock Status</h3>
+            <div class="overflow-x-auto w-full">
+              <table class="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr class="border-b border-outline-variant/15 text-on-surface-variant/80 font-bold uppercase tracking-wider">
+                    <th class="py-3 px-3">Product</th>
+                    <th class="py-3 px-3">Status</th>
+                    <th class="py-3 px-3">Size Breakdown</th>
+                    <th class="py-3 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="stock-alerts-body" class="divide-y divide-outline-variant/5">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== 5. INVENTORY SECTION ==================== -->
+        <div id="inventory-section" class="admin-section animate-entrance flex flex-col gap-6" style="display: none;">
+          <div class="border-b border-outline-variant/5 pb-4">
+            <h2 class="font-headline-lg text-2xl text-on-surface mb-1 font-medium">📋 Inventory Management</h2>
+            <p class="text-xs text-on-surface-variant/80">Stock movement history and inventory value analysis.</p>
+          </div>
+
+          <!-- Inventory Value Cards -->
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-4 text-center hover:border-outline-variant/15 transition-all">
+              <div class="font-label-caps text-[9px] text-on-surface-variant/80 uppercase tracking-widest mb-2">Total Cost</div>
+              <div id="inv-total-cost" class="text-lg text-on-surface font-data-mono font-bold">₹0</div>
+            </div>
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-4 text-center hover:border-outline-variant/15 transition-all">
+              <div class="font-label-caps text-[9px] text-on-surface-variant/80 uppercase tracking-widest mb-2">Selling Value</div>
+              <div id="inv-selling-value" class="text-lg text-green-400 font-data-mono font-bold">₹0</div>
+            </div>
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-4 text-center hover:border-outline-variant/15 transition-all">
+              <div class="font-label-caps text-[9px] text-on-surface-variant/80 uppercase tracking-widest mb-2">Potential Profit</div>
+              <div id="inv-profit" class="text-lg text-secondary font-data-mono font-bold">₹0</div>
+            </div>
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-4 text-center hover:border-outline-variant/15 transition-all">
+              <div class="font-label-caps text-[9px] text-on-surface-variant/80 uppercase tracking-widest mb-2">Dead Stock</div>
+              <div id="inv-dead-stock" class="text-lg text-red-400 font-data-mono font-bold">₹0</div>
+            </div>
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-4 text-center hover:border-outline-variant/15 transition-all">
+              <div class="font-label-caps text-[9px] text-on-surface-variant/80 uppercase tracking-widest mb-2">Fast Moving</div>
+              <div id="inv-fast-moving" class="text-lg text-green-400 font-data-mono font-bold">₹0</div>
+            </div>
+            <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-4 text-center hover:border-outline-variant/15 transition-all">
+              <div class="font-label-caps text-[9px] text-on-surface-variant/80 uppercase tracking-widest mb-2">Slow Moving</div>
+              <div id="inv-slow-moving" class="text-lg text-yellow-400 font-data-mono font-bold">₹0</div>
+            </div>
+          </div>
+
+          <!-- Movement History -->
+          <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-6">
+            <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+              <div>
+                <h3 class="font-label-caps text-xs text-on-surface uppercase tracking-widest font-bold">Stock Movement History</h3>
+                <p class="text-[10px] text-on-surface-variant/60 mt-1">Complete audit trail of all inventory changes</p>
+              </div>
+              <div class="flex gap-2">
+                <select id="movement-action-filter" class="px-3 py-1.5 text-[10px] bg-surface-container-low border border-outline-variant/20 rounded-lg text-on-surface outline-none">
+                  <option value="">All Actions</option>
+                  <option value="product_added">Product Added</option>
+                  <option value="product_edited">Product Edited</option>
+                  <option value="stock_increased">Stock Increased</option>
+                  <option value="stock_decreased">Stock Decreased</option>
+                  <option value="sale">Sale</option>
+                  <option value="return">Return</option>
+                  <option value="exchange">Exchange</option>
+                  <option value="manual_adjustment">Manual Adjustment</option>
+                  <option value="damaged">Damaged</option>
+                  <option value="lost">Lost</option>
+                </select>
+              </div>
+            </div>
+            <div class="overflow-x-auto w-full">
+              <table class="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr class="border-b border-outline-variant/15 text-on-surface-variant/80 font-bold uppercase tracking-wider">
+                    <th class="py-3 px-3">Date & Time</th>
+                    <th class="py-3 px-3">Product</th>
+                    <th class="py-3 px-3">Action</th>
+                    <th class="py-3 px-3">Size</th>
+                    <th class="py-3 px-3">Qty Change</th>
+                    <th class="py-3 px-3">Before → After</th>
+                    <th class="py-3 px-3">Reason</th>
+                    <th class="py-3 px-3">By</th>
+                  </tr>
+                </thead>
+                <tbody id="movement-history-body" class="divide-y divide-outline-variant/5">
+                </tbody>
+              </table>
+            </div>
+            <div class="flex justify-between items-center mt-4 pt-4 border-t border-outline-variant/10">
+              <span id="movement-page-info" class="text-[10px] text-on-surface-variant/60">Showing 0 records</span>
+              <div class="flex gap-2">
+                <button id="movement-prev-btn" class="px-3 py-1.5 text-[10px] font-bold bg-surface-container-low border border-outline-variant/20 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-30" disabled>← Prev</button>
+                <button id="movement-next-btn" class="px-3 py-1.5 text-[10px] font-bold bg-surface-container-low border border-outline-variant/20 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-30">Next →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== 6. PERFORMANCE SECTION ==================== -->
+        <div id="performance-section" class="admin-section animate-entrance flex flex-col gap-6" style="display: none;">
+          <div class="border-b border-outline-variant/5 pb-4">
+            <h2 class="font-headline-lg text-2xl text-on-surface mb-1 font-medium">📊 Product Performance</h2>
+            <p class="text-xs text-on-surface-variant/80">Per-product analytics, smart filters, and quick actions.</p>
+          </div>
+
+          <!-- Smart Filters Bar -->
+          <div class="bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl p-4">
+            <div class="flex flex-wrap gap-3 items-center">
+              <select id="perf-filter-category" class="px-3 py-2 text-[11px] bg-surface-container-low border border-outline-variant/20 rounded-lg text-on-surface outline-none focus:border-primary transition-colors">
+                <option value="">All Categories</option>
+                <option value="mens">Men's Wear</option>
+                <option value="womens">Women's Wear</option>
+                <option value="kids">Kids Wear</option>
+              </select>
+              <select id="perf-filter-brand" class="px-3 py-2 text-[11px] bg-surface-container-low border border-outline-variant/20 rounded-lg text-on-surface outline-none focus:border-primary transition-colors">
+                <option value="">All Brands</option>
+              </select>
+              <select id="perf-filter-stock" class="px-3 py-2 text-[11px] bg-surface-container-low border border-outline-variant/20 rounded-lg text-on-surface outline-none focus:border-primary transition-colors">
+                <option value="">All Stock Status</option>
+                <option value="healthy">🟢 Healthy</option>
+                <option value="low_stock">🟡 Low Stock</option>
+                <option value="out_of_stock">🔴 Out of Stock</option>
+                <option value="overstock">🔵 Overstock</option>
+              </select>
+              <select id="perf-filter-date" class="px-3 py-2 text-[11px] bg-surface-container-low border border-outline-variant/20 rounded-lg text-on-surface outline-none focus:border-primary transition-colors">
+                <option value="">Any Date Added</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+              </select>
+              <select id="perf-filter-sales" class="px-3 py-2 text-[11px] bg-surface-container-low border border-outline-variant/20 rounded-lg text-on-surface outline-none focus:border-primary transition-colors">
+                <option value="">All Sales</option>
+                <option value="best">Best Sellers</option>
+                <option value="low">Low Sellers</option>
+                <option value="none">No Sales</option>
+              </select>
+              <button id="perf-clear-filters" class="px-3 py-2 text-[10px] font-bold text-on-surface-variant hover:text-error border border-outline-variant/20 rounded-lg transition-colors">✕ Clear</button>
+            </div>
+          </div>
+
+          <!-- Quick Actions Bar -->
+          <div class="flex flex-wrap gap-3">
+            <button id="perf-add-product-btn" class="px-4 py-2.5 bg-primary text-on-primary font-label-caps text-[10px] tracking-wider rounded-xl hover:bg-primary/90 transition-all font-bold flex items-center gap-1.5 shadow-[0_4px_20px_rgba(165,180,252,0.15)]">➕ Add Product</button>
+            <button id="perf-bulk-restock-btn" class="px-4 py-2.5 bg-surface-container-high text-on-surface font-label-caps text-[10px] tracking-wider rounded-xl hover:bg-surface-variant/60 transition-all font-bold flex items-center gap-1.5 border border-outline-variant/10">📦 Bulk Restock</button>
+            <button id="perf-export-csv-btn" class="px-4 py-2.5 bg-surface-container-high text-on-surface font-label-caps text-[10px] tracking-wider rounded-xl hover:bg-surface-variant/60 transition-all font-bold flex items-center gap-1.5 border border-outline-variant/10">📥 Export CSV</button>
+            <button class="px-4 py-2.5 bg-surface-container-low/40 text-on-surface-variant/50 font-label-caps text-[10px] tracking-wider rounded-xl font-bold flex items-center gap-1.5 border border-outline-variant/5 cursor-not-allowed" disabled>📤 Import CSV <span class="text-[8px] ml-1 opacity-60">SOON</span></button>
+            <button class="px-4 py-2.5 bg-surface-container-low/40 text-on-surface-variant/50 font-label-caps text-[10px] tracking-wider rounded-xl font-bold flex items-center gap-1.5 border border-outline-variant/5 cursor-not-allowed" disabled>🏷️ Print Barcode <span class="text-[8px] ml-1 opacity-60">SOON</span></button>
+          </div>
+
+          <!-- Product Performance Cards Grid -->
+          <div id="performance-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Dynamic product performance cards render here -->
+          </div>
+
+          <!-- Empty state -->
+          <div id="performance-empty" class="hidden text-center py-12">
+            <div class="text-4xl mb-3">📊</div>
+            <p class="text-sm text-on-surface-variant/60">No products match your filters</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Add/Edit Product Modal -->
+    <div id="product-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-background/50 backdrop-blur-md p-4">
+      <div class="bg-surface border border-outline-variant/10 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col font-body-md">
+        <div class="p-6 border-b border-outline-variant/10 flex items-center justify-between sticky top-0 bg-surface z-10">
+          <h2 id="modal-title" class="margin-0 text-lg font-bold text-on-surface">Add New Product</h2>
+          <button id="close-modal-btn" class="bg-surface-variant/20 hover:bg-surface-variant/40 border-none w-8 h-8 rounded-full cursor-pointer text-lg text-on-surface-variant font-bold flex items-center justify-center transition-all">&times;</button>
+        </div>
+        
+        <form id="product-form" class="p-6 flex flex-col gap-4">
+          <input type="hidden" id="product-id" />
+
+          <!-- Title & Brand -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Product Title *</label>
+              <input type="text" id="product-title-input" placeholder="e.g. Midnight Blue Tuxedo" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+            </div>
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Brand Name *</label>
+              <input type="text" id="product-brand-input" placeholder="e.g. DevTech Premium" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+            </div>
+          </div>
+
+          <!-- Category & Snippet -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Category *</label>
+              <select id="product-category-input" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required>
+                <option value="mens">Men's Wear</option>
+                <option value="womens">Women's Wear</option>
+                <option value="kids">Kids Wear</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Highlights Description *</label>
+              <input type="text" id="product-title-desc-input" placeholder="e.g. Slim fit. Wool blend. Peak lapels." class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+            </div>
+          </div>
+
+          <!-- Pricing: MRP & Price -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">MRP (Strikethrough Price ₹) *</label>
+              <input type="number" id="product-mrp-input" placeholder="MRP" min="1" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+            </div>
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Special Price (Offer Price ₹) *</label>
+              <input type="number" id="product-price-input" placeholder="Offer Price" min="1" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+            </div>
+          </div>
+
+          <!-- Image upload limit block -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center bg-surface-container-low/40 p-4 border border-outline-variant/5 rounded-xl">
+            <div class="md:col-span-1">
+              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-1.5 block">Number of Images *</label>
+              <input type="number" id="image-count-limit" value="1" min="1" max="5" class="w-full p-2.5 text-xs text-center border border-outline-variant/20 rounded-xl bg-surface-container-low text-on-surface outline-none" required />
+            </div>
+            <div class="md:col-span-2 text-[10px] text-on-surface-variant/70 leading-relaxed">
+              💡 Enter how many images you want to add for this product. You can customize their order in the Sequence Panel below.
+            </div>
+          </div>
+
+          <!-- Dynamic Slots for Image Uploads -->
+          <div id="image-slots-container" class="flex flex-col gap-3"></div>
+
+          <!-- Global Cropper Viewport -->
+          <div id="cropper-container-wrapper" class="hidden rounded-xl overflow-hidden bg-black/80 border border-outline-variant/10 h-[260px] justify-center items-center relative">
+            <img id="cropper-target-img" class="max-w-full max-h-[260px] block" />
+          </div>
+
+          <div id="cropper-actions" class="hidden justify-end gap-2">
+            <button type="button" id="crop-cancel-btn" class="px-4 py-2 border border-outline-variant/30 rounded-lg text-on-surface-variant hover:text-on-surface font-semibold text-xs transition-colors">Cancel Crop</button>
+            <button type="button" id="crop-confirm-btn" class="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold text-xs hover:bg-green-600 transition-colors shadow-lg shadow-green-500/10">✂️ Crop & Confirm</button>
+          </div>
+
+          <!-- Image Sequence Panel -->
+          <div id="image-sequence-section" class="hidden bg-surface-container-low/40 p-4 border border-outline-variant/5 rounded-xl flex flex-col gap-3">
+            <div class="flex justify-between items-center flex-wrap gap-2">
+              <div>
+                <label class="text-[10px] font-bold uppercase tracking-wider text-primary block">Image Sequence Panel</label>
+                <span class="text-[10px] text-on-surface-variant/70">Rearrange slide order using arrows.</span>
+              </div>
+              <label class="flex items-center gap-2 text-xs font-bold text-green-400 cursor-pointer user-select-none">
+                <input type="checkbox" id="verify-upload-checkbox" checked /> Verify Images
+              </label>
+            </div>
+            <div id="cropped-thumbnails-gallery" class="flex gap-3 overflow-x-auto py-1"></div>
+          </div>
+
+          <!-- Sizes & Stock Selection UI -->
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Sizes & Stock Availability *</label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-surface-container-low/40 p-4 border border-outline-variant/5 rounded-xl">
+              <!-- S -->
+              <div class="flex items-center justify-between gap-3">
+                <label class="flex gap-2 align-center text-xs font-bold text-on-surface cursor-pointer select-none">
+                  <input type="checkbox" class="size-cb" data-size="S" checked /> S
+                </label>
+                <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none" data-size="S" value="10" min="0" />
+              </div>
+              <!-- M -->
+              <div class="flex items-center justify-between gap-3">
+                <label class="flex gap-2 align-center text-xs font-bold text-on-surface cursor-pointer select-none">
+                  <input type="checkbox" class="size-cb" data-size="M" checked /> M
+                </label>
+                <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none" data-size="M" value="10" min="0" />
+              </div>
+              <!-- L -->
+              <div class="flex items-center justify-between gap-3">
+                <label class="flex gap-2 align-center text-xs font-bold text-on-surface cursor-pointer select-none">
+                  <input type="checkbox" class="size-cb" data-size="L" checked /> L
+                </label>
+                <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none" data-size="L" value="10" min="0" />
+              </div>
+              <!-- XL -->
+              <div class="flex items-center justify-between gap-3">
+                <label class="flex gap-2 align-center text-xs font-bold text-on-surface cursor-pointer select-none">
+                  <input type="checkbox" class="size-cb" data-size="XL" /> XL
+                </label>
+                <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none opacity-50" data-size="XL" value="0" min="0" disabled />
+              </div>
+              <!-- XXL -->
+              <div class="flex items-center justify-between gap-3">
+                <label class="flex gap-2 align-center text-xs font-bold text-on-surface cursor-pointer select-none">
+                  <input type="checkbox" class="size-cb" data-size="XXL" /> XXL
+                </label>
+                <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none opacity-50" data-size="XXL" value="0" min="0" disabled />
+              </div>
+            </div>
+          </div>
+
+          <!-- Logistics Toggles -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-surface-container-low/40 p-4 border border-outline-variant/5 rounded-xl text-xs">
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Replacement Option</label>
+              <div class="flex gap-2 align-center">
+                <input type="checkbox" id="product-replacement-input" checked />
+                <span class="font-bold text-on-surface">Allow</span>
+                <input type="number" id="product-replacement-days" value="7" min="1" max="30" class="w-12 p-1 border border-outline-variant/20 rounded bg-surface-container-low text-on-surface text-center" />
+                <span class="text-on-surface-variant/80">Days</span>
+              </div>
+            </div>
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Cash On Delivery (COD)</label>
+              <label class="flex gap-2 align-center cursor-pointer mt-1">
+                <input type="checkbox" id="product-cod-input" checked />
+                <span class="font-bold text-on-surface">Available</span>
+              </label>
+            </div>
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Coupons Applicable</label>
+              <label class="flex gap-2 align-center cursor-pointer mt-1">
+                <input type="checkbox" id="product-coupon-input" checked />
+                <span class="font-bold text-on-surface">Allowed</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Fabric, Pattern, Fit, Suitable For -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Fabric *</label>
+              <input type="text" id="product-fabric-input" placeholder="e.g. Wool Blend" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+            </div>
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Pattern *</label>
+              <input type="text" id="product-pattern-input" placeholder="e.g. Solid" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Fit *</label>
+              <input type="text" id="product-fit-input" placeholder="e.g. Slim Fit" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+            </div>
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Suitable For *</label>
+              <input type="text" id="product-suitable-input" placeholder="e.g. Formal Wear" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+            </div>
+          </div>
+
+          <!-- Detailed Description -->
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Detailed Description</label>
+            <textarea id="product-desc-input" rows="3" placeholder="Enter full details..." class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all font-body-md resize-none"></textarea>
+          </div>
+
+          <!-- Error banner -->
+          <div id="modal-error-banner" class="hidden p-3 border border-red-200 bg-red-100/10 text-red-400 text-xs font-semibold rounded-lg"></div>
+
+          <!-- Modal footer actions -->
+          <div class="flex gap-3 mt-4 border-t border-outline-variant/10 pt-4 sticky bottom-0 bg-surface z-10">
+            <button type="button" id="cancel-modal-btn" class="flex-1 py-3 border border-outline-variant/30 rounded-xl text-on-surface-variant hover:text-on-surface font-bold text-xs transition-colors">Cancel</button>
+            <button type="button" id="preview-product-btn" class="flex-[1.2] py-3 border border-primary text-primary hover:bg-primary/5 rounded-xl font-bold text-xs transition-all">👁️ Preview Product</button>
+            <button type="submit" id="save-product-btn" class="flex-[1.2] py-3 bg-primary text-on-primary hover:bg-primary/90 rounded-xl font-bold text-xs transition-all shadow-[0_4px_20px_rgba(165,180,252,0.15)]">Save Product</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Restock Modal -->
+    <div id="restock-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-background/50 backdrop-blur-md p-4">
+      <div class="bg-surface border border-outline-variant/10 rounded-2xl w-full max-w-md shadow-2xl flex flex-col">
+        <div class="p-6 border-b border-outline-variant/10 flex items-center justify-between">
+          <h2 id="restock-modal-title" class="text-lg font-bold text-on-surface">Restock Product</h2>
+          <button id="close-restock-modal" class="bg-surface-variant/20 hover:bg-surface-variant/40 border-none w-8 h-8 rounded-full cursor-pointer text-lg text-on-surface-variant font-bold flex items-center justify-center transition-all">&times;</button>
+        </div>
+        <form id="restock-form" class="p-6 flex flex-col gap-4">
+          <input type="hidden" id="restock-pid" />
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Size *</label>
+            <select id="restock-size" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required>
+            </select>
+          </div>
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Quantity to Add *</label>
+            <input type="number" id="restock-quantity" min="1" placeholder="Enter quantity" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+          </div>
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Reason</label>
+            <input type="text" id="restock-reason" placeholder="e.g. Vendor shipment received" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" />
+          </div>
+          <button type="submit" class="w-full py-3 bg-primary text-on-primary font-label-caps text-xs tracking-wider rounded-xl hover:bg-primary/90 transition-all font-bold shadow-[0_4px_20px_rgba(165,180,252,0.15)]">Confirm Restock</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Bulk Restock Modal -->
+    <div id="bulk-restock-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-background/50 backdrop-blur-md p-4">
+      <div class="bg-surface border border-outline-variant/10 rounded-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-2xl flex flex-col">
+        <div class="p-6 border-b border-outline-variant/10 flex items-center justify-between sticky top-0 bg-surface z-10">
+          <h2 class="text-lg font-bold text-on-surface">📦 Bulk Restock</h2>
+          <button id="close-bulk-restock-modal" class="bg-surface-variant/20 hover:bg-surface-variant/40 border-none w-8 h-8 rounded-full cursor-pointer text-lg text-on-surface-variant font-bold flex items-center justify-center transition-all">&times;</button>
+        </div>
+        <div id="bulk-restock-body" class="p-6 flex flex-col gap-3">
+          <!-- Dynamic product restock rows -->
+        </div>
+        <div class="p-6 border-t border-outline-variant/10">
+          <button id="bulk-restock-submit" class="w-full py-3 bg-primary text-on-primary font-label-caps text-xs tracking-wider rounded-xl hover:bg-primary/90 transition-all font-bold">Apply Bulk Restock</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Product Preview Modal Overlay -->
+    <div id="live-preview-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+      <div class="bg-surface border border-outline-variant/10 rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+        <!-- Sticky Preview Header -->
+        <div class="p-6 border-b border-outline-variant/10 flex items-center justify-between bg-surface-container-low/40 backdrop-blur-md z-10 shrink-0">
+          <div>
+            <h2 class="text-sm font-bold text-primary uppercase tracking-widest">Storefront Live Preview</h2>
+            <span class="text-[10px] text-on-surface-variant/70 block mt-1">See exactly how this product will look in the storefront.</span>
+          </div>
+          <button id="close-preview-btn" class="bg-on-surface text-background font-bold text-xs px-4 py-2 rounded-lg hover:opacity-90 transition-all">Close Preview</button>
+        </div>
+
+        <!-- Scrollable details viewport -->
+        <div class="flex-1 overflow-y-auto p-8">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+            
+            <!-- Left Side: Carousel Simulation -->
+            <div class="md:col-span-5 flex flex-col gap-3">
+              <div class="relative w-full aspect-[3/4] bg-surface-container-low border border-outline-variant/10 rounded-2xl overflow-hidden shadow-md">
+                <div id="preview-carousel-track" class="absolute inset-0 flex transition-transform duration-300 ease-in-out">
+                  <!-- Dynamic slides -->
+                </div>
+                <!-- Prev/Next Controls -->
+                <button id="prev-preview-slide" class="absolute left-3 top-1/2 -translate-y-1/2 border-none bg-surface/90 hover:bg-surface w-9 h-9 rounded-full cursor-pointer flex items-center justify-center z-10 shadow shadow-black/25"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+                <button id="next-preview-slide" class="absolute right-3 top-1/2 -translate-y-1/2 border-none bg-surface/90 hover:bg-surface w-9 h-9 rounded-full cursor-pointer flex items-center justify-center z-10 shadow shadow-black/25"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+              </div>
+              <div id="preview-carousel-dots" class="flex gap-1.5 justify-center"></div>
+            </div>
+
+            <!-- Right Side: Details Configurator Simulation -->
+            <div class="md:col-span-7 flex flex-col gap-5 text-left">
+              <div>
+                <span id="preview-brand" class="text-[10px] font-bold uppercase tracking-wider text-primary">Brand</span>
+                <h1 id="preview-title" class="text-2xl font-bold text-on-surface font-headline-lg mt-1 mb-3">Title</h1>
+                <ul id="preview-snippets" class="list-disc list-inside text-xs text-on-surface-variant/80 space-y-1"></ul>
+              </div>
+
+              <!-- Price Card -->
+              <div class="bg-surface-container-low/40 border border-outline-variant/10 rounded-2xl p-5">
+                <div class="flex items-baseline gap-2.5 flex-wrap">
+                  <span id="preview-price" class="text-xl font-bold text-on-surface">₹0</span>
+                  <span id="preview-mrp" class="text-xs text-decoration-line-through text-on-surface-variant/60">₹0</span>
+                  <span id="preview-discount-badge" class="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded">0% OFF</span>
+                </div>
+                <div id="preview-savings-msg" class="text-[11px] text-green-400 font-semibold mt-1"></div>
+              </div>
+
+              <!-- Sizes list -->
+              <div>
+                <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Select size</label>
+                <div id="preview-sizes-list" class="flex gap-2"></div>
+              </div>
+
+              <!-- Description Specs -->
+              <div class="border-t border-outline-variant/10 pt-5 flex flex-col gap-3">
+                <div id="preview-description" class="text-xs text-on-surface-variant leading-relaxed"></div>
+                <div class="grid grid-cols-2 gap-3 text-[11px]">
+                  <div class="flex items-center gap-1.5">👔 <span class="font-bold">Fit:</span> <span id="preview-fit">Slim</span></div>
+                  <div class="flex items-center gap-1.5">🧶 <span class="font-bold">Fabric:</span> <span id="preview-fabric">Cotton</span></div>
+                  <div class="flex items-center gap-1.5">✨ <span class="font-bold">Pattern:</span> <span id="preview-pattern">Solid</span></div>
+                  <div class="flex items-center gap-1.5">🎯 <span class="font-bold">Suitable For:</span> <span id="preview-suitable">Casual</span></div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+    <!-- Order Invoice & Shipping Label Modal (Amazon / Flipkart Style) -->
+    <div id="order-invoice-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-y-auto">
+      <div class="bg-white text-black rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col font-sans print:max-w-none print:w-full print:h-auto print:shadow-none print:p-0">
+        
+        <!-- Modal Control Topbar (Hidden on Print) -->
+        <div class="p-4 bg-gray-900 text-white flex items-center justify-between sticky top-0 z-20 print:hidden shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">🖨️</span>
+            <h3 class="font-bold text-sm">Amazon / Flipkart Style Shipping Label & Tax Invoice</h3>
+          </div>
+          <div class="flex items-center gap-3">
+            <button id="trigger-print-btn" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs rounded-lg transition-all flex items-center gap-1.5 shadow cursor-pointer">
+              🖨️ Print Label / Bill
+            </button>
+            <button id="close-invoice-modal" class="bg-gray-800 hover:bg-gray-700 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all cursor-pointer">&times;</button>
+          </div>
+        </div>
+
+        <!-- Printable Invoice Sheet Area -->
+        <div id="printable-invoice-content" class="p-6 text-black bg-white space-y-5 print:p-4">
+          
+          <!-- Top Shipping Label Header (Amazon / Flipkart Logistics Style) -->
+          <div class="border-2 border-black p-4 rounded-xl space-y-4">
+            <!-- Logistics Header Bar -->
+            <div class="flex justify-between items-center border-b-2 border-black pb-3">
+              <div class="flex items-center gap-3">
+                <div class="bg-black text-white px-3 py-1 text-sm font-black tracking-wider uppercase rounded">ATS EXPRESS</div>
+                <span class="text-[10px] font-bold border border-black px-2 py-0.5 rounded uppercase">STANDARD DELIVERY</span>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-bold">SORT CODE: <span id="invoice-sort-code" class="font-mono text-xs">MYL / 521230-E</span></div>
+                <div class="text-[10px] text-gray-600">Routing Hub: AP-KR-DEL-01</div>
+              </div>
+            </div>
+
+            <!-- Barcode Section -->
+            <div class="flex flex-col items-center justify-center py-2 border-b-2 border-black">
+              <div class="text-[9px] font-mono tracking-widest text-gray-500 mb-1">AWB TRACKING BARCODE</div>
+              <!-- Scannable Barcode SVG -->
+              <div id="invoice-barcode-awb" class="my-1"></div>
+              <div id="invoice-awb-text" class="text-xs font-mono font-bold tracking-widest mt-1">AWB984710293481IN</div>
+            </div>
+
+            <!-- From & To Addresses Side by Side -->
+            <div class="grid grid-cols-2 gap-4 text-xs">
+              <!-- SHIP FROM (SELLER) -->
+              <div class="border-r border-black pr-3">
+                <div class="font-bold uppercase tracking-wider text-[10px] text-gray-700 mb-1">SHIP FROM (SELLER):</div>
+                <div class="font-bold text-sm text-black">DevTech Fashion Retail Pvt. Ltd.</div>
+                <div class="text-gray-700 mt-1 leading-relaxed text-[11px]">
+                  Plot 42, DevTech Logistics Hub, Main Road,<br>
+                  Mylavaram, NTR District,<br>
+                  Andhra Pradesh, India - 521230<br>
+                  <strong>GSTIN:</strong> 37AAAAA0000A1Z5<br>
+                  <strong>Phone:</strong> +91 98765 43210
+                </div>
+              </div>
+
+              <!-- SHIP TO (DELIVERY ADDRESS) -->
+              <div>
+                <div class="font-bold uppercase tracking-wider text-[10px] text-gray-700 mb-1">DELIVER TO (CUSTOMER):</div>
+                <div id="inv-to-name" class="font-bold text-sm text-black">Customer Name</div>
+                <div id="inv-to-address" class="text-gray-800 mt-1 leading-relaxed text-[11px]">
+                  <!-- Dynamic customer address lines -->
+                </div>
+                <div id="inv-to-phone" class="font-bold text-xs mt-2 text-black">Phone: N/A</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tax Invoice & Order Items Section -->
+          <div class="border-2 border-black p-4 rounded-xl space-y-4">
+            <!-- Invoice Header Info -->
+            <div class="flex justify-between items-start border-b border-gray-300 pb-3">
+              <div>
+                <h2 class="text-sm font-bold uppercase tracking-wider">TAX INVOICE / BILL OF SUPPLY</h2>
+                <div id="inv-no" class="text-xs font-mono font-bold text-gray-700 mt-0.5">Invoice No: INV-2026-1072</div>
+              </div>
+              <div class="text-right text-xs">
+                <div><strong>Order ID:</strong> <span id="inv-order-id" class="font-mono">#1072</span></div>
+                <div><strong>Order Date:</strong> <span id="inv-date">23 Jul 2026</span></div>
+                <div><strong>Payment Status:</strong> <span id="inv-pay-mode" class="font-bold text-emerald-700">PAID (ONLINE)</span></div>
+              </div>
+            </div>
+
+            <!-- Item Table -->
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="border-b-2 border-black bg-gray-100 font-bold uppercase text-[10px] text-gray-700">
+                  <th class="py-2 px-2">#</th>
+                  <th class="py-2 px-2">Item Description</th>
+                  <th class="py-2 px-2 text-center">Qty</th>
+                  <th class="py-2 px-2 text-right">Unit Price</th>
+                  <th class="py-2 px-2 text-right">GST (18%)</th>
+                  <th class="py-2 px-2 text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody id="inv-items-body" class="divide-y divide-gray-200 text-[11px]">
+                <!-- Dynamic item rows -->
+              </tbody>
+            </table>
+
+            <!-- Totals & Financial Summary -->
+            <div class="flex justify-between items-end border-t-2 border-black pt-3 text-xs">
+              <div class="text-[10px] text-gray-600 space-y-1">
+                <div>* Goods once sold can be returned within 7 days.</div>
+                <div>* Computer generated tax invoice. No signature required.</div>
+                <div class="font-bold text-black mt-2">Thank you for shopping with DevTech Fashion!</div>
+              </div>
+              <div class="w-64 space-y-1 text-right">
+                <div class="flex justify-between text-gray-600">
+                  <span>Taxable Value:</span>
+                  <span id="inv-taxable-val">₹0</span>
+                </div>
+                <div class="flex justify-between text-gray-600">
+                  <span>CGST (9%):</span>
+                  <span id="inv-cgst-val">₹0</span>
+                </div>
+                <div class="flex justify-between text-gray-600">
+                  <span>SGST (9%):</span>
+                  <span id="inv-sgst-val">₹0</span>
+                </div>
+                <div class="flex justify-between text-gray-600">
+                  <span>Shipping Charge:</span>
+                  <span class="text-emerald-600 font-bold">FREE</span>
+                </div>
+                <div class="flex justify-between font-bold text-sm text-black border-t border-black pt-1">
+                  <span>Grand Total:</span>
+                  <span id="inv-grand-total">₹0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        // --- WebGL Shader Background ANIMATION_16 ---
+        (() => {
+          const canvas = document.getElementById('shader-canvas-ANIMATION_16');
+          if (!canvas) return;
+
+          function syncSize() {
+            const w = canvas.clientWidth  || 1280;
+            const h = canvas.clientHeight || 720;
+            if (canvas.width !== w || canvas.height !== h) {
+              canvas.width  = w;
+              canvas.height = h;
+            }
+          }
+          if (typeof ResizeObserver !== 'undefined') {
+            new ResizeObserver(syncSize).observe(canvas);
+          }
+          syncSize();
+
+          const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+          if (!gl) return;
+          const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+          const fs = `precision highp float;
+varying vec2 v_texCoord;
+uniform float u_time;
+uniform vec2 u_resolution;
+
+void main() {
+    vec2 uv = v_texCoord;
+    float time = u_time * 0.03;
+    
+    vec3 background = vec3(0.043, 0.047, 0.086); // Navy #0b0c16
+    vec3 indigo_mist = vec3(0.102, 0.102, 0.180); // Indigo #1a1a2e
+    
+    float n = 0.0;
+    vec2 p = uv * 2.0;
+    
+    float noise1 = sin(p.x + time) * 0.5 + 0.5;
+    float noise2 = cos(p.y - time * 0.7) * 0.5 + 0.5;
+    
+    float final_mist = (noise1 * noise2) * 0.08;
+    
+    vec3 color = mix(background, indigo_mist, final_mist);
+    
+    float dist = length(uv - 0.5);
+    float vignette = smoothstep(0.8, 0.2, dist);
+    color *= (0.8 + 0.2 * vignette);
+    
+    gl_FragColor = vec4(color, 1.0);
+}`;
+          function cs(type, src) {
+            const s = gl.createShader(type);
+            gl.shaderSource(s, src);
+            gl.compileShader(s);
+            return s;
+          }
+          const prog = gl.createProgram();
+          gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+          gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+          gl.linkProgram(prog);
+          gl.useProgram(prog);
+          const buf = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+          const pos = gl.getAttribLocation(prog, 'a_position');
+          gl.enableVertexAttribArray(pos);
+          gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+          const uTime = gl.getUniformLocation(prog, 'u_time');
+          const uRes = gl.getUniformLocation(prog, 'u_resolution');
+          const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+          let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+          window.addEventListener('mousemove', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width && rect.height) {
+              const nx = (event.clientX - rect.left) / rect.width;
+              const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+              mouse.x = nx * canvas.width;
+              mouse.y = ny * canvas.height;
+            }
+          });
+
+          function render(t) {
+            if (typeof ResizeObserver === 'undefined') syncSize();
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            if (uTime) gl.uniform1f(uTime, t * 0.001);
+            if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+            if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            requestAnimationFrame(render);
+          }
+          render(0);
+        })();
+
+        const accessPanel = document.getElementById('access-denied-panel');
+        const dashboardPanel = document.getElementById('dashboard-panel');
+        const quickLoginBtn = document.getElementById('quick-admin-login-btn');
+        
+        // --- Access Control Verification ---
+        const rawUser = localStorage.getItem('dtf_user');
+        let user = null;
+        if (rawUser) {
+          try {
+            user = JSON.parse(rawUser);
+          } catch (e) {
+            user = null;
+          }
+        }
+
+        if (!user || user.role !== 'admin') {
+          accessPanel.classList.remove('hidden');
+          accessPanel.style.display = 'flex';
+          dashboardPanel.style.display = 'none';
+          document.getElementById('admin-sidebar').classList.add('hidden');
+          document.getElementById('admin-top-navbar').classList.add('hidden');
+          document.getElementById('admin-main-content').classList.add('hidden');
+          document.getElementById('logged-out-back-btn').style.display = 'flex';
+        } else {
+          accessPanel.classList.add('hidden');
+          accessPanel.style.display = 'none';
+          dashboardPanel.style.display = 'flex';
+          document.getElementById('admin-sidebar').classList.remove('hidden');
+          document.getElementById('admin-top-navbar').classList.remove('hidden');
+          document.getElementById('admin-main-content').classList.remove('hidden');
+          document.getElementById('logged-out-back-btn').style.display = 'none';
+          initDashboard();
+        }
+
+        // Quick login shortcut handler
+        quickLoginBtn.addEventListener('click', async () => {
+          quickLoginBtn.disabled = true;
+          quickLoginBtn.textContent = 'Logging in...';
+          try {
+            const res = await fetch('http://localhost:5000/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: 'admin@devtech.com', password: 'password' }) // Seeded password
+            });
+            const result = await res.json();
+            if (!res.ok || !result.success) {
+              throw new Error(result.errors ? result.errors.join(' ') : 'Login failed');
+            }
+
+            localStorage.setItem('dtf_user', JSON.stringify({
+              token: result.data.token,
+              ...result.data.user
+            }));
+
+            // Refresh page
+            window.location.reload();
+          } catch (err) {
+            alert('Admin login shortcut failed: ' + err.message);
+          } finally {
+            quickLoginBtn.disabled = false;
+            quickLoginBtn.textContent = 'Login as Admin';
+          }
+        });
+
+        function initDashboard() {
+          const navTabs = document.querySelectorAll('.admin-nav-tab');
+          const sections = document.querySelectorAll('.admin-section');
+          const hamburgerBtn = document.getElementById('admin-hamburger-btn');
+
+          // Setup Hamburger sidebar toggle for mobile viewports
+          const sidebar = document.getElementById('admin-sidebar');
+          const backdrop = document.getElementById('sidebar-backdrop');
+          
+          if (hamburgerBtn && sidebar) {
+            hamburgerBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              
+              if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.remove('hidden');
+                if (backdrop) {
+                  backdrop.classList.remove('hidden');
+                  backdrop.style.display = 'block';
+                }
+                
+                // Toggle lines to X
+                const lines = hamburgerBtn.querySelectorAll('.admin-ham-line');
+                if (lines.length === 3) {
+                  lines[0].style.transform = 'translateY(6px) rotate(45deg)';
+                  lines[1].style.opacity = '0';
+                  lines[2].style.transform = 'translateY(-6px) rotate(-45deg)';
+                }
+              } else {
+                sidebar.classList.add('-translate-x-full');
+                if (backdrop) {
+                  backdrop.classList.add('hidden');
+                  backdrop.style.display = 'none';
+                }
+                
+                // Reset lines
+                const lines = hamburgerBtn.querySelectorAll('.admin-ham-line');
+                if (lines.length === 3) {
+                  lines[0].style.transform = 'none';
+                  lines[1].style.opacity = '1';
+                  lines[2].style.transform = 'none';
+                }
+              }
+            });
+          }
+
+          if (backdrop) {
+            backdrop.addEventListener('click', () => {
+              if (sidebar) sidebar.classList.add('-translate-x-full');
+              backdrop.classList.add('hidden');
+              backdrop.style.display = 'none';
+              const lines = hamburgerBtn.querySelectorAll('.admin-ham-line');
+              if (lines.length === 3) {
+                lines[0].style.transform = 'none';
+                lines[1].style.opacity = '1';
+                lines[2].style.transform = 'none';
+              }
+            });
+          }
+
+          // Logout Button Listener
+          const logoutBtn = document.getElementById('admin-logout-btn');
+          if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              localStorage.removeItem('dtf_user');
+              window.location.href = '../index.html';
+            });
+          }
+
+          // Tab click handling
+          navTabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+              e.preventDefault();
+              const targetSectionId = tab.getAttribute('data-section');
+              
+              // Update nav active classes
+              navTabs.forEach(t => {
+                const isTarget = t.getAttribute('data-section') === targetSectionId;
+                if (isTarget) {
+                  t.className = "flex items-center gap-4 bg-primary-container text-on-primary-container rounded-lg px-4 py-3 shadow-[0_20px_40px_rgba(30,27,75,0.3)] scale-[0.98] transition-transform group admin-nav-tab active";
+                  const icon = t.querySelector('.material-symbols-outlined');
+                  if (icon) icon.style.fontVariationSettings = "'FILL' 1";
+                } else {
+                  t.className = "flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 transition-colors hover:bg-surface-variant/50 rounded-lg duration-200 group admin-nav-tab";
+                  const icon = t.querySelector('.material-symbols-outlined');
+                  if (icon) icon.style.fontVariationSettings = "'FILL' 0";
+                }
+              });
+
+              // Toggle sections display
+              sections.forEach(sec => {
+                if (sec.id === targetSectionId) {
+                  sec.style.display = 'flex';
+                } else {
+                  sec.style.display = 'none';
+                }
+              });
+
+              // Close mobile menu on select
+              if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+                if (backdrop) {
+                  backdrop.classList.add('hidden');
+                  backdrop.style.display = 'none';
+                }
+                const lines = hamburgerBtn.querySelectorAll('.admin-ham-line');
+                if (lines.length === 3) {
+                  lines[0].style.transform = 'none';
+                  lines[1].style.opacity = '1';
+                  lines[2].style.transform = 'none';
+                }
+              }
+            });
+          });
+
+          let currentPeriod = 'month';
+          const periodBtns = document.querySelectorAll('.period-btn');
+          const chartViewport = document.getElementById('chart-viewport');
+          const chartLabels = document.getElementById('chart-labels');
+          const productTableBody = document.getElementById('product-table-body');
+          const addProductBtn = document.getElementById('add-product-btn');
+          const productModal = document.getElementById('product-modal');
+          const productForm = document.getElementById('product-form');
+          const modalTitle = document.getElementById('modal-title');
+          const modalError = document.getElementById('modal-error-banner');
+
+          // Highlight initial period button
+          periodBtns.forEach(btn => {
+            if (btn.getAttribute('data-period') === currentPeriod) {
+              btn.className = "period-btn px-3 py-1.5 text-[10px] font-bold tracking-wider uppercase rounded-md bg-primary text-on-primary shadow-sm";
+            } else {
+              btn.className = "period-btn px-3 py-1.5 text-[10px] font-bold tracking-wider uppercase rounded-md text-on-surface-variant/80 hover:text-on-surface hover:bg-surface-variant/30";
+            }
+          });
+
+          // Fetch Analytics & Render Chart
+          async function fetchAnalytics(period) {
+            try {
+              const res = await fetch(`http://localhost:5000/admin/analytics?period=${period}`, {
+                headers: { 'Authorization': `Bearer ${user.token}` }
+              });
+              const result = await res.json();
+              if (!res.ok || !result.success) throw new Error(result.error);
+
+              // Update overview stats
+              document.getElementById('stat-revenue').textContent = `₹${result.overview.totalRevenue.toLocaleString('en-IN')}`;
+              document.getElementById('stat-orders').textContent = result.overview.totalOrders.toLocaleString();
+              document.getElementById('stat-aov').textContent = `₹${result.overview.avgOrderValue.toLocaleString('en-IN')}`;
+
+              // Render SVG Chart Bars
+              renderChart(result.sales || []);
+
+              // Render Categories Trend progress bars
+              renderCategoryTrends(result.categoryTrend || result.categoryTrends || []);
+
+            } catch (err) {
+              console.error('Analytics load error:', err.message);
+            }
+          }
+
+          function renderChart(salesData) {
+            chartViewport.innerHTML = '';
+            chartLabels.innerHTML = '';
+            
+            if (!salesData || salesData.length === 0) {
+              chartViewport.innerHTML = '<div style="margin: auto; font-size: 13px; color: var(--text-muted);">No transaction records available</div>';
+              return;
+            }
+
+            const maxSales = Math.max(...salesData.map(d => parseFloat(d.sales || 0)), 1);
+
+            salesData.forEach(d => {
+              const val = parseFloat(d.sales || 0);
+              const percent = Math.round((val / maxSales) * 100);
+
+              const barWrapper = document.createElement('div');
+              barWrapper.style.flex = '1';
+              barWrapper.style.display = 'flex';
+              barWrapper.style.flexDirection = 'column';
+              barWrapper.style.alignItems = 'center';
+              barWrapper.style.gap = '8px';
+              barWrapper.style.position = 'relative';
+
+              // Value tooltip trigger
+              barWrapper.innerHTML = `
+                <span class="chart-tooltip" style="position: absolute; bottom: calc(${percent}% + 36px); background: #111827; color: #ffffff; font-size: 9px; font-weight: 700; padding: 4px 6px; border-radius: 6px; white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10;">
+                  ₹${Math.round(val).toLocaleString('en-IN')}
+                </span>
+                <div class="chart-bar" style="width: 100%; max-width: 32px; height: ${Math.max(percent, 8)}%; background: linear-gradient(180deg, #a5b4fc, #6366f1); border-radius: 6px 6px 0 0; cursor: pointer; transition: all 0.2s;"></div>
+              `;
+
+              const bar = barWrapper.querySelector('.chart-bar');
+              const tooltip = barWrapper.querySelector('.chart-tooltip');
+
+              bar.addEventListener('mouseenter', () => {
+                bar.style.opacity = '0.85';
+                tooltip.style.opacity = '1';
+              });
+              bar.addEventListener('mouseleave', () => {
+                bar.style.opacity = '1';
+                tooltip.style.opacity = '0';
+              });
+
+              chartViewport.appendChild(barWrapper);
+
+              // Label
+              const labelSpan = document.createElement('span');
+              labelSpan.style.flex = '1';
+              labelSpan.style.textAlign = 'center';
+              labelSpan.style.fontSize = '9px';
+              labelSpan.textContent = d.label;
+              chartLabels.appendChild(labelSpan);
+            });
+          }
+
+          function renderCategoryTrends(trends) {
+            const container = document.getElementById('categories-container');
+            container.innerHTML = '';
+
+            trends.forEach(t => {
+              const row = document.createElement('div');
+              row.innerHTML = `
+                <div class="flex justify-between text-xs font-bold text-on-surface mb-1">
+                  <span>${t.category}</span>
+                  <span>${t.share}%</span>
+                </div>
+                <div class="w-full h-2 bg-surface-container-low rounded-full overflow-hidden">
+                  <div class="h-full rounded-full" style="width: ${t.share}%; background: ${t.color};"></div>
+                </div>
+              `;
+              container.appendChild(row);
+            });
+          }
+
+          // Handle Period button swaps
+          periodBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+              periodBtns.forEach(b => {
+                b.className = "period-btn px-3 py-1.5 text-[10px] font-bold tracking-wider uppercase rounded-md text-on-surface-variant/80 hover:text-on-surface hover:bg-surface-variant/30";
+              });
+              btn.className = "period-btn px-3 py-1.5 text-[10px] font-bold tracking-wider uppercase rounded-md bg-primary text-on-primary shadow-sm";
+              currentPeriod = btn.getAttribute('data-period');
+              fetchAnalytics(currentPeriod);
+            });
+          });
+
+          // Category-wise tabs states and event listeners
+          let cachedProducts = [];
+          let activeCategory = 'all';
+          const catalogTabs = document.querySelectorAll('.catalog-tab');
+
+          catalogTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+              // Reset all tab styles
+              catalogTabs.forEach(t => {
+                t.className = "catalog-tab px-4 py-2 text-xs font-bold rounded-lg cursor-pointer whitespace-nowrap bg-surface-variant/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50";
+                t.classList.remove('active');
+              });
+              // Set active tab styles
+              tab.className = "catalog-tab px-4 py-2 text-xs font-bold rounded-lg cursor-pointer whitespace-nowrap bg-primary text-on-primary shadow-sm active";
+              tab.classList.add('active');
+
+              activeCategory = tab.getAttribute('data-cat');
+              filterAndRenderProducts();
+            });
+          });
+
+          function filterAndRenderProducts() {
+            let filtered = cachedProducts;
+            if (activeCategory !== 'all') {
+              filtered = cachedProducts.filter(p => p.category === activeCategory);
+            }
+            renderProductTable(filtered);
+          }
+
+          function updateCategoryCounts() {
+            const countAll = cachedProducts.length;
+            const countMens = cachedProducts.filter(p => p.category === 'mens').length;
+            const countWomens = cachedProducts.filter(p => p.category === 'womens').length;
+            const countKids = cachedProducts.filter(p => p.category === 'kids').length;
+
+            document.getElementById('count-all').textContent = countAll;
+            document.getElementById('count-mens').textContent = countMens;
+            document.getElementById('count-womens').textContent = countWomens;
+            document.getElementById('count-kids').textContent = countKids;
+          }
+
+          // Fetch products catalog list
+          async function fetchProducts() {
+            try {
+              const res = await fetch('http://localhost:5000/admin/products', {
+                headers: { 'Authorization': `Bearer ${user.token}` }
+              });
+              const result = await res.json();
+              if (!res.ok || !result.success) throw new Error(result.error);
+
+              cachedProducts = result.products;
+              updateCategoryCounts();
+              filterAndRenderProducts();
+            } catch (err) {
+              console.error('Products load error:', err.message);
+            }
+          }
+
+          function renderProductTable(products) {
+            productTableBody.innerHTML = '';
+            if (products.length === 0) {
+              productTableBody.innerHTML = `<tr><td colspan="4" class="text-center py-12 text-on-surface-variant/60">
+                <div class="text-3xl mb-2">🛍️</div>
+                No products found in this category
+              </td></tr>`;
+              return;
+            }
+
+            products.forEach(p => {
+              const tr = document.createElement('tr');
+              tr.className = "border-b border-outline-variant/5 hover:bg-surface-variant/10 transition-colors";
+              tr.innerHTML = `
+                <td class="py-4 px-3 flex items-center gap-3">
+                  <div class="w-10 h-12 rounded-lg overflow-hidden border border-outline-variant/10 bg-surface-container-low shrink-0">
+                    <img src="${p.image_url.split(',')[0].trim()}" class="w-full h-full object-cover" />
+                  </div>
+                  <span class="font-semibold text-on-surface text-xs md:text-sm line-clamp-1">${p.title}</span>
+                </td>
+                <td class="py-4 px-3 text-on-surface-variant/80 text-xs uppercase tracking-wider font-label-caps">${p.category} Wear</td>
+                <td class="py-4 px-3 font-semibold text-on-surface text-xs md:text-sm font-data-mono">₹${parseFloat(p.price).toLocaleString('en-IN')}</td>
+                <td class="py-4 px-3 text-right space-x-2 whitespace-nowrap">
+                  <button class="edit-btn px-2.5 py-1.5 rounded-lg border border-outline-variant/20 hover:border-primary/50 text-xs font-semibold text-primary transition-all">Edit</button>
+                  <button class="delete-btn px-2.5 py-1.5 rounded-lg border border-error/20 hover:border-error text-xs font-semibold text-error transition-all">Delete</button>
+                </td>
+              `;
+
+              // Edit click
+              tr.querySelector('.edit-btn').addEventListener('click', () => {
+                openModal('edit', p);
+              });
+
+              // Delete click
+              tr.querySelector('.delete-btn').addEventListener('click', async () => {
+                if (confirm(`Are you sure you want to delete "${p.title}"?`)) {
+                  try {
+                    const res = await fetch(`http://localhost:5000/admin/products/${p.id}`, {
+                      method: 'DELETE',
+                      headers: { 'Authorization': `Bearer ${user.token}` }
+                    });
+                    if (!res.ok) throw new Error('Delete request failed.');
+                    fetchProducts();
+                  } catch (err) {
+                    alert(err.message);
+                  }
+                }
+              });
+
+              productTableBody.appendChild(tr);
+            });
+          }
+
+          // Setup size checkbox toggling
+          document.querySelectorAll('.size-cb').forEach(cb => {
+            cb.addEventListener('change', () => {
+              const size = cb.getAttribute('data-size');
+              const input = document.querySelector(`.size-stock-input[data-size="${size}"]`);
+              if (cb.checked) {
+                input.disabled = false;
+                input.style.opacity = '1';
+                if (input.value === "0" || !input.value) {
+                  input.value = "10";
+                }
+              } else {
+                input.disabled = true;
+                input.style.opacity = '0.5';
+                input.value = "0";
+              }
+            });
+          });
+
+
+
+          // --- Dynamic Multi-Image Slot Controller ---
+          const slotsContainer = document.getElementById('image-slots-container');
+          const imageCountInput = document.getElementById('image-count-limit');
+          const cropperWrapper = document.getElementById('cropper-container-wrapper');
+          const cropperTarget = document.getElementById('cropper-target-img');
+          const cropperActions = document.getElementById('cropper-actions');
+          const cropCancelBtn = document.getElementById('crop-cancel-btn');
+          const cropConfirmBtn = document.getElementById('crop-confirm-btn');
+
+          let cropperInstance = null;
+          let activeCropIndex = null;
+          let originalFilename = "";
+
+          // activeImagesList stores objects: { src: string (URL or Base64), filename: string }
+          let activeImagesList = [{ src: "", filename: "" }];
+
+          // Reset cropper
+          function resetCropper() {
+            if (cropperInstance) {
+              cropperInstance.destroy();
+              cropperInstance = null;
+            }
+            cropperWrapper.style.display = 'none';
+            cropperActions.style.display = 'none';
+          }
+
+          // Render slots based on activeImagesList
+          function renderSlots() {
+            slotsContainer.innerHTML = '';
+            
+            activeImagesList.forEach((item, index) => {
+              const slot = document.createElement('div');
+              slot.style.display = 'flex';
+              slot.style.flexDirection = 'column';
+              slot.style.gap = '8px';
+              slot.style.background = 'rgba(0,0,0,0.015)';
+              slot.style.padding = '12px';
+              slot.style.borderRadius = '12px';
+              slot.style.border = '1px solid rgba(0,0,0,0.03)';
+              slot.style.boxSizing = 'border-box';
+
+              // Header of slot
+              const isMain = index === 0;
+              const titleText = isMain ? `Image #${index + 1} (🌟 Main Thumbnail)` : `Image #${index + 1} (Alternate Angle)`;
+
+              slot.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                  <span style="font-size: 11px; font-weight: 700; color: ${isMain ? '#6366f1' : 'var(--text-muted)'}; text-transform: uppercase;">${titleText}</span>
+                  <div style="display: flex; gap: 6px;">
+                    <button type="button" class="move-up-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; border: 1px solid var(--glass-border); background: #ffffff; border-radius: 4px; cursor: pointer; color: var(--text-primary);" ${index === 0 ? 'disabled' : ''}>◀ Move Left</button>
+                    <button type="button" class="move-down-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; border: 1px solid var(--glass-border); background: #ffffff; border-radius: 4px; cursor: pointer; color: var(--text-primary);" ${index === activeImagesList.length - 1 ? 'disabled' : ''}>Move Right ▶</button>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <!-- Thumbnail preview -->
+                  <div style="width: 50px; height: 62px; background: #fafafa; border: 1px solid rgba(0,0,0,0.08); border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    ${item.src ? `<img src="${item.src}" style="width: 100%; height: 100%; object-fit: cover;" />` : `<span style="font-size: 18px; color: #ccc;">🖼️</span>`}
+                  </div>
+                  <!-- URL input -->
+                  <input type="text" class="slot-url-input" data-index="${index}" placeholder="Paste URL or choose file..." value="${item.src.startsWith('data:') ? '[Cropped Local Image]' : item.src}" style="flex: 1; padding: 8px 12px; font-size: 13px; border: 1.5px solid var(--glass-border); border-radius: 8px; outline: none; background-color: var(--bg-elevated); color: var(--text-primary);" ${item.src.startsWith('data:') ? 'disabled' : ''} />
+                  <!-- File Selector button -->
+                  <button type="button" class="slot-file-btn" data-index="${index}" style="padding: 8px 12px; font-size: 12px; font-weight: 700; border: 1.5px solid #6366f1; background: transparent; color: #6366f1; border-radius: 8px; cursor: pointer;">📁 File</button>
+                  <input type="file" class="slot-file-input" data-index="${index}" accept="image/*, .heic, .heif" style="display: none;" />
+                </div>
+              `;
+
+              // Event listeners
+              // URL input update
+              const urlInput = slot.querySelector('.slot-url-input');
+              urlInput.addEventListener('input', (e) => {
+                activeImagesList[index].src = e.target.value.trim();
+                activeImagesList[index].filename = "";
+                // Live update preview
+                const thumb = slot.querySelector('img');
+                if (thumb) {
+                  thumb.src = e.target.value.trim();
+                } else if (e.target.value.trim()) {
+                  renderSlots();
+                }
+              });
+
+              // Swap Left
+              const moveUp = slot.querySelector('.move-up-btn');
+              moveUp.addEventListener('click', () => {
+                if (index > 0) {
+                  const temp = activeImagesList[index];
+                  activeImagesList[index] = activeImagesList[index - 1];
+                  activeImagesList[index - 1] = temp;
+                  renderSlots();
+                }
+              });
+
+              // Swap Right
+              const moveDown = slot.querySelector('.move-down-btn');
+              moveDown.addEventListener('click', () => {
+                if (index < activeImagesList.length - 1) {
+                  const temp = activeImagesList[index];
+                  activeImagesList[index] = activeImagesList[index + 1];
+                  activeImagesList[index + 1] = temp;
+                  renderSlots();
+                }
+              });
+
+              // File trigger button
+              const fileBtn = slot.querySelector('.slot-file-btn');
+              const fileIn = slot.querySelector('.slot-file-input');
+              fileBtn.addEventListener('click', () => {
+                fileIn.click();
+              });
+
+              // File selector change
+              fileIn.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                activeCropIndex = index;
+                originalFilename = file.name;
+                let targetFile = file;
+
+                // HEIC check
+                if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+                  try {
+                    fileBtn.textContent = '🔄...';
+                    fileBtn.disabled = true;
+                    const convertedBlob = await heic2any({
+                      blob: file,
+                      toType: 'image/jpeg',
+                      quality: 0.8
+                    });
+                    targetFile = new File([convertedBlob], file.name.replace(/\.[^/.]+$/, ".jpg"), { type: 'image/jpeg' });
+                    originalFilename = targetFile.name;
+                  } catch (err) {
+                    alert('HEIC image conversion failed. Please try standard formats.');
+                    console.error(err);
+                    return;
+                  } finally {
+                    fileBtn.textContent = '📁 File';
+                    fileBtn.disabled = false;
+                  }
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                  resetCropper();
+                  cropperTarget.src = event.target.result;
+                  cropperWrapper.style.display = 'flex';
+                  cropperActions.style.display = 'flex';
+
+                  cropperInstance = new Cropper(cropperTarget, {
+                    aspectRatio: 3 / 4,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 1,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false
+                  });
+                };
+                reader.readAsDataURL(targetFile);
+              });
+
+              slotsContainer.appendChild(slot);
+            });
+          }
+
+          // Change number of images listener
+          imageCountInput.addEventListener('change', () => {
+            let val = parseInt(imageCountInput.value, 10);
+            if (isNaN(val) || val < 1) val = 1;
+            if (val > 5) val = 5;
+            imageCountInput.value = val;
+
+            while (activeImagesList.length < val) {
+              activeImagesList.push({ src: "", filename: "" });
+            }
+            while (activeImagesList.length > val) {
+              activeImagesList.pop();
+            }
+            renderSlots();
+          });
+
+          // Cancel Crop click
+          cropCancelBtn.addEventListener('click', () => {
+            resetCropper();
+          });
+
+          // Crop Confirm click
+          cropConfirmBtn.addEventListener('click', () => {
+            if (!cropperInstance || activeCropIndex === null) return;
+
+            const canvas = cropperInstance.getCroppedCanvas({
+              width: 600,
+              height: 800
+            });
+
+            const base64 = canvas.toDataURL('image/jpeg', 0.85);
+            activeImagesList[activeCropIndex] = {
+              src: base64,
+              filename: originalFilename
+            };
+
+            resetCropper();
+            renderSlots();
+          });
+
+          // Modal actions
+          function openModal(mode, product = null) {
+            modalError.style.display = 'none';
+            productForm.reset();
+            resetCropper();
+
+            // Set default slot
+            activeImagesList = [{ src: "", filename: "" }];
+            imageCountInput.value = 1;
+
+            const categoryInput = document.getElementById('product-category-input');
+            const oldLabel = document.getElementById('category-indicator-lbl');
+            if (oldLabel) oldLabel.remove();
+
+            if (mode === 'add') {
+              if (activeCategory !== 'all') {
+                categoryInput.value = activeCategory;
+                categoryInput.disabled = true;
+                categoryInput.style.opacity = '0.7';
+
+                const helper = document.createElement('span');
+                helper.id = 'category-indicator-lbl';
+                helper.style.fontSize = '10px';
+                helper.style.color = '#6366f1';
+                helper.style.fontWeight = '700';
+                helper.style.display = 'block';
+                helper.style.marginTop = '4px';
+                helper.textContent = '🔒 Fixed to current category tab';
+                categoryInput.parentNode.appendChild(helper);
+              } else {
+                categoryInput.disabled = false;
+                categoryInput.style.opacity = '1';
+              }
+            } else {
+              categoryInput.disabled = false;
+              categoryInput.style.opacity = '1';
+            }
+
+            // Reset sizes
+            document.querySelectorAll('.size-cb').forEach(cb => {
+              cb.checked = false;
+              const size = cb.getAttribute('data-size');
+              const input = document.querySelector(`.size-stock-input[data-size="${size}"]`);
+              input.value = "0";
+              input.disabled = true;
+              input.style.opacity = '0.5';
+            });
+
+            if (mode === 'edit' && product) {
+              modalTitle.textContent = 'Edit Product Details';
+              document.getElementById('product-id').value = product.id;
+              document.getElementById('product-title-input').value = product.title;
+              document.getElementById('product-brand-input').value = product.brand || 'DevTech';
+              categoryInput.value = product.category;
+              document.getElementById('product-title-desc-input').value = product.title_description || '';
+              document.getElementById('product-mrp-input').value = Math.round(parseFloat(product.mrp || 0));
+              document.getElementById('product-price-input').value = Math.round(parseFloat(product.price));
+              
+              // Populate image list
+              const imgs = (product.image_url || '').split(',').map(url => url.trim()).filter(Boolean);
+              if (imgs.length > 0) {
+                activeImagesList = imgs.map(url => ({ src: url, filename: "" }));
+                imageCountInput.value = imgs.length;
+              }
+
+              // Populate sizes & stocks
+              const productSizes = (product.sizes || 'S, M, L').split(',').map(s => s.trim());
+              const stockPairs = (product.size_stock || 'S:10, M:10, L:10').split(',').map(s => s.trim());
+              const stockMap = {};
+              stockPairs.forEach(pair => {
+                const [s, qty] = pair.split(':');
+                if (s && qty) {
+                  stockMap[s.trim()] = qty.trim();
+                }
+              });
+
+              productSizes.forEach(size => {
+                const cb = document.querySelector(`.size-cb[data-size="${size}"]`);
+                const input = document.querySelector(`.size-stock-input[data-size="${size}"]`);
+                if (cb && input) {
+                  cb.checked = true;
+                  input.disabled = false;
+                  input.style.opacity = '1';
+                  input.value = stockMap[size] || "10";
+                }
+              });
+              
+              document.getElementById('product-replacement-input').checked = product.replacement_allowed !== false;
+              document.getElementById('product-replacement-days').value = product.replacement_days || 7;
+              document.getElementById('product-cod-input').checked = product.cod_available !== false;
+              document.getElementById('product-coupon-input').checked = product.coupon_applicable !== false;
+              
+              document.getElementById('product-fabric-input').value = product.fabric || 'Cotton';
+              document.getElementById('product-pattern-input').value = product.pattern || 'Solid';
+              document.getElementById('product-fit-input').value = product.fit || 'Regular Fit';
+              document.getElementById('product-suitable-input').value = product.suitable_for || 'Casual';
+              
+              const textareas = productForm.querySelectorAll('textarea');
+              if (textareas.length > 0) {
+                textareas[0].value = product.description || '';
+              }
+            } else {
+              modalTitle.textContent = 'Add New Product';
+              document.getElementById('product-id').value = '';
+              document.getElementById('product-brand-input').value = 'DevTech';
+              
+              // Default check S, M, L
+              ['S', 'M', 'L'].forEach(size => {
+                const cb = document.querySelector(`.size-cb[data-size="${size}"]`);
+                const input = document.querySelector(`.size-stock-input[data-size="${size}"]`);
+                if (cb && input) {
+                  cb.checked = true;
+                  input.disabled = false;
+                  input.style.opacity = '1';
+                  input.value = "10";
+                }
+              });
+
+              document.getElementById('product-replacement-input').checked = true;
+              document.getElementById('product-replacement-days').value = 7;
+              document.getElementById('product-cod-input').checked = true;
+              document.getElementById('product-coupon-input').checked = true;
+              document.getElementById('product-fabric-input').value = 'Cotton';
+              document.getElementById('product-pattern-input').value = 'Solid';
+              document.getElementById('product-fit-input').value = 'Regular Fit';
+              document.getElementById('product-suitable-input').value = 'Casual';
+            }
+
+            renderSlots();
+            productModal.style.display = 'flex';
+          }
+
+          function closeModal() {
+            document.getElementById('product-category-input').disabled = false;
+            productModal.style.display = 'none';
+          }
+
+          addProductBtn.addEventListener('click', () => openModal('add'));
+          document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+          document.getElementById('cancel-modal-btn').addEventListener('click', closeModal);
+
+          // --- Live Preview Engine ---
+          const previewModal = document.getElementById('live-preview-modal');
+          const previewBtn = document.getElementById('preview-product-btn');
+          const closePreviewBtn = document.getElementById('close-preview-btn');
+
+          let previewSlideIndex = 0;
+          let previewImages = [];
+
+          function updatePreviewCarousel() {
+            const track = document.getElementById('preview-carousel-track');
+            const dots = document.getElementById('preview-carousel-dots');
+            track.innerHTML = '';
+            dots.innerHTML = '';
+
+            if (previewImages.length === 0) {
+              const slide = document.createElement('div');
+              slide.style.minWidth = '100%';
+              slide.style.height = '100%';
+              slide.style.display = 'flex';
+              slide.style.alignItems = 'center';
+              slide.style.justifyContent = 'center';
+              slide.style.background = '#f3f4f6';
+              slide.innerHTML = `<span style="font-size: 32px;">🖼️</span>`;
+              track.appendChild(slide);
+              return;
+            }
+
+            previewImages.forEach((src, idx) => {
+              const slide = document.createElement('div');
+              slide.style.minWidth = '100%';
+              slide.style.height = '100%';
+              slide.style.position = 'relative';
+              slide.innerHTML = `<img src="${src}" style="width:100%; height:100%; object-fit:cover;" />`;
+              track.appendChild(slide);
+
+              const dot = document.createElement('span');
+              dot.style.width = '6px';
+              dot.style.height = '6px';
+              dot.style.borderRadius = '50%';
+              dot.style.background = idx === previewSlideIndex ? '#6366f1' : '#d1d5db';
+              dot.style.transition = 'all 0.2s';
+              dots.appendChild(dot);
+            });
+
+            track.style.transform = `translateX(-${previewSlideIndex * 100}%)`;
+          }
+
+          document.getElementById('prev-preview-slide').addEventListener('click', () => {
+            if (previewImages.length > 0) {
+              previewSlideIndex = (previewSlideIndex - 1 + previewImages.length) % previewImages.length;
+              updatePreviewCarousel();
+            }
+          });
+
+          document.getElementById('next-preview-slide').addEventListener('click', () => {
+            if (previewImages.length > 0) {
+              previewSlideIndex = (previewSlideIndex + 1) % previewImages.length;
+              updatePreviewCarousel();
+            }
+          });
+
+          previewBtn.addEventListener('click', () => {
+            // Gather details
+            const title = document.getElementById('product-title-input').value.trim() || 'Product Title';
+            const brand = document.getElementById('product-brand-input').value.trim() || 'Brand Name';
+            const mrp = parseFloat(document.getElementById('product-mrp-input').value) || 0;
+            const price = parseFloat(document.getElementById('product-price-input').value) || 0;
+            const fabric = document.getElementById('product-fabric-input').value.trim() || 'Cotton';
+            const pattern = document.getElementById('product-pattern-input').value.trim() || 'Solid';
+            const fit = document.getElementById('product-fit-input').value.trim() || 'Regular Fit';
+            const suitable = document.getElementById('product-suitable-input').value.trim() || 'Casual';
+
+            const descText = productForm.querySelectorAll('textarea')[0].value.trim() || 'No description provided.';
+
+            // Collect active images
+            previewImages = activeImagesList.map(item => item.src).filter(Boolean);
+            previewSlideIndex = 0;
+
+            // Populate live preview modal
+            document.getElementById('preview-brand').textContent = brand;
+            document.getElementById('preview-title').textContent = title;
+            document.getElementById('preview-fit').textContent = fit;
+            document.getElementById('preview-fabric').textContent = fabric;
+            document.getElementById('preview-pattern').textContent = pattern;
+            document.getElementById('preview-suitable').textContent = suitable;
+            document.getElementById('preview-description').textContent = descText;
+
+            // Pricing
+            document.getElementById('preview-price').textContent = `₹${price.toLocaleString('en-IN')}`;
+            const previewMrpSpan = document.getElementById('preview-mrp');
+            const previewDiscountPill = document.getElementById('preview-discount-badge');
+            const previewSavings = document.getElementById('preview-savings-msg');
+
+            if (mrp > price) {
+              previewMrpSpan.style.display = 'inline';
+              previewMrpSpan.textContent = `₹${mrp.toLocaleString('en-IN')}`;
+              const disc = Math.round(((mrp - price) / mrp) * 100);
+              previewDiscountPill.style.display = 'inline';
+              previewDiscountPill.textContent = `${disc}% OFF`;
+              let savingsMsg = `🎉 You save ₹${(mrp - price).toLocaleString('en-IN')}`;
+              if (disc > 2) {
+                savingsMsg += ` (✨ Special Price Active — Best Price Applied!)`;
+              }
+              previewSavings.style.display = 'block';
+              previewSavings.textContent = savingsMsg;
+            } else {
+              previewMrpSpan.style.display = 'none';
+              previewDiscountPill.style.display = 'none';
+              previewSavings.style.display = 'none';
+            }
+
+            // Bullet snippets
+            const snippetsTrack = document.getElementById('preview-snippets');
+            snippetsTrack.innerHTML = `
+              <li>High-quality materials tailored for longevity and everyday luxury.</li>
+              <li>Comfortable fit matching premium contemporary cuts.</li>
+            `;
+
+            // Sizes
+            const sizesList = document.getElementById('preview-sizes-list');
+            sizesList.innerHTML = '';
+            document.querySelectorAll('.size-cb').forEach(cb => {
+              if (cb.checked) {
+                const s = cb.getAttribute('data-size');
+                const btn = document.createElement('button');
+                btn.textContent = s;
+                btn.style.width = '36px';
+                btn.style.height = '36px';
+                btn.style.fontSize = '12px';
+                btn.style.fontWeight = '700';
+                btn.style.borderRadius = '8px';
+                btn.style.border = '1px solid #d1d5db';
+                btn.style.background = '#ffffff';
+                sizesList.appendChild(btn);
+              }
+            });
+
+            updatePreviewCarousel();
+            previewModal.style.display = 'flex';
+          });
+
+          closePreviewBtn.addEventListener('click', () => {
+            previewModal.style.display = 'none';
+          });
+
+          // Submit handler
+          productForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('product-id').value;
+            const title = document.getElementById('product-title-input').value.trim();
+            const brand = document.getElementById('product-brand-input').value.trim();
+            const category = document.getElementById('product-category-input').value;
+            const titleDescription = document.getElementById('product-title-desc-input').value.trim();
+            const mrp = parseFloat(document.getElementById('product-mrp-input').value);
+            const price = parseFloat(document.getElementById('product-price-input').value);
+            
+            // Build sizes and sizeStock dynamically from checkboxes
+            const selectedSizes = [];
+            const stockParts = [];
+            document.querySelectorAll('.size-cb').forEach(cb => {
+              if (cb.checked) {
+                const size = cb.getAttribute('data-size');
+                selectedSizes.push(size);
+                const qtyInput = document.querySelector(`.size-stock-input[data-size="${size}"]`);
+                const qty = qtyInput ? parseInt(qtyInput.value, 10) || 0 : 0;
+                stockParts.push(`${size}:${qty}`);
+              }
+            });
+
+            const sizes = selectedSizes.join(', ');
+            const sizeStock = stockParts.join(', ');
+            
+            const replacementAllowed = document.getElementById('product-replacement-input').checked;
+            const replacementDays = parseInt(document.getElementById('product-replacement-days').value, 10);
+            const codAvailable = document.getElementById('product-cod-input').checked;
+            const couponApplicable = document.getElementById('product-coupon-input').checked;
+            
+            const fabric = document.getElementById('product-fabric-input').value.trim();
+            const pattern = document.getElementById('product-pattern-input').value.trim();
+            const fit = document.getElementById('product-fit-input').value.trim();
+            const suitableFor = document.getElementById('product-suitable-input').value.trim();
+            
+            const textareas = productForm.querySelectorAll('textarea');
+            const description = textareas.length > 0 ? textareas[0].value.trim() : '';
+
+            // Handle image verification & concurrent uploads
+            let finalImageUrl = "";
+            const verifiedList = activeImagesList.map(item => item.src).filter(Boolean);
+
+            if (verifiedList.length === 0) {
+              modalError.textContent = 'Validation Error: Please add at least one product image.';
+              modalError.style.display = 'block';
+              return;
+            }
+
+            modalError.textContent = 'Processing and uploading product images...';
+            modalError.style.display = 'block';
+
+            try {
+              const uploadPromises = activeImagesList.map(async (item, index) => {
+                if (!item.src) return "";
+                // If it is already a server image URL, don't re-upload
+                if (!item.src.startsWith('data:')) {
+                  return item.src;
+                }
+                // Upload base64
+                const uploadRes = await fetch('http://localhost:5000/admin/upload', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    base64Data: item.src,
+                    filename: item.filename || `product_img_${index}.jpg`
+                  })
+                });
+                const uploadResult = await uploadRes.json();
+                if (!uploadRes.ok || !uploadResult.success) {
+                  throw new Error(uploadResult.error || 'Upload failed.');
+                }
+                return uploadResult.url;
+              });
+
+              const uploadedUrls = await Promise.all(uploadPromises);
+              finalImageUrl = uploadedUrls.filter(Boolean).join(', ');
+            } catch (uploadErr) {
+              modalError.textContent = 'Image Processing Failed: ' + uploadErr.message;
+              modalError.style.display = 'block';
+              return;
+            }
+
+            if (price > mrp) {
+              modalError.textContent = 'Validation Error: The discounted price should not be greater than the MRP.';
+              modalError.style.display = 'block';
+              return;
+            }
+
+            if (!title || isNaN(price) || !finalImageUrl || !brand || selectedSizes.length === 0) {
+              modalError.textContent = 'Please fill out all required fields and verify product image.';
+              modalError.style.display = 'block';
+              return;
+            }
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `http://localhost:5000/admin/products/${id}` : 'http://localhost:5000/admin/products';
+
+            const payload = {
+              title, brand, category, titleDescription, mrp, price, imageUrl: finalImageUrl, sizes,
+              replacementAllowed, replacementDays, codAvailable,
+              fabric, pattern, fit, suitableFor, description,
+              sizeStock, couponApplicable
+            };
+
+            try {
+              const res = await fetch(url, {
+                method,
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${user.token}`
+                },
+                body: JSON.stringify(payload)
+              });
+              const result = await res.json();
+              if (!res.ok || !result.success) throw new Error(result.error || 'Request failed.');
+
+              closeModal();
+              fetchProducts();
+            } catch (err) {
+              modalError.textContent = err.message;
+              modalError.style.display = 'block';
+            }
+          });
+
+          // Fetch orders list for admin
+          async function fetchOrders() {
+            try {
+              const res = await fetch('http://localhost:5000/admin/orders', {
+                headers: { 'Authorization': `Bearer ${user.token}` }
+              });
+              const result = await res.json();
+              if (!res.ok || !result.success) throw new Error(result.error);
+
+              renderOrderTable(result.orders);
+            } catch (err) {
+              console.error('Orders load error:', err.message);
+            }
+          }
+
+          function renderOrderTable(orders) {
+            // Count unconfirmed (Order Placed) orders
+            const unconfirmedCount = orders.filter(o => o.status === 'Order Placed').length;
+            const badges = document.querySelectorAll('.unconfirmed-badge');
+            badges.forEach(badge => {
+              badge.textContent = unconfirmedCount;
+              badge.style.display = unconfirmedCount > 0 ? 'inline-block' : 'none';
+            });
+
+            const orderTableBody = document.getElementById('order-table-body');
+            orderTableBody.innerHTML = '';
+            if (orders.length === 0) {
+              orderTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-on-surface-variant/60">
+                <div class="text-3xl mb-2">📦</div>
+                No orders placed yet
+              </td></tr>`;
+              return;
+            }
+
+            orders.forEach(o => {
+              const tr = document.createElement('tr');
+              tr.className = "border-b border-outline-variant/5 hover:bg-surface-variant/10 transition-colors";
+
+              // Parse items array
+              let itemsArray = [];
+              try {
+                itemsArray = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
+              } catch (e) {}
+              if (!Array.isArray(itemsArray)) itemsArray = [];
+
+              const itemsSummary = itemsArray.map(item => `${item.title} (x${item.quantity || 1})`).join(', ');
+
+              // Formatted date
+              const orderDate = new Date(o.created_at).toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+              });
+
+              // Status styles
+              let statusClass = 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20';
+              if (o.status === 'Shipped') {
+                statusClass = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+              } else if (o.status === 'Cancelled') {
+                statusClass = 'bg-red-500/10 text-red-400 border border-red-500/20';
+              }
+
+              // Action buttons: Confirm Shipment + Print Label/Bill
+              let actionBtnHtml = `
+                <div class="flex items-center justify-end gap-2">
+                  ${o.status === 'Order Placed' ? `
+                    <button class="confirm-ship-btn px-3 py-1.5 bg-primary text-on-primary hover:bg-primary/95 text-[10px] font-bold tracking-wider uppercase rounded-lg transition-all shadow-[0_2px_10px_rgba(165,180,252,0.1)]">
+                      Confirm Shipment
+                    </button>
+                  ` : ''}
+                  <button class="print-label-btn px-3 py-1.5 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 text-[10px] font-bold tracking-wider rounded-lg transition-all border border-amber-500/20 flex items-center gap-1">
+                    🖨️ Print Bill
+                  </button>
+                </div>
+              `;
+
+              tr.innerHTML = `
+                <td class="py-4 px-3">
+                  <span class="font-semibold text-on-surface text-xs md:text-sm">Order #${o.id}</span>
+                  <div class="text-[10px] text-on-surface-variant/60 mt-0.5">${orderDate}</div>
+                </td>
+                <td class="py-4 px-3 text-xs">
+                  <div class="font-semibold text-on-surface">${o.addr_name || ((o.first_name || '') + ' ' + (o.last_name || '')) || 'Customer'}</div>
+                  <div class="text-on-surface-variant/70">${o.email || ''}</div>
+                </td>
+                <td class="py-4 px-3 text-xs text-on-surface-variant/80 max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${itemsSummary}">
+                  ${itemsSummary || 'No items'}
+                </td>
+                <td class="py-4 px-3 font-semibold text-on-surface text-xs md:text-sm font-data-mono">
+                  ₹${parseFloat(o.total_amount || 0).toLocaleString('en-IN')}
+                </td>
+                <td class="py-4 px-3">
+                  <span class="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase ${statusClass}">
+                    ${o.status || 'Order Placed'}
+                  </span>
+                </td>
+                <td class="py-4 px-3 text-right">
+                  ${actionBtnHtml}
+                </td>
+              `;
+
+              // Event listener for confirm shipment button
+              const shipBtn = tr.querySelector('.confirm-ship-btn');
+              if (shipBtn) {
+                shipBtn.addEventListener('click', async () => {
+                  try {
+                    shipBtn.disabled = true;
+                    shipBtn.textContent = 'Processing...';
+                    const res = await fetch(`http://localhost:5000/admin/orders/${o.id}/ship`, {
+                      method: 'PUT',
+                      headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user.token}` 
+                      }
+                    });
+                    const result = await res.json();
+                    if (!res.ok || !result.success) throw new Error(result.error);
+                    
+                    fetchOrders();
+                    fetchAnalytics(currentPeriod);
+                  } catch (err) {
+                    alert('Shipment update failed: ' + err.message);
+                    shipBtn.disabled = false;
+                    shipBtn.textContent = 'Confirm Shipment';
+                  }
+                });
+              }
+
+              // Event listener for Print Label/Bill button
+              const printBtn = tr.querySelector('.print-label-btn');
+              if (printBtn) {
+                printBtn.addEventListener('click', () => {
+                  openOrderInvoiceModal(o);
+                });
+              }
+
+              orderTableBody.appendChild(tr);
+            });
+          }
+
+          // Helper: Code 128 / Code 39 Barcode SVG Generator
+          function generateBarcodeSvg(codeText) {
+            let bars = '';
+            let x = 15;
+            for (let i = 0; i < codeText.length; i++) {
+              const charCode = codeText.charCodeAt(i);
+              const w1 = (charCode % 3) + 1.5;
+              const w2 = ((charCode * 2) % 4) + 1;
+              const gap = (charCode % 2) + 1.5;
+              bars += `<rect x="${x}" y="2" width="${w1}" height="38" fill="#000" />`;
+              x += w1 + gap;
+              bars += `<rect x="${x}" y="2" width="${w2}" height="38" fill="#000" />`;
+              x += w2 + gap;
+            }
+            return `<svg width="${Math.max(x + 15, 240)}" height="42" viewBox="0 0 ${Math.max(x + 15, 240)} 42" xmlns="http://www.w3.org/2000/svg">${bars}</svg>`;
+          }
+
+          // Open Order Invoice & Shipping Label Modal
+          function openOrderInvoiceModal(o) {
+            const modal = document.getElementById('order-invoice-modal');
+            if (!modal) return;
+
+            // Barcode & AWB
+            const awbNo = `AWB${o.id}984710IN`;
+            document.getElementById('invoice-barcode-awb').innerHTML = generateBarcodeSvg(awbNo);
+            document.getElementById('invoice-awb-text').textContent = awbNo;
+            document.getElementById('invoice-sort-code').textContent = `MYL / ${(o.addr_pincode || '521230')}-E`;
+
+            // Customer Name & Address
+            const custName = o.addr_name || ((o.first_name || '') + ' ' + (o.last_name || '')).trim() || 'Valued Customer';
+            document.getElementById('inv-to-name').textContent = custName;
+
+            const addrParts = [];
+            if (o.addr_house) addrParts.push(o.addr_house);
+            if (o.addr_building) addrParts.push(o.addr_building);
+            if (o.addr_street) addrParts.push(o.addr_street);
+            if (o.addr_area) addrParts.push(o.addr_area);
+            if (o.addr_landmark) addrParts.push('Near ' + o.addr_landmark);
+            const cityStatePin = [o.addr_city, o.addr_state].filter(Boolean).join(', ') + (o.addr_pincode ? ' - ' + o.addr_pincode : '');
+            if (cityStatePin) addrParts.push(cityStatePin);
+
+            const addressHtml = addrParts.length > 0 
+              ? addrParts.join('<br>') 
+              : (o.delivery_address || 'Mylavaram, NTR District, Andhra Pradesh - 521230');
+
+            document.getElementById('inv-to-address').innerHTML = addressHtml;
+            document.getElementById('inv-to-phone').textContent = 'Phone: ' + (o.addr_mobile || '98765 43210');
+
+            // Order & Invoice Metadata
+            document.getElementById('inv-no').textContent = `Invoice No: INV-2026-${o.id}`;
+            document.getElementById('inv-order-id').textContent = `#${o.id}`;
+            const invDate = new Date(o.created_at || o.placed_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            document.getElementById('inv-date').textContent = invDate;
+            
+            const payStatus = o.payment_status ? o.payment_status.toUpperCase() : 'PAID (ONLINE)';
+            const payModeElem = document.getElementById('inv-pay-mode');
+            payModeElem.textContent = payStatus;
+            payModeElem.className = payStatus.includes('PAID') ? 'font-bold text-emerald-700' : 'font-bold text-amber-700';
+
+            // Items Table
+            let itemsArray = [];
+            try { itemsArray = typeof o.items === 'string' ? JSON.parse(o.items) : o.items; } catch (e) {}
+            if (!Array.isArray(itemsArray)) itemsArray = [];
+
+            const itemsTbody = document.getElementById('inv-items-body');
+            itemsTbody.innerHTML = '';
+            let grandTotal = parseFloat(o.total_amount) || 0;
+
+            if (itemsArray.length === 0) {
+              itemsArray = [{
+                title: 'Oversized Heavyweight Cotton Apparel',
+                price: grandTotal > 0 ? Math.round(grandTotal / 1.18) : 2200,
+                quantity: 1,
+                size: 'L'
+              }];
+            }
+
+            itemsArray.forEach((item, idx) => {
+              const tr = document.createElement('tr');
+              const price = parseFloat(item.price) || 0;
+              const qty = parseInt(item.quantity) || 1;
+              const lineTotal = price * qty;
+              const gstVal = Math.round(lineTotal * 0.18);
+              const sizeText = item.size ? ` (Size: ${item.size})` : '';
+
+              tr.innerHTML = `
+                <td class="py-2 px-2 font-mono">${idx + 1}</td>
+                <td class="py-2 px-2 font-semibold text-black">${item.title || 'Apparel Item'}${sizeText}</td>
+                <td class="py-2 px-2 text-center font-mono font-bold">${qty}</td>
+                <td class="py-2 px-2 text-right font-mono">₹${price.toLocaleString('en-IN')}</td>
+                <td class="py-2 px-2 text-right font-mono">₹${gstVal.toLocaleString('en-IN')}</td>
+                <td class="py-2 px-2 text-right font-mono font-bold">₹${lineTotal.toLocaleString('en-IN')}</td>
+              `;
+              itemsTbody.appendChild(tr);
+            });
+
+            // Calculations
+            const taxableVal = Math.round(grandTotal / 1.18);
+            const totalGst = grandTotal - taxableVal;
+            const cgst = Math.round(totalGst / 2);
+            const sgst = totalGst - cgst;
+
+            document.getElementById('inv-taxable-val').textContent = '₹' + taxableVal.toLocaleString('en-IN');
+            document.getElementById('inv-cgst-val').textContent = '₹' + cgst.toLocaleString('en-IN');
+            document.getElementById('inv-sgst-val').textContent = '₹' + sgst.toLocaleString('en-IN');
+            document.getElementById('inv-grand-total').textContent = '₹' + Math.round(grandTotal).toLocaleString('en-IN');
+
+            modal.classList.remove('hidden');
+          }
+
+          // Modal close & print handlers
+          const closeInvBtn = document.getElementById('close-invoice-modal');
+          if (closeInvBtn) {
+            closeInvBtn.addEventListener('click', () => {
+              document.getElementById('order-invoice-modal').classList.add('hidden');
+            });
+          }
+
+          const triggerPrintBtn = document.getElementById('trigger-print-btn');
+          if (triggerPrintBtn) {
+            triggerPrintBtn.addEventListener('click', () => {
+              window.print();
+            });
+          }
+
+          // ==================== STOCK ALERTS ====================
+          async function fetchInventoryStats() {
+            try {
+              const res = await fetch('http://localhost:5000/admin/inventory-stats', {
+                headers: { 'Authorization': `Bearer ${user.token}` }
+              });
+              const result = await res.json();
+              if (!res.ok || !result.success) throw new Error(result.error);
+
+              const s = result.stats || {};
+
+              const saTotProd = document.getElementById('sa-total-products');
+              if (saTotProd) saTotProd.textContent = s.totalProducts || 0;
+              const saTotVar = document.getElementById('sa-total-variants');
+              if (saTotVar) saTotVar.textContent = s.totalVariants || 0;
+              const saTotUnits = document.getElementById('sa-total-units');
+              if (saTotUnits) saTotUnits.textContent = (s.totalUnitsInStock || 0).toLocaleString();
+              const saLow = document.getElementById('sa-low-stock');
+              if (saLow) saLow.textContent = s.lowStockProducts || 0;
+              const saOut = document.getElementById('sa-out-of-stock');
+              if (saOut) saOut.textContent = s.outOfStockProducts || 0;
+
+              const saCost = document.getElementById('sa-inv-cost');
+              if (saCost) saCost.textContent = '₹' + Math.round(s.totalInventoryCost || 0).toLocaleString('en-IN');
+              const saSelling = document.getElementById('sa-inv-selling');
+              if (saSelling) saSelling.textContent = '₹' + Math.round(s.totalSellingValue || 0).toLocaleString('en-IN');
+              const saProfit = document.getElementById('sa-inv-profit');
+              if (saProfit) saProfit.textContent = '₹' + Math.round(s.potentialProfit || 0).toLocaleString('en-IN');
+
+              // Update Inventory tab value cards
+              const tc = document.getElementById('inv-total-cost');
+              if (tc) tc.textContent = '₹' + Math.round(s.totalInventoryCost || 0).toLocaleString('en-IN');
+              const sv = document.getElementById('inv-selling-value');
+              if (sv) sv.textContent = '₹' + Math.round(s.totalSellingValue || 0).toLocaleString('en-IN');
+              const pr = document.getElementById('inv-profit');
+              if (pr) pr.textContent = '₹' + Math.round(s.potentialProfit || 0).toLocaleString('en-IN');
+              const ds = document.getElementById('inv-dead-stock');
+              if (ds) ds.textContent = '₹' + Math.round(s.deadStockValue || 0).toLocaleString('en-IN');
+              const fm = document.getElementById('inv-fast-moving');
+              if (fm) fm.textContent = '₹' + Math.round(s.fastMovingValue || 0).toLocaleString('en-IN');
+              const sm = document.getElementById('inv-slow-moving');
+              if (sm) sm.textContent = '₹' + Math.round(s.slowMovingValue || 0).toLocaleString('en-IN');
+
+              const alertDot = document.querySelector('.stock-alert-dot');
+              if (alertDot) {
+                if ((s.outOfStockProducts || 0) > 0 || (s.lowStockProducts || 0) > 0) {
+                  alertDot.classList.remove('hidden');
+                } else {
+                  alertDot.classList.add('hidden');
+                }
+              }
+
+              renderStockAlerts(result.alerts || []);
+            } catch (err) {
+              console.error('Inventory stats error:', err.message);
+            }
+          }
+
+          function renderStockAlerts(alerts) {
+            const tbody = document.getElementById('stock-alerts-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (!alerts || alerts.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-on-surface-variant/60"><div class="text-3xl mb-2">✅</div>All products are healthy</td></tr>';
+              return;
+            }
+
+            alerts.forEach(a => {
+              const tr = document.createElement('tr');
+              tr.className = 'border-b border-outline-variant/5 hover:bg-surface-variant/10 transition-colors';
+
+              const labelMap = { healthy: '🟢 Healthy', low_stock: '🟡 Low Stock', out_of_stock: '🔴 Out of Stock', overstock: '🔵 Overstock' };
+              const badgeColorMap = {
+                healthy: 'bg-green-500/10 text-green-400 border-green-500/20',
+                low_stock: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+                out_of_stock: 'bg-red-500/10 text-red-400 border-red-500/20',
+                overstock: 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+              };
+              const dotColorMap = { healthy: 'bg-green-500', low_stock: 'bg-yellow-500', out_of_stock: 'bg-red-500', overstock: 'bg-blue-500' };
+
+              const sizes = parseSizeStockClient(a.stock);
+              const sizeHtml = Object.entries(sizes).map(([sz, qty]) => {
+                let qtyColor = 'text-green-400';
+                if (qty === 0) qtyColor = 'text-red-400';
+                else if (qty <= 5) qtyColor = 'text-yellow-400';
+                else if (qty > 50) qtyColor = 'text-blue-400';
+                return `<span class="inline-block px-2 py-0.5 bg-surface-container-low rounded text-[10px] font-bold mr-1">${sz}: <span class="${qtyColor}">${qty}</span></span>`;
+              }).join('');
+
+              const pulseClass = a.status === 'out_of_stock' ? 'animate-pulse' : '';
+
+              tr.innerHTML = `
+                <td class="py-3 px-3">
+                  <div class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full ${dotColorMap[a.status] || 'bg-gray-500'} ${pulseClass}"></div>
+                    <div>
+                      <div class="font-semibold text-on-surface text-xs">${a.title}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3 px-3">
+                  <span class="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider border ${badgeColorMap[a.status] || ''}">${labelMap[a.status] || a.status}</span>
+                </td>
+                <td class="py-3 px-3">${sizeHtml}</td>
+                <td class="py-3 px-3 text-right">
+                  <button class="restock-btn px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 text-[10px] font-bold tracking-wider rounded-lg transition-all border border-primary/20" data-pid="${a.pid}" data-sizes='${JSON.stringify(sizes)}' data-title="${a.title}">Restock ➔</button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+
+            tbody.querySelectorAll('.restock-btn').forEach(btn => {
+              btn.addEventListener('click', () => openRestockModal(btn.dataset.pid, btn.dataset.title, JSON.parse(btn.dataset.sizes)));
+            });
+          }
+
+          // ==================== RESTOCK MODAL ====================
+          function openRestockModal(pid, title, sizes) {
+            const modal = document.getElementById('restock-modal');
+            if (!modal) return;
+            document.getElementById('restock-pid').value = pid;
+            document.getElementById('restock-modal-title').textContent = 'Restock: ' + title;
+            const sizeSelect = document.getElementById('restock-size');
+            sizeSelect.innerHTML = '';
+            Object.keys(sizes).forEach(s => {
+              const opt = document.createElement('option');
+              opt.value = s;
+              opt.textContent = `${s} (current: ${sizes[s]})`;
+              sizeSelect.appendChild(opt);
+            });
+            document.getElementById('restock-quantity').value = '';
+            document.getElementById('restock-reason').value = '';
+            modal.classList.remove('hidden');
+          }
+
+          const closeRestockBtn = document.getElementById('close-restock-modal');
+          if (closeRestockBtn) {
+            closeRestockBtn.addEventListener('click', () => {
+              document.getElementById('restock-modal').classList.add('hidden');
+            });
+          }
+
+          const restockForm = document.getElementById('restock-form');
+          if (restockForm) {
+            restockForm.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const pid = document.getElementById('restock-pid').value;
+              const size = document.getElementById('restock-size').value;
+              const quantity = parseInt(document.getElementById('restock-quantity').value, 10);
+              const reason = document.getElementById('restock-reason').value || 'Manual restock';
+
+              try {
+                const res = await fetch(`http://localhost:5000/admin/products/${pid}/restock`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
+                  body: JSON.stringify({ size, quantity, reason })
+                });
+                const result = await res.json();
+                if (!res.ok || !result.success) throw new Error(result.error);
+
+                document.getElementById('restock-modal').classList.add('hidden');
+                fetchInventoryStats();
+                fetchStockMovements();
+                fetchProductPerformance();
+              } catch (err) {
+                alert('Restock failed: ' + err.message);
+              }
+            });
+          }
+
+          // ==================== STOCK MOVEMENTS ====================
+          let movementOffset = 0;
+          const movementLimit = 20;
+
+          async function fetchStockMovements() {
+            const filterElem = document.getElementById('movement-action-filter');
+            const actionFilter = filterElem ? filterElem.value : '';
+            try {
+              let url = `http://localhost:5000/admin/stock-movements?limit=${movementLimit}&offset=${movementOffset}`;
+              if (actionFilter) url += `&action=${actionFilter}`;
+
+              const res = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${user.token}` }
+              });
+              const result = await res.json();
+              if (!res.ok || !result.success) throw new Error(result.error);
+
+              renderMovementHistory(result.movements || []);
+
+              const movements = result.movements || [];
+              const total = movements.length;
+              const pageInfo = document.getElementById('movement-page-info');
+              if (pageInfo) pageInfo.textContent = `Showing ${movementOffset + 1}–${Math.min(movementOffset + movementLimit, total)} of ${total} records`;
+              const prevBtn = document.getElementById('movement-prev-btn');
+              if (prevBtn) prevBtn.disabled = movementOffset === 0;
+              const nextBtn = document.getElementById('movement-next-btn');
+              if (nextBtn) nextBtn.disabled = movementOffset + movementLimit >= total;
+
+            } catch (err) {
+              console.error('Stock movements error:', err.message);
+            }
+          }
+
+          function renderMovementHistory(movements) {
+            const tbody = document.getElementById('movement-history-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (!movements || movements.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-on-surface-variant/60"><div class="text-3xl mb-2">📋</div>No movement records found</td></tr>';
+              return;
+            }
+
+            const actionLabels = {
+              product_added: '🆕 Added', product_edited: '✏️ Edited', stock_increased: '📦 Increased',
+              stock_decreased: '📉 Decreased', sale: '💰 Sale', return: '🔄 Return',
+              exchange: '🔁 Exchange', manual_adjustment: '🔧 Adjusted', damaged: '💥 Damaged', lost: '❓ Lost'
+            };
+            const actionColors = {
+              product_added: 'bg-green-500/10 text-green-400 border-green-500/20',
+              stock_increased: 'bg-green-500/10 text-green-400 border-green-500/20',
+              sale: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+              return: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+              stock_decreased: 'bg-red-500/10 text-red-400 border-red-500/20',
+              damaged: 'bg-red-500/10 text-red-400 border-red-500/20',
+              lost: 'bg-red-500/10 text-red-400 border-red-500/20',
+              product_edited: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+              manual_adjustment: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+              exchange: 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+            };
+
+            movements.forEach(m => {
+              const tr = document.createElement('tr');
+              tr.className = 'border-b border-outline-variant/5 hover:bg-surface-variant/10 transition-colors';
+              const date = new Date(m.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+              const qtyClass = m.quantity_changed > 0 ? 'text-green-400' : 'text-red-400';
+              const qtySign = m.quantity_changed > 0 ? '+' : '';
+              tr.innerHTML = `
+                <td class="py-3 px-3 text-[11px] text-on-surface-variant/80 whitespace-nowrap">${date}</td>
+                <td class="py-3 px-3 font-semibold text-on-surface text-xs">${m.product_title || 'N/A'}</td>
+                <td class="py-3 px-3"><span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${actionColors[m.action] || ''}">${actionLabels[m.action] || m.action}</span></td>
+                <td class="py-3 px-3 text-xs font-data-mono">${m.size || '—'}</td>
+                <td class="py-3 px-3 font-bold font-data-mono ${qtyClass}">${qtySign}${m.quantity_changed}</td>
+                <td class="py-3 px-3 text-[11px] text-on-surface-variant/70 font-data-mono">${m.quantity_before} → ${m.quantity_after}</td>
+                <td class="py-3 px-3 text-[11px] text-on-surface-variant/70">${m.reason || '—'}</td>
+                <td class="py-3 px-3 text-[11px] text-on-surface-variant/70">${m.first_name ? m.first_name + ' ' + (m.last_name||'') : 'System'}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+
+          const movPrev = document.getElementById('movement-prev-btn');
+          if (movPrev) movPrev.addEventListener('click', () => { movementOffset = Math.max(0, movementOffset - movementLimit); fetchStockMovements(); });
+          const movNext = document.getElementById('movement-next-btn');
+          if (movNext) movNext.addEventListener('click', () => { movementOffset += movementLimit; fetchStockMovements(); });
+          const movAct = document.getElementById('movement-action-filter');
+          if (movAct) movAct.addEventListener('change', () => { movementOffset = 0; fetchStockMovements(); });
+
+          // ==================== PRODUCT PERFORMANCE ====================
+          async function fetchProductPerformance() {
+            const catElem = document.getElementById('perf-filter-category');
+            const category = catElem ? catElem.value : '';
+            const brandElem = document.getElementById('perf-filter-brand');
+            const brand = brandElem ? brandElem.value : '';
+            const stockElem = document.getElementById('perf-filter-stock');
+            const stockStatus = stockElem ? stockElem.value : '';
+            const dateElem = document.getElementById('perf-filter-date');
+            const dateAdded = dateElem ? dateElem.value : '';
+            const salesElem = document.getElementById('perf-filter-sales');
+            const salesPerf = salesElem ? salesElem.value : '';
+
+            try {
+              let url = 'http://localhost:5000/admin/product-performance?';
+              if (category) url += `category=${category}&`;
+              if (brand) url += `brand=${encodeURIComponent(brand)}&`;
+              if (stockStatus) url += `stockStatus=${stockStatus}&`;
+              if (dateAdded) url += `dateAdded=${dateAdded}&`;
+              if (salesPerf) url += `salesPerformance=${salesPerf}&`;
+
+              const res = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${user.token}` }
+              });
+              const result = await res.json();
+              if (!res.ok || !result.success) throw new Error(result.error);
+
+              const items = result.performance || [];
+
+              const brandFilter = document.getElementById('perf-filter-brand');
+              if (brandFilter) {
+                const currentBrand = brandFilter.value;
+                const brands = [...new Set(items.map(p => p.brand).filter(Boolean))];
+                brandFilter.innerHTML = '<option value="">All Brands</option>';
+                brands.forEach(b => {
+                  const opt = document.createElement('option');
+                  opt.value = b;
+                  opt.textContent = b;
+                  if (b === currentBrand) opt.selected = true;
+                  brandFilter.appendChild(opt);
+                });
+              }
+
+              renderPerformanceCards(items);
+            } catch (err) {
+              console.error('Product performance error:', err.message);
+            }
+          }
+
+          function renderPerformanceCards(products) {
+            const grid = document.getElementById('performance-cards-grid');
+            const empty = document.getElementById('performance-empty');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            if (!products || products.length === 0) {
+              if (empty) empty.classList.remove('hidden');
+              return;
+            }
+            if (empty) empty.classList.add('hidden');
+
+            products.forEach(p => {
+              const card = document.createElement('div');
+              card.className = 'bg-surface/40 backdrop-blur-3xl border border-outline-variant/5 rounded-2xl overflow-hidden hover:border-outline-variant/15 transition-all duration-300 group';
+
+              const statusMap = {
+                healthy: { label: '🟢 Healthy', cls: 'bg-green-500/10 text-green-400 border-green-500/20' },
+                low_stock: { label: '🟡 Low Stock', cls: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
+                out_of_stock: { label: '🔴 Out of Stock', cls: 'bg-red-500/10 text-red-400 border-red-500/20' },
+                overstock: { label: '🔵 Overstock', cls: 'bg-blue-500/10 text-blue-400 border-blue-500/20' }
+              };
+              const status = statusMap[p.stockStatus] || statusMap.healthy;
+
+              const sizes = parseSizeStockClient(p.size_stock);
+              const sizeHtml = Object.entries(sizes).map(([sz, qty]) => {
+                let c = 'text-green-400';
+                if (qty === 0) c = 'text-red-400';
+                else if (qty <= 5) c = 'text-yellow-400';
+                return `<span class="text-[10px] font-data-mono">${sz}:<span class="${c} font-bold">${qty}</span></span>`;
+              }).join(' · ');
+
+              const convWidth = Math.min(p.conversionRate || 0, 100);
+
+              card.innerHTML = `
+                <div class="flex gap-4 p-5">
+                  <img src="${p.image_url || ''}" class="w-16 h-16 rounded-xl object-cover bg-surface-container-low flex-shrink-0" alt="" />
+                  <div class="flex-1 min-w-0">
+                    <div class="font-semibold text-on-surface text-sm truncate">${p.title}</div>
+                    <div class="text-[10px] text-on-surface-variant/60 mt-0.5">${p.category || ''} · ${p.brand || ''}</div>
+                    <div class="flex items-center gap-2 mt-2">
+                      <span class="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold border ${status.cls}">${status.label}</span>
+                      <span class="text-[10px] text-on-surface-variant/50">${sizeHtml}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="px-5 pb-4 grid grid-cols-3 gap-3 border-t border-outline-variant/5 pt-4">
+                  <div>
+                    <div class="text-[9px] text-on-surface-variant/60 uppercase font-bold tracking-wider">Sold</div>
+                    <div class="text-sm font-bold text-on-surface font-data-mono">${(p.units_sold || 0).toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div class="text-[9px] text-on-surface-variant/60 uppercase font-bold tracking-wider">Revenue</div>
+                    <div class="text-sm font-bold text-green-400 font-data-mono">₹${Math.round(p.revenue || 0).toLocaleString('en-IN')}</div>
+                  </div>
+                  <div>
+                    <div class="text-[9px] text-on-surface-variant/60 uppercase font-bold tracking-wider">Profit</div>
+                    <div class="text-sm font-bold text-secondary font-data-mono">₹${Math.round(p.profit || 0).toLocaleString('en-IN')}</div>
+                  </div>
+                </div>
+                <div class="px-5 pb-4">
+                  <div class="flex justify-between text-[9px] mb-1">
+                    <span class="text-on-surface-variant/60 uppercase font-bold tracking-wider">Conversion</span>
+                    <span class="text-on-surface font-bold font-data-mono">${(p.conversionRate || 0).toFixed(1)}%</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-surface-container-low rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-500" style="width: ${convWidth}%"></div>
+                  </div>
+                </div>
+                <div class="px-5 pb-4 flex flex-wrap gap-2 border-t border-outline-variant/5 pt-3">
+                  <span class="text-[9px] px-2 py-0.5 bg-surface-container-low rounded text-on-surface-variant/50 border border-outline-variant/5">⭐ Rating: Coming Soon</span>
+                  <span class="text-[9px] px-2 py-0.5 bg-surface-container-low rounded text-on-surface-variant/50 border border-outline-variant/5">❤️ Wishlist: Coming Soon</span>
+                  <span class="text-[9px] px-2 py-0.5 bg-surface-container-low rounded text-on-surface-variant/50 border border-outline-variant/5">🛒 Cart: Coming Soon</span>
+                  <span class="text-[9px] px-2 py-0.5 bg-surface-container-low rounded text-on-surface-variant/50 border border-outline-variant/5">↩️ Returns: Coming Soon</span>
+                </div>
+                <div class="px-5 pb-5 flex gap-2">
+                  <button class="perf-restock-btn flex-1 py-2 bg-primary/10 text-primary hover:bg-primary/20 text-[10px] font-bold tracking-wider rounded-lg transition-all border border-primary/20" data-pid="${p.pid}" data-sizes='${JSON.stringify(sizes)}' data-title="${p.title}">📦 Restock</button>
+                  <button class="perf-edit-btn flex-1 py-2 bg-surface-container-high text-on-surface hover:bg-surface-variant/60 text-[10px] font-bold tracking-wider rounded-lg transition-all border border-outline-variant/10" data-pid="${p.pid}">✏️ Edit</button>
+                </div>
+              `;
+              grid.appendChild(card);
+            });
+
+            grid.querySelectorAll('.perf-restock-btn').forEach(btn => {
+              btn.addEventListener('click', () => openRestockModal(btn.dataset.pid, btn.dataset.title, JSON.parse(btn.dataset.sizes)));
+            });
+          }
+
+          ['perf-filter-category', 'perf-filter-brand', 'perf-filter-stock', 'perf-filter-date', 'perf-filter-sales'].forEach(id => {
+            const elem = document.getElementById(id);
+            if (elem) elem.addEventListener('change', () => fetchProductPerformance());
+          });
+          const clearFiltersBtn = document.getElementById('perf-clear-filters');
+          if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', () => {
+              const c = document.getElementById('perf-filter-category'); if (c) c.value = '';
+              const b = document.getElementById('perf-filter-brand'); if (b) b.value = '';
+              const s = document.getElementById('perf-filter-stock'); if (s) s.value = '';
+              const d = document.getElementById('perf-filter-date'); if (d) d.value = '';
+              const sa = document.getElementById('perf-filter-sales'); if (sa) sa.value = '';
+              fetchProductPerformance();
+            });
+          }
+
+          const perfAddBtn = document.getElementById('perf-add-product-btn');
+          if (perfAddBtn) {
+            perfAddBtn.addEventListener('click', () => {
+              const mainAddBtn = document.getElementById('add-product-btn');
+              if (mainAddBtn) mainAddBtn.click();
+            });
+          }
+
+          const perfExportBtn = document.getElementById('perf-export-csv-btn');
+          if (perfExportBtn) {
+            perfExportBtn.addEventListener('click', async () => {
+              try {
+                const res = await fetch('http://localhost:5000/admin/products/export', {
+                  headers: { 'Authorization': `Bearer ${user.token}` }
+                });
+                if (!res.ok) throw new Error('Export failed');
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'inventory_export.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+              } catch (err) {
+                alert('Export failed: ' + err.message);
+              }
+            });
+          }
+
+          const perfBulkBtn = document.getElementById('perf-bulk-restock-btn');
+          if (perfBulkBtn) {
+            perfBulkBtn.addEventListener('click', async () => {
+              const modal = document.getElementById('bulk-restock-modal');
+              const body = document.getElementById('bulk-restock-body');
+              if (!modal || !body) return;
+              body.innerHTML = '<div class="text-center py-4 text-xs text-on-surface-variant/60">Loading products...</div>';
+              modal.classList.remove('hidden');
+
+              try {
+                const res = await fetch('http://localhost:5000/admin/products', {
+                  headers: { 'Authorization': `Bearer ${user.token}` }
+                });
+                const result = await res.json();
+                if (!res.ok || !result.success) throw new Error(result.error);
+
+                body.innerHTML = '';
+                result.products.forEach(p => {
+                  const sizes = parseSizeStockClient(p.size_stock);
+                  const row = document.createElement('div');
+                  row.className = 'flex items-center gap-3 p-3 bg-surface-container-low/30 rounded-xl border border-outline-variant/5';
+                  row.innerHTML = `
+                    <div class="flex-1 min-w-0">
+                      <div class="font-semibold text-on-surface text-xs truncate">${p.title}</div>
+                      <div class="text-[10px] text-on-surface-variant/60">${Object.entries(sizes).map(([s,q]) => s+':'+q).join(', ')}</div>
+                    </div>
+                    <select class="bulk-size-select px-2 py-1 text-[10px] bg-surface-container-low border border-outline-variant/20 rounded-lg text-on-surface outline-none" data-pid="${p.id}">
+                      ${Object.keys(sizes).map(s => `<option value="${s}">${s}</option>`).join('')}
+                    </select>
+                    <input type="number" class="bulk-qty-input w-16 px-2 py-1 text-[10px] border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none text-center" min="0" value="0" data-pid="${p.id}" />
+                  `;
+                  body.appendChild(row);
+                });
+              } catch (err) {
+                body.innerHTML = '<div class="text-center py-4 text-xs text-red-400">Failed to load products</div>';
+              }
+            });
+          }
+
+          const closeBulkBtn = document.getElementById('close-bulk-restock-modal');
+          if (closeBulkBtn) {
+            closeBulkBtn.addEventListener('click', () => {
+              const modal = document.getElementById('bulk-restock-modal');
+              if (modal) modal.classList.add('hidden');
+            });
+          }
+
+          const submitBulkBtn = document.getElementById('bulk-restock-submit');
+          if (submitBulkBtn) {
+            submitBulkBtn.addEventListener('click', async () => {
+              const updates = [];
+              document.querySelectorAll('.bulk-qty-input').forEach(input => {
+                const qty = parseInt(input.value, 10);
+                if (qty > 0) {
+                  const pid = input.dataset.pid;
+                  const sizeSelect = document.querySelector(`.bulk-size-select[data-pid="${pid}"]`);
+                  updates.push({ pid: parseInt(pid, 10), size: sizeSelect.value, quantity: qty });
+                }
+              });
+
+              if (updates.length === 0) {
+                alert('No quantities entered. Set quantity > 0 for products you want to restock.');
+                return;
+              }
+
+              try {
+                const res = await fetch('http://localhost:5000/admin/products/bulk-restock', {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
+                  body: JSON.stringify({ updates })
+                });
+                const result = await res.json();
+                if (!res.ok || !result.success) throw new Error(result.error);
+
+                const modal = document.getElementById('bulk-restock-modal');
+                if (modal) modal.classList.add('hidden');
+                alert('✅ Restocked ' + result.updated + ' product(s) successfully!');
+                fetchInventoryStats();
+                fetchStockMovements();
+                fetchProductPerformance();
+              } catch (err) {
+                alert('Bulk restock failed: ' + err.message);
+              }
+            });
+          }
+
+          function parseSizeStockClient(str) {
+            const result = {};
+            if (!str) return result;
+            str.split(',').forEach(pair => {
+              const [size, qty] = pair.trim().split(':');
+              if (size && qty !== undefined) result[size.trim()] = parseInt(qty.trim(), 10) || 0;
+            });
+            return result;
+          }
+
+          const printDashBtn = document.getElementById('admin-print-dashboard-btn');
+          if (printDashBtn) {
+            printDashBtn.addEventListener('click', () => {
+              window.print();
+            });
+          }
+
+          // Kick off fetches
+          fetchAnalytics(currentPeriod);
+          fetchProducts();
+          fetchOrders();
+          fetchInventoryStats();
+          fetchStockMovements();
+          fetchProductPerformance();
+
+          // Real-time automatic background polling every 5 seconds for live order & stock updates
+          setInterval(() => {
+            fetchOrders();
+            fetchInventoryStats();
+            fetchStockMovements();
+          }, 5000);
+        }
+
+      });
+    </script>
+  </body>
+</html>

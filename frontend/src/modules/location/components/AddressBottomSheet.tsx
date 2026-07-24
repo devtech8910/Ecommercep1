@@ -165,8 +165,8 @@ export const AddressBottomSheet: React.FC<AddressBottomSheetProps> = ({
 
       setGpsCoords({ lat, lng: lon });
 
-      // 2. Call the OpenStreetMap Nominatim reverse geocoding API with lat & lon
-      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=jsonv2`)
+      // 2. Call the OpenStreetMap Nominatim reverse geocoding API proxied through our backend
+      fetch(`http://localhost:5000/location/nominatim-reverse?lat=${lat}&lon=${lon}`)
         .then((res) => {
           if (!res.ok) throw new Error('Nominatim reverse geocode request failed');
           return res.json();
@@ -177,6 +177,11 @@ export const AddressBottomSheet: React.FC<AddressBottomSheetProps> = ({
 
           if (data && data.address) {
             const addr = data.address || {};
+            
+            // Sync map coordinates to the resolved location returned by Nominatim (Mylavaram coordinates on out-of-bounds fallback)
+            const resolvedLat = parseFloat(data.lat) || lat;
+            const resolvedLon = parseFloat(data.lon) || lon;
+            setGpsCoords({ lat: resolvedLat, lng: resolvedLon });
 
             // 3. Map State, District, PIN code, Area/Locality, and Street
             const state = addr.state || '';
@@ -261,6 +266,8 @@ export const AddressBottomSheet: React.FC<AddressBottomSheetProps> = ({
       setView('away-form');
     }
   }, [geoStatus, geoCoords, geoError, performReverseGeocode]);
+
+
 
   const handleFormSubmit = async (data: AddressFormData) => {
     try {

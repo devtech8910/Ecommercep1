@@ -4,10 +4,22 @@ import type { Address } from './modules/location/types/location.types';
 
 export default function App({ isIntegrated = false }: { isIntegrated?: boolean }) {
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [activeAddress, setActiveAddress] = useState<Address | null>(null);
+  const [activeAddress, setActiveAddress] = useState<Address | null>(() => {
+    const raw = localStorage.getItem('dtf_active_address');
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
 
   const handleAddressSelected = (address: Address) => {
     setActiveAddress(address);
+    localStorage.setItem('dtf_active_address', JSON.stringify(address));
+    window.dispatchEvent(new Event('dtf:address:updated'));
     setSheetOpen(false);
   };
 

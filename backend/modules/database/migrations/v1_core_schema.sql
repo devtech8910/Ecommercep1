@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     date_of_birth DATE NULL,
     role VARCHAR(20) DEFAULT 'customer' NOT NULL,
+    phn_verified BOOLEAN DEFAULT FALSE,
+    email_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -32,9 +34,7 @@ CREATE TABLE IF NOT EXISTS user_addresses (
     pincode VARCHAR(20) NOT NULL,
     latitude DECIMAL(10,8) NOT NULL,
     longitude DECIMAL(11,8) NOT NULL,
-    formatted_address TEXT,
-    accuracy VARCHAR(50),
-    verified BOOLEAN DEFAULT FALSE,
+
     address_type VARCHAR(20) DEFAULT 'home',
     is_default BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

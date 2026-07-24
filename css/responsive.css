@@ -112,22 +112,33 @@
      Hamburger (left) | Logo (center) | Icons + Login (right)
   ============================================================ */
 
-  /* Make nav-container a 3-zone flex row */
+  /* Make nav-container a clean flex row */
   .nav-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0;
-    padding: 0 var(--space-4);
+    gap: 8px;
+    padding: 0 12px;
   }
 
-  /* 1. Logo — left side */
-  .nav-logo {
-    order: 1;
+  /* Search bar scaling on mobile */
+  .nav-search-wrapper {
+    max-width: 240px;
+    margin: 0 8px;
     flex: 1;
-    justify-content: flex-start;
   }
-  
+
+  .nav-search-input {
+    padding: 7px 34px 7px 14px;
+    font-size: 0.85rem;
+  }
+
+  .nav-search-btn {
+    width: 26px;
+    height: 26px;
+    right: 4px;
+  }
+
   /* 2. Nav links — hidden on mobile */
   .nav-links {
     display: none;
@@ -141,13 +152,15 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: var(--space-1);
+    gap: 4px;
   }
 
   /* Show wishlist + cart icons always on mobile */
   .nav-icon-btn {
     display: flex;
     order: 1;
+    width: 36px;
+    height: 36px;
   }
 
   /* Show Hamburger in nav-actions */
@@ -155,8 +168,8 @@
     display: flex;
     order: 2;
     flex-shrink: 0;
-    margin-left: var(--space-1);
-    margin-right: var(--space-1);
+    margin-left: 4px;
+    margin-right: 4px;
   }
 
   /* Hide Login and Sign Up buttons — they're inside mobile menu */
@@ -249,12 +262,22 @@
   }
 
   .form-group {
-    flex-direction: column;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
   }
 
-  .form-input,
+  .form-input {
+    flex: 1;
+    width: auto;
+    font-size: 0.9rem;
+    padding: 0 var(--space-4);
+  }
+
   .form-group .btn {
-    width: 100%;
+    width: auto;
+    padding: 0 var(--space-5);
+    font-size: 0.9rem;
   }
 
   /* Footer */

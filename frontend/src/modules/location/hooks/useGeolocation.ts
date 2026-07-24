@@ -22,42 +22,92 @@ export function useGeolocation() {
     setStatus('loading');
     setError(null);
 
-    navigator.geolocation.getCurrentPosition(
+    const optionsHigh = {
+      enableHighAccuracy: true,
+      timeout: 8000,
+      maximumAge: 0
+    };
+
+    const optionsLow = {
+      enableHighAccuracy: false,
+      timeout: 10000,
+      maximumAge: 0
+    };
+
+    const tryLowAccuracy = () => {
+      console.log('Retrying browser geolocation with enableHighAccuracy: false (Wi-Fi/Cellular positioning)...');
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoords({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy
+          });
+          setStatus('success');
+        },
+        (geoError) => {
+          console.warn('Low accuracy geolocation failed. Falling back to IP-based geolocator...', geoError.message);
+          fetchIPFallback(
+            () => {
+              setStatus('error');
+              setError(geoError.message || 'Unable to retrieve location coordinates.');
+            },
+            (msg) => setError(msg)
+          );
+        },
+        optionsLow
+      );
+    };
+
+    let watchId: number | null = null;
+    let fallbackTimeout = setTimeout(() => {
+      // If we don't get high-accuracy coords within 5 seconds, clear watch and try low accuracy
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      tryLowAccuracy();
+    }, 5000);
+
+    watchId = navigator.geolocation.watchPosition(
       (position) => {
+        const acc = position.coords.accuracy;
+        console.log(`GPS refinement update: Lat: ${position.coords.latitude}, Lon: ${position.coords.longitude}, Accuracy: ${acc} meters`);
+        
         setCoords({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy
+          accuracy: acc
         });
         setStatus('success');
+
+        // Stop watching as soon as we acquire a high-precision fix (under 100m accuracy)
+        if (acc < 100 && watchId !== null) {
+          clearTimeout(fallbackTimeout);
+          navigator.geolocation.clearWatch(watchId);
+          watchId = null;
+        }
       },
       (geoError) => {
-        console.warn('Browser geolocation failed. Trying IP-based location fallback...', geoError.message);
-        
-        // Fallback to IP-based Geolocation if browser permission denied, timed out, or unavailable
-        fetchIPFallback(
-          () => {
-            if (geoError.code === geoError.PERMISSION_DENIED) {
-              setStatus('denied');
-              setError('Location permission denied. Please enter address manually.');
-            } else {
-              setStatus('error');
-              setError(geoError.message || 'Unable to retrieve location coordinates.');
-            }
-          },
-          (msg) => setError(msg)
-        );
+        clearTimeout(fallbackTimeout);
+        if (watchId !== null) {
+          navigator.geolocation.clearWatch(watchId);
+          watchId = null;
+        }
+        if (geoError.code === geoError.PERMISSION_DENIED) {
+          console.warn('Browser geolocation permission denied.');
+          setStatus('denied');
+          setError("Location access is blocked in your browser. Please click the lock/settings icon in your address bar (next to 'localhost:3000'), set Location to 'Allow', and refresh the page.");
+          return;
+        }
+        tryLowAccuracy();
       },
-      {
-        enableHighAccuracy: false, // Disables active hardware GPS query on desktops for instant return
-        timeout: 8000,             // 8 seconds timeout
-        maximumAge: 300000         // 5 minutes cache
-      }
+      optionsHigh
     );
   }, []);
 
   const fetchIPFallback = (onFailure: () => void, onErrorMsg: (msg: string) => void) => {
-    fetch('https://ipapi.co/json/')
+    fetch(`https://ipapi.co/json/?cb=${Date.now()}`)
       .then((res) => {
         if (!res.ok) throw new Error('IP Geolocation API failed');
         return res.json();

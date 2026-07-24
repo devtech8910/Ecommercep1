@@ -24,14 +24,14 @@ interface AddressFormProps {
   onCancel: () => void;
 }
 
-export const AddressForm: React.FC<AddressFormProps> = ({
+export const AddressForm = ({
   mode,
   gpsCoords,
   gpsAddress,
   initialData,
   onSubmit,
   onCancel
-}) => {
+}: AddressFormProps) => {
   // Map preview coordinates (for GPS mode)
   const [mapCenter, setMapCenter] = useState<Coordinates>(
     gpsCoords || (initialData?.latitude && initialData?.longitude 
@@ -194,6 +194,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
     }
   }, [mode, gpsAddress, loadingDataset, gpsPrefilled, statesData, setValue]);
 
+
   // Handle Form Submission
   const onFormSubmit = async (data: AddressFormData) => {
     data.latitude = mapCenter.lat;
@@ -323,6 +324,27 @@ export const AddressForm: React.FC<AddressFormProps> = ({
             🛰️ Auto-Detected Address Components
           </span>
           <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '10px 16px', fontSize: '13px', lineHeight: 1.5 }}>
+            {gpsAddress.address.houseNumber && (
+              <>
+                <span style={{ color: '#6b7280', fontWeight: 600 }}>House / Flat No:</span>
+                <span style={{ color: '#1f2937', fontWeight: 500 }}>{gpsAddress.address.houseNumber}</span>
+              </>
+            )}
+
+            {gpsAddress.address.building && (
+              <>
+                <span style={{ color: '#6b7280', fontWeight: 600 }}>Building / Apt:</span>
+                <span style={{ color: '#1f2937', fontWeight: 500 }}>{gpsAddress.address.building}</span>
+              </>
+            )}
+
+            {gpsAddress.address.street && (
+              <>
+                <span style={{ color: '#6b7280', fontWeight: 600 }}>Street / Road:</span>
+                <span style={{ color: '#1f2937', fontWeight: 500 }}>{gpsAddress.address.street}</span>
+              </>
+            )}
+
             <span style={{ color: '#6b7280', fontWeight: 600 }}>Pincode:</span>
             <span style={{ color: '#1f2937', fontWeight: 500 }}>{gpsAddress.address.pincode}</span>
 

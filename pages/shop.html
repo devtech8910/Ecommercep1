@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grand Marketplace Shop — DevTech Fashion</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/animations.css" />
+    <link rel="stylesheet" href="../css/responsive.css" />
+
+    <style>
+      body {
+        background-color: #0a0a14;
+        color: #f0f0f5;
+        font-family: 'Inter', sans-serif;
+      }
+      .action-btn-pill {
+        padding: 9px 14px;
+        border-radius: 12px;
+        font-size: 12.5px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .btn-add-cart {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        flex: 1;
+      }
+      .btn-add-cart:hover {
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+        transform: translateY(-1px);
+      }
+      .btn-add-wishlist {
+        background: rgba(255, 255, 255, 0.08);
+        color: #ef4444;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        padding: 0;
+      }
+      .btn-add-wishlist:hover {
+        background: rgba(239, 68, 68, 0.2);
+        border-color: rgba(239, 68, 68, 0.4);
+      }
+      .view-all-link {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #818cf8;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s ease;
+      }
+      .view-all-link:hover {
+        color: #a5b4fc;
+        transform: translateX(4px);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="navbar" id="navbar" role="banner">
+      <nav class="nav-container" aria-label="Main Navigation">
+        <!-- Search Bar to Left -->
+        <div class="nav-search-wrapper" style="margin-left: 0;">
+          <input type="text" class="nav-search-input" id="nav-search-input" placeholder="Search across all categories..." aria-label="Search all products" />
+          <button type="button" class="nav-search-btn" id="nav-search-btn" aria-label="Search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+        </div>
+
+        <!-- Nav Actions to Right: Wishlist, Cart & 3-Line Hamburger Menu -->
+        <div class="nav-actions">
+          <a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist" id="wishlist-nav-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span class="icon-badge" id="wishlist-count" aria-live="polite">0</span>
+          </a>
+          <a href="cart.html" class="nav-icon-btn" aria-label="Shopping Cart" id="cart-nav-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <span class="icon-badge" id="cart-count" aria-live="polite">0</span>
+          </a>
+          <!-- Mobile Hamburger 3 Lines -->
+          <button class="hamburger" id="hamburger" aria-label="Toggle Menu" aria-expanded="false" aria-controls="mobile-menu">
+            <span class="ham-bar"></span>
+            <span class="ham-bar"></span>
+            <span class="ham-bar"></span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Mobile Menu Drawer -->
+      <div class="mobile-menu glass-panel" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
+        <!-- User Greeting Header -->
+        <div class="mobile-user-greeting">
+          <div class="user-avatar-badge">👤</div>
+          <div class="user-greeting-info">
+            <span class="user-greeting-sub">Welcome back</span>
+            <div id="mobile-user-name" class="user-greeting-name">Hey User</div>
+          </div>
+        </div>
+
+        <ul class="mobile-links" role="list">
+          <li><a href="../index.html" class="mobile-link">🏠 Home</a></li>
+          <li><a href="shop.html" class="mobile-link active">🛍️ Shop</a></li>
+          <li><a href="orders.html" class="mobile-link">📦 My Orders</a></li>
+          <li class="mobile-category-block">
+            <div class="mobile-category-header">📂 Categories</div>
+            <ul class="mobile-category-list">
+              <li><a href="mens-wear.html" class="mobile-link mobile-sub-link">♂️ Men's Wear</a></li>
+              <li><a href="womens-wear.html" class="mobile-link mobile-sub-link">♀️ Women's Wear</a></li>
+              <li><a href="kids-wear.html" class="mobile-link mobile-sub-link">★ Kids Wear</a></li>
+            </ul>
+          </li>
+          <li class="mobile-divider" aria-hidden="true"></li>
+          <li><a href="settings.html" class="mobile-link">⚙️ Settings</a></li>
+        </ul>
+
+        <div class="mobile-actions">
+          <button id="mobile-logout-btn" class="mobile-logout-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main style="padding-top: 100px;">
+      <!-- Hero Banner & Marketplace Quick Nav -->
+      <section style="text-align: center; padding: 40px 20px 24px;">
+        <div class="container">
+          <span style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: #818cf8; display: block; margin-bottom: 6px;">All-In-One Atelier Marketplace</span>
+          <h1 style="font-family: var(--font-serif); font-size: clamp(2.5rem, 6vw, 4.2rem); font-weight: 400; color: #ffffff; margin: 0 0 12px;">Grand Fashion Marketplace</h1>
+          <p style="color: #94a3b8; max-width: 650px; margin: 0 auto 24px; font-size: 1.08rem; line-height: 1.6;">Explore top-selling collections across Men's Wear, Women's Wear, Kids' Fashion, and Luxury Accessories.</p>
+
+          <!-- Category Quick Pills -->
+          <div style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
+            <a href="#bestsellers-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">🔥 Best Sellers</a>
+            <a href="#mens-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">♂️ Men's Wear</a>
+            <a href="#womens-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">♀️ Women's Wear</a>
+            <a href="#kids-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">★ Kids Wear</a>
+            <a href="#accessories-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">⌚ Accessories</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main Marketplace Catalog Section with Sticky Controls Bar -->
+      <section class="container" style="padding-bottom: 60px;">
+        
+        <!-- Sticky Control Bar with Filter Trigger Button & Sort By Select -->
+        <div class="cat-controls-bar">
+          
+          <!-- Left: Filter Trigger Button -->
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <button type="button" id="open-filter-btn" style="padding: 10px 22px; border-radius: 14px; font-size: 14px; font-weight: 800; background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.25)); border: 1.5px solid rgba(99, 102, 241, 0.4); color: #ffffff; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2); transition: all 0.2s ease;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+              <span>Filters</span>
+              <span id="active-filter-badge" style="display: none; background: #6366f1; color: white; border-radius: 99px; padding: 2px 8px; font-size: 11px; font-weight: 800;">0</span>
+            </button>
+            
+            <!-- Clear Filters Button -->
+            <button type="button" id="clear-all-filters-btn" style="display: none; background: transparent; border: none; color: #ef4444; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: underline;">
+              Reset Filters
+            </button>
+          </div>
+
+          <!-- Right: Sort By Dropdown -->
+          <div class="sort-wrapper">
+            <span class="filter-label">⇅ Sort By:</span>
+            <select id="sort-select" class="sort-select">
+              <option value="featured">Featured / Popular</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="name">Name: A - Z</option>
+            </select>
+          </div>
+
+        </div>
+
+        <!-- 1. 🔥 SECTION: BEST SELLING PRODUCTS (Horizontal Scroll) -->
+        <div id="bestsellers-section" class="shop-carousel-wrap">
+          <div class="shop-section-header">
+            <div class="shop-section-title-wrap">
+              <span class="shop-badge-pill badge-bestseller">🔥 Trending Now</span>
+              <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 800; color: #ffffff; margin: 0;">Top Selling Products</h2>
+            </div>
+          </div>
+          <button type="button" class="scroll-btn scroll-left-btn" data-target="bestsellers-row" aria-label="Scroll left">‹</button>
+          <button type="button" class="scroll-btn scroll-right-btn" data-target="bestsellers-row" aria-label="Scroll right">›</button>
+          
+          <div id="bestsellers-row" class="shop-carousel-row">
+            <!-- Dynamic Items Rendered Here -->
+          </div>
+        </div>
+
+        <!-- 2. 👔 SECTION: MEN'S WEAR COLLECTION (Horizontal Scroll) -->
+        <div id="mens-section" class="shop-carousel-wrap">
+          <div class="shop-section-header">
+            <div class="shop-section-title-wrap">
+              <span class="shop-badge-pill badge-mens">♂️ Gentlemen's Atelier</span>
+              <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 800; color: #ffffff; margin: 0;">Men's Collection</h2>
+            </div>
+            <a href="mens-wear.html" class="view-all-link">Explore All Men's Wear →</a>
+          </div>
+          <button type="button" class="scroll-btn scroll-left-btn" data-target="mens-row" aria-label="Scroll left">‹</button>
+          <button type="button" class="scroll-btn scroll-right-btn" data-target="mens-row" aria-label="Scroll right">›</button>
+
+          <div id="mens-row" class="shop-carousel-row">
+            <!-- Dynamic Items Rendered Here -->
+          </div>
+        </div>
+
+        <!-- 3. 👗 SECTION: WOMEN'S WEAR COLLECTION (Horizontal Scroll) -->
+        <div id="womens-section" class="shop-carousel-wrap">
+          <div class="shop-section-header">
+            <div class="shop-section-title-wrap">
+              <span class="shop-badge-pill badge-womens">♀️ Haute Couture</span>
+              <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 800; color: #ffffff; margin: 0;">Women's Collection</h2>
+            </div>
+            <a href="womens-wear.html" class="view-all-link">Explore All Women's Wear →</a>
+          </div>
+          <button type="button" class="scroll-btn scroll-left-btn" data-target="womens-row" aria-label="Scroll left">‹</button>
+          <button type="button" class="scroll-btn scroll-right-btn" data-target="womens-row" aria-label="Scroll right">›</button>
+
+          <div id="womens-row" class="shop-carousel-row">
+            <!-- Dynamic Items Rendered Here -->
+          </div>
+        </div>
+
+        <!-- 4. ★ SECTION: KIDS & JUNIORS WEAR (Horizontal Scroll) -->
+        <div id="kids-section" class="shop-carousel-wrap">
+          <div class="shop-section-header">
+            <div class="shop-section-title-wrap">
+              <span class="shop-badge-pill badge-kids">★ Junior Couture</span>
+              <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 800; color: #ffffff; margin: 0;">Kids' Collection</h2>
+            </div>
+            <a href="kids-wear.html" class="view-all-link">Explore All Kids Wear →</a>
+          </div>
+          <button type="button" class="scroll-btn scroll-left-btn" data-target="kids-row" aria-label="Scroll left">‹</button>
+          <button type="button" class="scroll-btn scroll-right-btn" data-target="kids-row" aria-label="Scroll right">›</button>
+
+          <div id="kids-row" class="shop-carousel-row">
+            <!-- Dynamic Items Rendered Here -->
+          </div>
+        </div>
+
+        <!-- 5. ⌚ SECTION: LUXURY ACCESSORIES & BAGS (Horizontal Scroll) -->
+        <div id="accessories-section" class="shop-carousel-wrap">
+          <div class="shop-section-header">
+            <div class="shop-section-title-wrap">
+              <span class="shop-badge-pill badge-mens">⌚ Accessories & Luggage</span>
+              <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 800; color: #ffffff; margin: 0;">Accessories & Leather Goods</h2>
+            </div>
+          </div>
+          <button type="button" class="scroll-btn scroll-left-btn" data-target="accessories-row" aria-label="Scroll left">‹</button>
+          <button type="button" class="scroll-btn scroll-right-btn" data-target="accessories-row" aria-label="Scroll right">›</button>
+
+          <div id="accessories-row" class="shop-carousel-row">
+            <!-- Dynamic Items Rendered Here -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Left Slide-Over Filter Drawer Overlay (FULL FLIPKART FEATURE SET) -->
+      <div id="filter-drawer-overlay" class="filter-drawer-overlay">
+        <aside class="filter-drawer" aria-label="Filter Options">
+          
+          <!-- Drawer Header -->
+          <div class="filter-drawer-header">
+            <h2 class="filter-drawer-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+              Filters
+            </h2>
+            <button type="button" id="close-filter-drawer" class="filter-drawer-close" aria-label="Close filters">&times;</button>
+          </div>
+
+          <!-- Drawer Content Body: Flipkart Reference Accordions -->
+          <div class="filter-drawer-body">
+            
+            <!-- 1. CATEGORIES ACCORDION -->
+            <div class="filter-accordion">
+              <button type="button" class="filter-accordion-btn active">
+                <span>CATEGORIES</span>
+                <svg class="accordion-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="filter-accordion-content active">
+                <div class="category-breadcrumb">
+                  <div class="category-breadcrumb-item">‹ All Fashion & Accessories</div>
+                  <div class="category-breadcrumb-item" style="padding-left: 12px; font-weight: 800; color: #ffffff;">Grand Marketplace Shop</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. BRAND ACCORDION -->
+            <div class="filter-accordion">
+              <button type="button" class="filter-accordion-btn active">
+                <span>BRAND</span>
+                <svg class="accordion-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="filter-accordion-content active">
+                <div id="brands-checkbox-container" class="filter-checkbox-list">
+                  <!-- Dynamically populated -->
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. GENDER ACCORDION -->
+            <div class="filter-accordion">
+              <button type="button" class="filter-accordion-btn">
+                <span>GENDER / DEPT</span>
+                <svg class="accordion-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="filter-accordion-content">
+                <div class="filter-checkbox-list">
+                  <label class="filter-checkbox-item"><input type="checkbox" value="Men" class="gender-cb" /> Men</label>
+                  <label class="filter-checkbox-item"><input type="checkbox" value="Women" class="gender-cb" /> Women</label>
+                  <label class="filter-checkbox-item"><input type="checkbox" value="Kids" class="gender-cb" /> Kids</label>
+                  <label class="filter-checkbox-item"><input type="checkbox" value="Accessories" class="gender-cb" /> Accessories</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. PRICE RANGE ACCORDION -->
+            <div class="filter-accordion">
+              <button type="button" class="filter-accordion-btn active">
+                <span>PRICE RANGE (₹)</span>
+                <svg class="accordion-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="filter-accordion-content active">
+                <div class="filter-price-inputs">
+                  <input type="number" id="price-min-input" class="filter-price-input" placeholder="Min ₹" min="0" step="500" />
+                  <span style="color: #64748b; font-weight: bold;">to</span>
+                  <input type="number" id="price-max-input" class="filter-price-input" placeholder="Max ₹" min="0" step="500" />
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. CUSTOMER RATINGS ACCORDION -->
+            <div class="filter-accordion">
+              <button type="button" class="filter-accordion-btn">
+                <span>CUSTOMER RATINGS</span>
+                <svg class="accordion-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="filter-accordion-content">
+                <div class="filter-checkbox-list">
+                  <label class="filter-checkbox-item"><input type="checkbox" value="4" class="rating-cb" /> 4★ & above</label>
+                  <label class="filter-checkbox-item"><input type="checkbox" value="3" class="rating-cb" /> 3★ & above</label>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Drawer Footer -->
+          <div class="filter-drawer-footer">
+            <button type="button" id="reset-drawer-filters-btn" style="flex: 1; padding: 13px; border: 1.5px solid rgba(255,255,255,0.15); background: transparent; border-radius: 14px; font-size: 13.5px; font-weight: 700; color: #94a3b8; cursor: pointer;">
+              Reset All
+            </button>
+            <button type="button" id="apply-drawer-filters-btn" style="flex: 2; padding: 13px; border: none; background: linear-gradient(135deg, #6366f1, #4f46e5); border-radius: 14px; font-size: 13.5px; font-weight: 800; color: #ffffff; cursor: pointer; box-shadow: 0 4px 16px rgba(99,102,241,0.35);">
+              Apply Filters
+            </button>
+          </div>
+
+        </aside>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" style="padding-top: 60px; border-top: 1px solid rgba(255,255,255,0.08);">
+      <div class="container text-center" style="padding-bottom: 40px; color: rgba(255,255,255,0.6);">
+        <p>&copy; 2026 DevTech Solutions. All rights reserved.</p>
+        <p style="margin-top: 10px;"><a href="../index.html" style="color: #818cf8; text-decoration: none; font-weight: 700;">← Back to Home</a></p>
+      </div>
+    </footer>
+
+    <script src="../js/script.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', async () => {
+        document.documentElement.setAttribute('data-theme', 'dark');
+
+        // Accordion Toggle Handler
+        document.querySelectorAll('.filter-accordion-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            btn.classList.toggle('active');
+            const content = btn.nextElementSibling;
+            if (content) content.classList.toggle('active');
+          });
+        });
+
+        let catalogProducts = [
+          // Men
+          { id: 'm1', title: 'Midnight Blue Tuxedo', price: 24999, category: "Men", brand: "DevTech Luxury", bestSeller: true, image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80&fit=crop' },
+          { id: 'm2', title: 'Oxford Classic Shirt', price: 3499, category: "Men", brand: "DevTech Casuals", bestSeller: false, image: 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop' },
+          { id: 'm3', title: 'Premium Leather Jacket', price: 12999, category: "Men", brand: "DevTech Luxury", bestSeller: true, image: 'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&q=80&fit=crop' },
+          { id: 'm4', title: 'Slim Fit Italian Blazer', price: 16499, category: "Men", brand: "DevTech Luxury", bestSeller: false, image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&q=80&fit=crop' },
+          { id: 'm5', title: 'Tailored Chino Trousers', price: 4299, category: "Men", brand: "DevTech Casuals", bestSeller: false, image: 'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=600&q=80&fit=crop' },
+
+          // Women
+          { id: 'w1', title: 'Silk Evening Gown', price: 18499, category: "Women", brand: "DevTech Haute Couture", bestSeller: true, image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600&q=80&fit=crop' },
+          { id: 'w2', title: 'Floral Wrap Blouse', price: 4299, category: "Women", brand: "DevTech Casuals", bestSeller: false, image: 'https://images.unsplash.com/photo-1550614000-4b95d466f913?w=600&q=80&fit=crop' },
+          { id: 'w3', title: 'Stiletto Designer Heels', price: 9999, category: "Women", brand: "DevTech Footwear", bestSeller: true, image: 'https://images.unsplash.com/photo-1532453288672-3a27e9be9efd?w=600&q=80&fit=crop' },
+          { id: 'w4', title: 'Cashmere Winter Trenchcoat', price: 21999, category: "Women", brand: "DevTech Haute Couture", bestSeller: true, image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&q=80&fit=crop' },
+          { id: 'w5', title: 'Pleated Designer Skirt', price: 6499, category: "Women", brand: "DevTech Casuals", bestSeller: false, image: 'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=600&q=80&fit=crop' },
+
+          // Kids
+          { id: 'k1', title: 'Cotton Summer Floral Dress', price: 2499, category: "Kids", brand: "DevTech Juniors", bestSeller: true, image: 'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=600&q=80&fit=crop' },
+          { id: 'k2', title: 'Denim Playtime Overalls', price: 3299, category: "Kids", brand: "DevTech Juniors", bestSeller: false, image: 'https://images.unsplash.com/photo-1522204538344-922f76ecc041?w=600&q=80&fit=crop' },
+          { id: 'k3', title: 'Mini Winter Bomber Jacket', price: 4499, category: "Kids", brand: "DevTech Outerwear", bestSeller: true, image: 'https://images.unsplash.com/photo-1621458055613-255e4e892cfa?w=600&q=80&fit=crop' },
+          { id: 'k4', title: 'Cozy Woolen Hooded Sweater', price: 2899, category: "Kids", brand: "DevTech Juniors", bestSeller: false, image: 'https://images.unsplash.com/photo-1519700141310-3b523cda43ef?w=600&q=80&fit=crop' },
+
+          // Accessories
+          { id: 'a1', title: 'Chronograph Luxury Watch', price: 8999, category: "Accessories", brand: "DevTech Watches", bestSeller: true, image: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&q=80&fit=crop' },
+          { id: 'a2', title: 'Printed Canvas Weekend Duffle', price: 6999, category: "Accessories", brand: "DevTech Luggage", bestSeller: true, image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80&fit=crop' },
+          { id: 'a3', title: 'Classic Leather Tote Bag', price: 14999, category: "Accessories", brand: "DevTech Accessories", bestSeller: false, image: 'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&q=80&fit=crop' }
+        ];
+
+        // Fetch live database catalog from backend API
+        try {
+          const res = await fetch('http://localhost:5000/products');
+          if (res.ok) {
+            const data = await res.json();
+            const fetched = data.products || data || [];
+            if (Array.isArray(fetched) && fetched.length > 0) {
+              catalogProducts = fetched.map(p => ({
+                id: p.id || p.pid,
+                title: p.title,
+                price: parseFloat(p.price || 0),
+                category: p.category || 'General',
+                brand: p.brand || 'DevTech Collection',
+                bestSeller: parseFloat(p.price || 0) > 6000,
+                image: p.image_url || p.image || 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80&fit=crop'
+              }));
+            }
+          }
+        } catch (e) {
+          console.warn('Backend API fetch fallback used:', e.message);
+        }
+
+        // Populate Brand Checkboxes
+        const brandContainer = document.getElementById('brands-checkbox-container');
+        const brandsSet = new Set(catalogProducts.map(p => p.brand).filter(Boolean));
+        if (brandContainer) {
+          brandContainer.innerHTML = '';
+          if (brandsSet.size === 0) brandsSet.add('DevTech Collection');
+          brandsSet.forEach(brand => {
+            const label = document.createElement('label');
+            label.className = 'filter-checkbox-item';
+            label.innerHTML = `<input type="checkbox" value="${brand}" class="brand-cb" /> ${brand}`;
+            brandContainer.appendChild(label);
+          });
+        }
+
+        // Filter State
+        let filterMinPrice = null;
+        let filterMaxPrice = null;
+        let selectedBrands = [];
+        let selectedGenders = [];
+        let activeSort = 'featured';
+        let searchQuery = '';
+
+        const drawerOverlay = document.getElementById('filter-drawer-overlay');
+        const openFilterBtn = document.getElementById('open-filter-btn');
+        const closeFilterBtn = document.getElementById('close-filter-drawer');
+        const applyFilterBtn = document.getElementById('apply-drawer-filters-btn');
+        const resetFilterBtn = document.getElementById('reset-drawer-filters-btn');
+        const clearAllFiltersBtn = document.getElementById('clear-all-filters-btn');
+        const activeBadge = document.getElementById('active-filter-badge');
+        const sortSelect = document.getElementById('sort-select');
+
+        // Drawer toggle
+        openFilterBtn.addEventListener('click', () => drawerOverlay.classList.add('active'));
+        closeFilterBtn.addEventListener('click', () => drawerOverlay.classList.remove('active'));
+        drawerOverlay.addEventListener('click', (e) => {
+          if (e.target === drawerOverlay) drawerOverlay.classList.remove('active');
+        });
+
+        function updateFilterBadge() {
+          let count = 0;
+          if (filterMinPrice !== null || filterMaxPrice !== null) count++;
+          if (selectedBrands.length > 0) count++;
+          if (selectedGenders.length > 0) count++;
+
+          if (count > 0) {
+            activeBadge.textContent = count;
+            activeBadge.style.display = 'inline-block';
+            clearAllFiltersBtn.style.display = 'inline-block';
+          } else {
+            activeBadge.style.display = 'none';
+            clearAllFiltersBtn.style.display = 'none';
+          }
+        }
+
+        // Create product card element
+        function createProductCard(p) {
+          const card = document.createElement('article');
+          card.className = 'shop-carousel-card';
+
+          card.innerHTML = `
+            <div style="height: 220px; overflow: hidden; position: relative; background: #181826;">
+              <img src="${p.image}" style="width: 100%; height: 100%; object-fit: cover;" alt="${p.title}" />
+              ${p.bestSeller ? `<span style="position: absolute; top: 10px; left: 10px; background: rgba(245, 158, 11, 0.9); color: white; border-radius: 99px; padding: 2px 10px; font-size: 10.5px; font-weight: 800; text-transform: uppercase;">🔥 Top Sold</span>` : ''}
+            </div>
+            <div style="padding: 16px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1;">
+              <span style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #818cf8; letter-spacing: 0.06em;">${p.brand}</span>
+              <h3 style="margin: 0; font-size: 14.5px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.title}</h3>
+              <p style="margin: 0; font-size: 15px; font-weight: 800; color: #818cf8;">₹${p.price.toLocaleString('en-IN')}</p>
+              
+              <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 10px;">
+                <button class="action-btn-pill btn-add-cart">
+                  🛒 Add to Cart
+                </button>
+                <button class="action-btn-pill btn-add-wishlist" title="Add to Wishlist">
+                  💖
+                </button>
+              </div>
+            </div>
+          `;
+
+          // Cart Handler
+          card.querySelector('.btn-add-cart').addEventListener('click', () => {
+            const cart = JSON.parse(localStorage.getItem('dtf_cart') || '[]');
+            const existingIdx = cart.findIndex(item => item.title === p.title);
+            if (existingIdx > -1) {
+              cart[existingIdx].quantity = (cart[existingIdx].quantity || 1) + 1;
+            } else {
+              cart.push({ title: p.title, price: p.price, image: p.image, quantity: 1 });
+            }
+            localStorage.setItem('dtf_cart', JSON.stringify(cart));
+            window.dispatchEvent(new Event('dtf:cart:updated'));
+            alert(`🛒 "${p.title}" added to your Cart!`);
+          });
+
+          // Wishlist Handler
+          card.querySelector('.btn-add-wishlist').addEventListener('click', () => {
+            const wishlist = JSON.parse(localStorage.getItem('dtf_wishlist') || '[]');
+            if (!wishlist.some(item => item.title === p.title)) {
+              wishlist.push({ title: p.title, price: p.price, image: p.image });
+              localStorage.setItem('dtf_wishlist', JSON.stringify(wishlist));
+              window.dispatchEvent(new Event('dtf:wishlist:updated'));
+              alert(`💖 "${p.title}" saved to your Wishlist!`);
+            } else {
+              alert(`💖 "${p.title}" is already in your Wishlist.`);
+            }
+          });
+
+          return card;
+        }
+
+        // Render Carousel Row
+        function populateRow(rowId, filterFn) {
+          const row = document.getElementById(rowId);
+          if (!row) return;
+          row.innerHTML = '';
+          
+          let items = catalogProducts.filter(filterFn);
+
+          // Apply Min / Max price
+          if (filterMinPrice !== null) items = items.filter(p => p.price >= filterMinPrice);
+          if (filterMaxPrice !== null) items = items.filter(p => p.price <= filterMaxPrice);
+          
+          // Apply Brand Filter
+          if (selectedBrands.length > 0) items = items.filter(p => selectedBrands.includes(p.brand));
+          
+          // Apply Search Filter
+          if (searchQuery) items = items.filter(p => p.title.toLowerCase().includes(searchQuery));
+
+          // Sort
+          if (activeSort === 'price-low') items.sort((a, b) => a.price - b.price);
+          else if (activeSort === 'price-high') items.sort((a, b) => b.price - a.price);
+          else if (activeSort === 'name') items.sort((a, b) => a.title.localeCompare(b.title));
+
+          if (items.length === 0) {
+            row.innerHTML = `<span style="color: #64748b; font-size: 13.5px; padding: 16px 0;">No items match selected filters in this category.</span>`;
+            return;
+          }
+          items.forEach(p => row.appendChild(createProductCard(p)));
+        }
+
+        function refreshAllRows() {
+          updateFilterBadge();
+          populateRow('bestsellers-row', p => p.bestSeller);
+          populateRow('mens-row', p => p.category && p.category.toLowerCase().includes('men'));
+          populateRow('womens-row', p => p.category && p.category.toLowerCase().includes('women'));
+          populateRow('kids-row', p => p.category && p.category.toLowerCase().includes('kid'));
+          populateRow('accessories-row', p => !p.category || p.category.toLowerCase().includes('access') || p.category.toLowerCase().includes('bag') || p.category.toLowerCase().includes('luggage'));
+        }
+
+        // Apply Filters Handler
+        applyFilterBtn.addEventListener('click', () => {
+          const minVal = document.getElementById('price-min-input').value;
+          const maxVal = document.getElementById('price-max-input').value;
+          filterMinPrice = minVal ? parseFloat(minVal) : null;
+          filterMaxPrice = maxVal ? parseFloat(maxVal) : null;
+
+          selectedBrands = Array.from(document.querySelectorAll('.brand-cb:checked')).map(cb => cb.value);
+          selectedGenders = Array.from(document.querySelectorAll('.gender-cb:checked')).map(cb => cb.value);
+
+          drawerOverlay.classList.remove('active');
+          refreshAllRows();
+        });
+
+        // Reset Filters Handler
+        function resetAllFilters() {
+          document.getElementById('price-min-input').value = '';
+          document.getElementById('price-max-input').value = '';
+          document.querySelectorAll('.brand-cb').forEach(cb => cb.checked = false);
+          document.querySelectorAll('.gender-cb').forEach(cb => cb.checked = false);
+
+          filterMinPrice = null;
+          filterMaxPrice = null;
+          selectedBrands = [];
+          selectedGenders = [];
+
+          refreshAllRows();
+        }
+
+        resetFilterBtn.addEventListener('click', resetAllFilters);
+        clearAllFiltersBtn.addEventListener('click', resetAllFilters);
+
+        // Sort By Change
+        sortSelect.addEventListener('change', (e) => {
+          activeSort = e.target.value;
+          refreshAllRows();
+        });
+
+        // Scroll Buttons Left / Right
+        document.querySelectorAll('.scroll-left-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-target');
+            const row = document.getElementById(targetId);
+            if (row) row.scrollBy({ left: -320, behavior: 'smooth' });
+          });
+        });
+
+        document.querySelectorAll('.scroll-right-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-target');
+            const row = document.getElementById(targetId);
+            if (row) row.scrollBy({ left: 320, behavior: 'smooth' });
+          });
+        });
+
+        // Live Header Search
+        const searchInput = document.getElementById('nav-search-input');
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim().toLowerCase();
+            refreshAllRows();
+          });
+        }
+
+        refreshAllRows();
+      });
+    </script>
+  </body>
+</html>

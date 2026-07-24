@@ -3,24 +3,22 @@ import { query } from '../../../db.js';
 export async function createAddress(userId, data) {
   const {
     fullName, mobile, alternateMobile, houseNumber, building, street, area, landmark,
-    city, state, country, pincode, latitude, longitude, formattedAddress,
-    accuracy, verified = false, addressType = 'home', isDefault = false
+    city, state, country, pincode, latitude, longitude,
+    addressType = 'home', isDefault = false
   } = data;
 
   const sql = `
     INSERT INTO user_addresses (
       user_id, full_name, mobile, alternate_mobile, house_number, building, street, area, landmark,
-      city, state, country, pincode, latitude, longitude, formatted_address,
-      accuracy, verified, address_type, is_default
+      city, state, country, pincode, latitude, longitude, address_type, is_default
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
     RETURNING *;
   `;
 
   const values = [
     userId, fullName, mobile, alternateMobile, houseNumber, building, street, area, landmark,
-    city, state, country, pincode, latitude, longitude, formattedAddress,
-    accuracy, verified, addressType, isDefault
+    city, state, country, pincode, latitude, longitude, addressType, isDefault
   ];
 
   const result = await query(sql, values);
@@ -30,8 +28,8 @@ export async function createAddress(userId, data) {
 export async function updateAddress(id, userId, data) {
   const {
     fullName, mobile, alternateMobile, houseNumber, building, street, area, landmark,
-    city, state, country, pincode, latitude, longitude, formattedAddress,
-    accuracy, verified, addressType, isDefault
+    city, state, country, pincode, latitude, longitude,
+    addressType, isDefault
   } = data;
 
   const sql = `
@@ -51,11 +49,8 @@ export async function updateAddress(id, userId, data) {
       pincode = COALESCE($14, pincode),
       latitude = COALESCE($15, latitude),
       longitude = COALESCE($16, longitude),
-      formatted_address = COALESCE($17, formatted_address),
-      accuracy = COALESCE($18, accuracy),
-      verified = COALESCE($19, verified),
-      address_type = COALESCE($20, address_type),
-      is_default = COALESCE($21, is_default),
+      address_type = COALESCE($17, address_type),
+      is_default = COALESCE($18, is_default),
       updated_at = CURRENT_TIMESTAMP
     WHERE id = $1 AND user_id = $2
     RETURNING *;
@@ -63,8 +58,7 @@ export async function updateAddress(id, userId, data) {
 
   const values = [
     id, userId, fullName, mobile, alternateMobile, houseNumber, building, street, area, landmark,
-    city, state, country, pincode, latitude, longitude, formattedAddress,
-    accuracy, verified, addressType, isDefault
+    city, state, country, pincode, latitude, longitude, addressType, isDefault
   ];
 
   const result = await query(sql, values);
@@ -134,9 +128,6 @@ function mapDbRowToAddress(row) {
     pincode: row.pincode,
     latitude: parseFloat(row.latitude),
     longitude: parseFloat(row.longitude),
-    formattedAddress: row.formatted_address,
-    accuracy: row.accuracy,
-    verified: row.verified,
     addressType: row.address_type,
     isDefault: row.is_default,
     createdAt: row.created_at,
