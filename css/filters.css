@@ -672,6 +672,7 @@
 
   .filter-panel {
     width: 320px;
+    max-width: calc(100vw - 20px);
   }
 
   .filter-results-count {

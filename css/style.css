@@ -146,11 +146,17 @@
   }
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 body {
@@ -159,7 +165,8 @@ body {
   line-height: 1.6;
   color: var(--text-primary);
   background-color: var(--bg-base);
-  overflow-x: clip;
+  max-width: 100vw;
+  overflow-x: hidden;
   position: relative;
 }
 
@@ -769,6 +776,8 @@ iframe {
               opacity 0.3s ease,
               visibility 0.3s ease;
   max-width: 520px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
   margin: 0 auto;
 }
 
@@ -993,10 +1002,6 @@ iframe {
 .nav-search-btn:hover {
   background: #4f46e5 !important;
   transform: scale(1.05);
-}
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
-  transition: transform 0.2s ease, background 0.2s ease;
 }
 
 .nav-search-btn svg {
@@ -2170,6 +2175,9 @@ iframe {
 
 /* Map */
 .map-embed {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
@@ -3333,43 +3341,47 @@ iframe {
    BOTTOM-TO-TOP LOCATION DRAWER SHEET (Git Commit 157e17a UI)
    ============================================================ */
 .location-bottom-sheet-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 999999;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 999999 !important;
+  background: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-end !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.35s ease, visibility 0.35s ease !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
 .location-bottom-sheet-backdrop.active {
-  opacity: 1;
-  visibility: visible;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 }
 
 .location-bottom-sheet {
-  width: 100%;
-  max-width: 540px;
-  max-height: 88vh;
-  background: #ffffff;
-  color: #111827;
-  border-top-left-radius: 28px;
-  border-top-right-radius: 28px;
-  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.25);
-  overflow-y: auto;
-  transform: translateY(100%);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
+  width: 100% !important;
+  max-width: 540px !important;
+  max-height: 88vh !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  border-top-left-radius: 28px !important;
+  border-top-right-radius: 28px !important;
+  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.35) !important;
+  overflow-y: auto !important;
+  transform: translateY(100%) !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  z-index: 1000000 !important;
 }
 
 .location-bottom-sheet-backdrop.active .location-bottom-sheet {
-  transform: translateY(0);
+  transform: translateY(0) !important;
 }
 
 .sheet-drag-handle {

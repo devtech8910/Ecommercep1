@@ -100,8 +100,13 @@ function updateAuthUI() {
       const user = JSON.parse(rawUser);
       const name = user.full_name || user.name || user.username || user.email?.split('@')[0] || 'User';
 
-      // 1. Mobile Greeting
+      // 1. Mobile Greeting & Auth Buttons Toggle
+      const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+      const mobileAuthBtns = document.getElementById('mobile-auth-btns');
       if (nameEl) nameEl.textContent = `Hey ${name}`;
+
+      if (mobileLogoutBtn) mobileLogoutBtn.style.setProperty('display', 'flex', 'important');
+      if (mobileAuthBtns) mobileAuthBtns.style.setProperty('display', 'none', 'important');
 
       // Check Admin role
       const isAdmin = (user.role && user.role.toLowerCase() === 'admin') ||
@@ -164,18 +169,16 @@ function updateAuthUI() {
         }
       }
 
-    } else {
-      // Logged Out State
-      if (nameEl) nameEl.textContent = 'Hey Guest';
-      if (adminItem) adminItem.style.display = 'none';
-
-      if (loginBtn) loginBtn.style.display = '';
-      if (signupBtn) signupBtn.style.display = '';
-      if (desktopUserContainer) desktopUserContainer.style.display = 'none';
     }
   } catch (err) {
     console.warn('Auth UI update error:', err);
     if (nameEl) nameEl.textContent = 'Hey Guest';
+
+    const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+    const mobileAuthBtns = document.getElementById('mobile-auth-btns');
+    if (mobileLogoutBtn) mobileLogoutBtn.style.setProperty('display', 'none', 'important');
+    if (mobileAuthBtns) mobileAuthBtns.style.setProperty('display', 'flex', 'important');
+
     if (adminItem) adminItem.style.display = 'none';
     if (loginBtn) loginBtn.style.display = '';
     if (signupBtn) signupBtn.style.display = '';
@@ -191,69 +194,120 @@ document.addEventListener('DOMContentLoaded', updateAuthUI);
    MOBILE MENU — HAMBURGER TOGGLE
    ============================================================ */
 (function initMobileMenu() {
-  const hamburger  = $('#hamburger');
-  const mobileMenu = $('#mobile-menu');
-  if (!hamburger || !mobileMenu) return;
+  function toggleMenu(e) {
+    const hamburger = e.target.closest('#hamburger');
+    if (!hamburger) return;
 
-  let isOpen = false;
+    e.preventDefault();
+    e.stopPropagation();
 
-  function openMenu() {
-    isOpen = true;
-    updateAuthUI();
-    hamburger.classList.add('open');
-    mobileMenu.classList.add('open');
-    hamburger.setAttribute('aria-expanded', 'true');
-    document.body.style.overflow = 'hidden';
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (!mobileMenu) return;
 
-    // Trap focus inside mobile menu
-    mobileMenu.querySelector('a, button')?.focus();
+    const isOpen = mobileMenu.classList.contains('open');
+
+    if (isOpen) {
+      hamburger.classList.remove('open');
+      mobileMenu.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('mobile-menu-open');
+      document.body.style.overflow = '';
+    } else {
+      updateAuthUI();
+      hamburger.classList.add('open');
+      mobileMenu.classList.add('open');
+      hamburger.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('mobile-menu-open');
+      document.body.style.overflow = 'hidden';
+    }
   }
 
-  function closeMenu() {
-    isOpen = false;
-    hamburger.classList.remove('open');
-    mobileMenu.classList.remove('open');
-    hamburger.setAttribute('aria-expanded', 'false');
-    document.body.style.overflow = '';
-  }
-
-  hamburger.addEventListener('click', () => {
-    if (isOpen) closeMenu();
-    else openMenu();
-  });
+  document.addEventListener('click', toggleMenu);
 
   // Logout button handler in mobile menu
-  const logoutBtn = document.getElementById('mobile-logout-btn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
+  document.addEventListener('click', (e) => {
+    const logoutBtn = e.target.closest('#mobile-logout-btn');
+    if (logoutBtn) {
       localStorage.removeItem('dtf_user');
       localStorage.removeItem('dtf_token');
       localStorage.removeItem('user');
       updateAuthUI();
-      closeMenu();
+      const hamburger = document.getElementById('hamburger');
+      const mobileMenu = document.getElementById('mobile-menu');
+      hamburger?.classList.remove('open');
+      mobileMenu?.classList.remove('open');
+      hamburger?.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('mobile-menu-open');
+      document.body.style.overflow = '';
       alert('Logged out successfully!');
       window.location.reload();
-    });
-  }
-
-  // Initial greeting update
-  updateAuthUI();
-
-  // Close on Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isOpen) closeMenu();
+    }
   });
 
   // Close on outside click
   document.addEventListener('click', (e) => {
-    if (isOpen && !mobileMenu.contains(e.target) && !hamburger.contains(e.target)) {
-      closeMenu();
+    const mobileMenu = document.getElementById('mobile-menu');
+    const hamburger = document.getElementById('hamburger');
+    if (mobileMenu && mobileMenu.classList.contains('open')) {
+      if (!mobileMenu.contains(e.target) && (!hamburger || !hamburger.contains(e.target))) {
+        hamburger?.classList.remove('open');
+        mobileMenu.classList.remove('open');
+        hamburger?.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('mobile-menu-open');
+        document.body.style.overflow = '';
+      }
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const hamburger = document.getElementById('hamburger');
+      const mobileMenu = document.getElementById('mobile-menu');
+      if (mobileMenu && mobileMenu.classList.contains('open')) {
+        hamburger?.classList.remove('open');
+        mobileMenu.classList.remove('open');
+        hamburger?.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('mobile-menu-open');
+        document.body.style.overflow = '';
+      }
     }
   });
 
   // Close when a mobile link is clicked
-  $$('.mobile-link, .mobile-actions .btn', mobileMenu).forEach((link) => {
-    link.addEventListener('click', closeMenu);
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('.mobile-link, .mobile-actions .btn');
+    if (link) {
+      const hamburger = document.getElementById('hamburger');
+      const mobileMenu = document.getElementById('mobile-menu');
+      if (mobileMenu && mobileMenu.classList.contains('open')) {
+        hamburger?.classList.remove('open');
+        mobileMenu.classList.remove('open');
+        hamburger?.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('mobile-menu-open');
+        document.body.style.overflow = '';
+      }
+    }
+  });
+
+  // Initial greeting update
+  updateAuthUI();
+})();
+
+/* ============================================================
+   MOBILE CATEGORY ACCORDION
+   ============================================================ */
+(function initMobileCategoryAccordion() {
+  const categoryHeaders = document.querySelectorAll('.mobile-category-header');
+  categoryHeaders.forEach(header => {
+    header.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const block = header.closest('.mobile-category-block');
+      if (block) {
+        block.classList.toggle('expanded');
+      }
+    });
   });
 })();
 
@@ -1115,42 +1169,216 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
 
   // Open Sheet Drawer
   function openSheet() {
+    let activeBackdrop = document.getElementById('location-bottom-sheet-backdrop');
+    if (!activeBackdrop) return;
+
     renderSavedAddresses();
-    if (savedAddresses.length > 0) {
-      if (backToSavedBtn) backToSavedBtn.textContent = '← Back';
-      showView(viewSaved);
+
+    const viewSavedEl = document.getElementById('loc-view-saved');
+    const viewChoiceEl = document.getElementById('loc-view-choice');
+    const backBtn = document.getElementById('btn-back-to-saved');
+
+    if (savedAddresses && savedAddresses.length > 0) {
+      if (backBtn) backBtn.textContent = '← Back';
+      showView(viewSavedEl);
     } else {
-      if (backToSavedBtn) backToSavedBtn.textContent = '✕ Close';
-      showView(viewChoice);
+      if (backBtn) backBtn.textContent = '✕ Close';
+      showView(viewChoiceEl);
     }
-    backdrop.classList.add('active');
+
+    activeBackdrop.classList.add('active');
+    activeBackdrop.style.setProperty('display', 'flex', 'important');
+    activeBackdrop.style.setProperty('opacity', '1', 'important');
+    activeBackdrop.style.setProperty('visibility', 'visible', 'important');
+    activeBackdrop.style.setProperty('pointer-events', 'auto', 'important');
+    document.body.style.overflow = 'hidden';
   }
 
   // Close Sheet Drawer
   function closeSheet() {
-    backdrop.classList.remove('active');
+    const activeBackdrop = document.getElementById('location-bottom-sheet-backdrop');
+    if (activeBackdrop) {
+      activeBackdrop.classList.remove('active');
+      activeBackdrop.style.setProperty('display', 'none', 'important');
+      activeBackdrop.style.setProperty('opacity', '0', 'important');
+      activeBackdrop.style.setProperty('visibility', 'hidden', 'important');
+      activeBackdrop.style.setProperty('pointer-events', 'none', 'important');
+    }
+    document.body.style.overflow = '';
   }
 
-  if (changeBtn) changeBtn.addEventListener('click', openSheet);
-  if (textEl) textEl.addEventListener('click', openSheet);
-  if (closeSheetBtn) closeSheetBtn.addEventListener('click', closeSheet);
-  backdrop.addEventListener('click', (e) => {
-    if (e.target === backdrop) closeSheet();
-  });
+  // Expose globally for inline onclick handlers and external calls
+  window.openLocationSheet = openSheet;
+  window.closeLocationSheet = closeSheet;
 
-  // Navigation handlers
-  if (gotoAddBtn) gotoAddBtn.addEventListener('click', () => showView(viewChoice));
-  if (backToSavedBtn) {
-    backToSavedBtn.addEventListener('click', () => {
-      if (savedAddresses.length > 0) {
-        showView(viewSaved);
-      } else {
+  // Helper for triggering live GPS detection
+  function triggerGpsDetection() {
+    const viewGpsMapEl = document.getElementById('loc-view-gps-map');
+    const viewManualEl = document.getElementById('loc-view-manual');
+    const gpsStatusBoxEl = document.getElementById('gps-status-box');
+    const gpsSummaryCountryEl = document.getElementById('gps-summary-country');
+    const gpsSummaryPincodeEl = document.getElementById('gps-summary-pincode');
+    const gpsSummaryStateEl = document.getElementById('gps-summary-state');
+    const gpsSummaryDistrictEl = document.getElementById('gps-summary-district');
+    const gpsSummaryLocalityEl = document.getElementById('gps-summary-locality');
+
+    if (!navigator.geolocation) {
+      alert('GPS Geolocation is not supported by your browser.');
+      return;
+    }
+
+    showView(viewGpsMapEl);
+
+    if (gpsSummaryCountryEl) gpsSummaryCountryEl.textContent = 'India 🇮🇳';
+    if (gpsSummaryPincodeEl) gpsSummaryPincodeEl.textContent = '⏳ Detecting PIN...';
+    if (gpsSummaryStateEl) gpsSummaryStateEl.textContent = '⏳ Detecting State...';
+    if (gpsSummaryDistrictEl) gpsSummaryDistrictEl.textContent = '⏳ Detecting District...';
+    if (gpsSummaryLocalityEl) gpsSummaryLocalityEl.textContent = '📡 Triangulating GPS...';
+
+    if (gpsStatusBoxEl) {
+      gpsStatusBoxEl.style.display = 'block';
+      gpsStatusBoxEl.style.background = '#eff6ff';
+      gpsStatusBoxEl.style.color = '#1d4ed8';
+      gpsStatusBoxEl.textContent = '📡 Detecting exact GPS coordinates & location details...';
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+
+          detectedGpsData = await resolveHighPrecisionAddress(lat, lon);
+
+          const { country, area, state, district, pin } = detectedGpsData;
+
+          if (gpsSummaryCountryEl) gpsSummaryCountryEl.textContent = `${country} 🇮🇳`;
+          if (gpsSummaryPincodeEl) gpsSummaryPincodeEl.textContent = pin;
+          if (gpsSummaryStateEl) gpsSummaryStateEl.textContent = state;
+          if (gpsSummaryDistrictEl) gpsSummaryDistrictEl.textContent = district;
+          if (gpsSummaryLocalityEl) gpsSummaryLocalityEl.textContent = area;
+
+          setTimeout(() => {
+            const mapDiv = document.getElementById('gps-interactive-map');
+            if (mapDiv && window.L) {
+              if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+              leafletMap = L.map(mapDiv).setView([lat, lon], 16);
+              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19, attribution: '© OpenStreetMap'
+              }).addTo(leafletMap);
+              leafletMarker = L.marker([lat, lon], { draggable: true }).addTo(leafletMap);
+              leafletMarker.bindPopup(`<b>📍 ${area}</b><br>${district}, ${state} - ${pin}`).openPopup();
+
+              leafletMarker.on('dragend', async function() {
+                const mPos = leafletMarker.getLatLng();
+                try {
+                  const rData = await resolveHighPrecisionAddress(mPos.lat, mPos.lng);
+                  detectedGpsData.area = rData.area;
+                  detectedGpsData.pin = rData.pin;
+                  detectedGpsData.state = rData.state;
+                  detectedGpsData.district = rData.district;
+
+                  if (gpsSummaryLocalityEl) gpsSummaryLocalityEl.textContent = rData.area;
+                  if (gpsSummaryPincodeEl) gpsSummaryPincodeEl.textContent = rData.pin;
+                  if (gpsSummaryStateEl) gpsSummaryStateEl.textContent = rData.state;
+                  if (gpsSummaryDistrictEl) gpsSummaryDistrictEl.textContent = rData.district;
+                  leafletMarker.bindPopup(`<b>📍 ${rData.area}</b><br>${rData.district}, ${rData.state} - ${rData.pin}`).openPopup();
+                } catch {}
+              });
+            }
+          }, 200);
+
+        } catch (err) {
+          console.error('GPS reverse geocoding failed:', err);
+          alert('⚠️ Unable to fetch location details. Please enter manually.');
+          showView(viewManualEl);
+        } finally {
+          if (gpsStatusBoxEl) gpsStatusBoxEl.style.display = 'none';
+        }
+      },
+      (err) => {
+        alert('⚠️ GPS Access Permission Denied. Please enter details manually.');
+        if (gpsStatusBoxEl) gpsStatusBoxEl.style.display = 'none';
+        showView(viewManualEl);
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+    );
+  }
+
+  // Helper for opening manual form
+  function openManualForm() {
+    editingAddressId = null;
+    const viewManualEl = document.getElementById('loc-view-manual');
+    const manualFormEl = document.getElementById('manual-address-form');
+    const formTitle = viewManualEl ? viewManualEl.querySelector('h3') : null;
+    const submitBtn = manualFormEl ? manualFormEl.querySelector('button[type="submit"]') : null;
+    if (formTitle) formTitle.textContent = 'Enter Delivery Details';
+    if (submitBtn) submitBtn.textContent = 'Save & Deliver Here 🚀';
+    if (manualFormEl) manualFormEl.reset();
+    showView(viewManualEl);
+  }
+
+  // Master Document-level click handler for all location triggers & controls
+  document.addEventListener('click', (e) => {
+    // 1. If click is inside location sheet drawer
+    if (e.target.closest('#location-bottom-sheet-backdrop')) {
+      const closeBtn = e.target.closest('#close-loc-sheet');
+      if (closeBtn || e.target.id === 'location-bottom-sheet-backdrop') {
+        e.preventDefault();
         closeSheet();
+        return;
       }
-    });
-  }
-  if (backFromGpsBtn) backFromGpsBtn.addEventListener('click', () => showView(viewChoice));
-  if (backToChoiceBtn) backToChoiceBtn.addEventListener('click', () => showView(viewChoice));
+
+      const optionGpsCard = e.target.closest('#option-gps-detect');
+      if (optionGpsCard) {
+        e.preventDefault();
+        triggerGpsDetection();
+        return;
+      }
+
+      const optionAwayCard = e.target.closest('#option-away-manual');
+      if (optionAwayCard) {
+        e.preventDefault();
+        openManualForm();
+        return;
+      }
+
+      const gotoAdd = e.target.closest('#btn-goto-add-choice');
+      if (gotoAdd) {
+        e.preventDefault();
+        showView(document.getElementById('loc-view-choice'));
+        return;
+      }
+
+      const backToSaved = e.target.closest('#btn-back-to-saved');
+      if (backToSaved) {
+        e.preventDefault();
+        if (savedAddresses && savedAddresses.length > 0) {
+          showView(document.getElementById('loc-view-saved'));
+        } else {
+          closeSheet();
+        }
+        return;
+      }
+
+      const backFromGps = e.target.closest('#btn-back-from-gps');
+      const backToChoice = e.target.closest('#btn-back-to-choice');
+      if (backFromGps || backToChoice) {
+        e.preventDefault();
+        showView(document.getElementById('loc-view-choice'));
+        return;
+      }
+      return;
+    }
+
+    // 2. Open trigger from subbar
+    const openTrigger = e.target.closest('.location-subbar, #react-address-picker-root, #subbar-change-location-btn, #subbar-location-text');
+    if (openTrigger) {
+      e.preventDefault();
+      e.stopPropagation();
+      openSheet();
+    }
+  });
 
   // High-Precision Geocoding & Pincode Resolver (Direct Nominatim + India Post API Fallback)
   async function resolveHighPrecisionAddress(lat, lon) {
