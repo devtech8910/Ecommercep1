@@ -185,12 +185,66 @@
     });
   }
 
+  function initMobileScrollControls() {
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+    const SCROLL_THRESHOLD = 6;
+    const MIN_SCROLL_TOP = 80;
+
+    function update() {
+      const currentScrollY = window.scrollY;
+
+      if (window.innerWidth > 768) {
+        document.querySelectorAll('.cat-controls-bar').forEach((bar) => {
+          bar.classList.remove('mobile-controls-hidden');
+        });
+        lastScrollY = currentScrollY;
+        ticking = false;
+        return;
+      }
+
+      const delta = currentScrollY - lastScrollY;
+
+      // Scroll Down -> Hide controls bar smoothly
+      if (delta > SCROLL_THRESHOLD && currentScrollY > MIN_SCROLL_TOP) {
+        document.querySelectorAll('.cat-controls-bar').forEach((bar) => {
+          bar.classList.add('mobile-controls-hidden');
+        });
+      }
+      // Scroll Up or near Top -> Show controls bar smoothly
+      else if (delta < -SCROLL_THRESHOLD || currentScrollY <= MIN_SCROLL_TOP) {
+        document.querySelectorAll('.cat-controls-bar').forEach((bar) => {
+          bar.classList.remove('mobile-controls-hidden');
+        });
+      }
+
+      lastScrollY = currentScrollY;
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(update);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        document.querySelectorAll('.cat-controls-bar').forEach((bar) => {
+          bar.classList.remove('mobile-controls-hidden');
+        });
+      }
+    }, { passive: true });
+  }
+
   function boot() {
     setViewportHooks();
     ensureBottomNav();
     ensureCategoryModal();
     enhanceTouchCarousels();
     syncBodyMenuState();
+    initMobileScrollControls();
 
     const menu = document.getElementById('mobile-menu');
     if (menu) {

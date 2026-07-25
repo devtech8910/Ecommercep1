@@ -406,17 +406,32 @@
     font-size: 16px !important;
   }
 
+  /* Flipkart-Style Equal 50/50 Sticky Filter & Sort Bar (Mobile Only) */
   .cat-controls-bar {
-    top: calc(var(--mobile-header-height) + 18px) !important;
+    position: sticky !important;
+    top: calc(var(--mobile-header-height, 64px) + max(8px, env(safe-area-inset-top, 0px))) !important;
+    z-index: 950 !important;
     display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 10px !important;
-    padding: 10px 0 !important;
-    margin: 12px 0 18px !important;
-    background: rgba(10, 10, 20, 0.82) !important;
-    backdrop-filter: blur(18px) !important;
-    -webkit-backdrop-filter: blur(18px) !important;
-    border-radius: 16px !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    padding: 6px 8px !important;
+    margin: 8px 0 16px !important;
+    background: rgba(15, 23, 42, 0.88) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease, visibility 0.22s ease !important;
+    will-change: transform, opacity;
+  }
+
+  /* Flipkart-Style Hide on Scroll Down */
+  .cat-controls-bar.mobile-controls-hidden {
+    transform: translateY(-130%) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
   }
 
   .cat-controls-bar > div,
@@ -424,17 +439,56 @@
   .filter-group {
     width: 100% !important;
     min-width: 0 !important;
-    margin-left: 0 !important;
-    justify-content: stretch !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .sort-wrapper {
+    position: relative !important;
   }
 
   #open-filter-btn,
-  .filter-toggle-btn,
+  .filter-toggle-btn {
+    width: 100% !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 0 10px !important;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.28), rgba(139, 92, 246, 0.28)) !important;
+    border: 1.5px solid rgba(99, 102, 241, 0.45) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25) !important;
+    cursor: pointer !important;
+  }
+
   .sort-select,
   .filter-sort-select {
     width: 100% !important;
-    min-height: 46px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    text-align-last: center !important;
+    display: flex !important;
+    align-items: center !important;
     justify-content: center !important;
+    padding: 0 10px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
+    color: #ffffff !important;
+    cursor: pointer !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
   }
 
   .filter-label {
