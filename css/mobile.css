@@ -322,7 +322,12 @@
     border-radius: var(--mobile-radius) !important;
   }
 
-  .cat-card,
+  .cat-card {
+    padding: 0 !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+  }
+
   .bento-card,
   .dark-glass-card,
   .auth-card,
@@ -334,7 +339,7 @@
 
   .cat-photo-wrap {
     aspect-ratio: 4 / 5 !important;
-    border-radius: 16px !important;
+    border-radius: 20px !important;
   }
 
   .editorial-grid,
@@ -883,12 +888,99 @@
   align-items: center;
   gap: 14px;
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   border-radius: 16px;
-  color: #ffffff;
+  color: #ffffff !important;
   text-decoration: none;
   transition: all 0.2s ease;
+}
+
+/* ============================================================
+   MOBILE READABILITY & CONTRAST ENHANCEMENTS
+   ============================================================ */
+
+/* Mobile Bottom Navigation Bar */
+.mobile-bottom-nav {
+  background: rgba(10, 10, 24, 0.95) !important;
+  backdrop-filter: blur(24px) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.mobile-bottom-nav-item {
+  color: rgba(255, 255, 255, 0.70) !important;
+  font-weight: 600 !important;
+  border-radius: 16px !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  border: 1px solid transparent !important;
+}
+
+.mobile-bottom-nav-item svg {
+  color: rgba(255, 255, 255, 0.85) !important;
+  transition: transform 0.2s ease, color 0.2s ease !important;
+}
+
+/* Hover & Focus state for NON-ACTIVE bottom nav buttons */
+.mobile-bottom-nav-item:not(.active):hover,
+.mobile-bottom-nav-item:not(.active):focus {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.20) !important;
+  transform: translateY(-2px);
+}
+
+.mobile-bottom-nav-item:not(.active):hover svg {
+  color: #ffffff !important;
+  transform: scale(1.08);
+}
+
+.mobile-bottom-nav-item:active {
+  transform: scale(0.95);
+}
+
+/* Active Marking / Blue Pill Indicator (Persists as long as on current page) */
+.mobile-bottom-nav-item.active,
+.mobile-bottom-nav-item.active:hover,
+.mobile-bottom-nav-item.active:focus {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  background: linear-gradient(135deg, rgba(37, 43, 94, 0.98), rgba(28, 33, 75, 0.98)) !important;
+  border: 1.5px solid rgba(129, 140, 248, 0.75) !important;
+  box-shadow: 0 4px 20px rgba(79, 70, 229, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.15) !important;
+  border-radius: 20px !important;
+}
+
+.mobile-bottom-nav-item.active svg,
+.mobile-bottom-nav-item.active:hover svg {
+  color: #818cf8 !important;
+  stroke: #818cf8 !important;
+  stroke-width: 2.2 !important;
+  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.7)) !important;
+}
+
+.mobile-bottom-nav-item.active span,
+.mobile-bottom-nav-item.active:hover span {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+/* Mobile Drawer Links & Headers */
+.mobile-link {
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-weight: 700 !important;
+}
+
+.mobile-category-header {
+  color: #a5b4fc !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+}
+
+/* Touch Action Buttons & Badges */
+.ham-bar {
+  background-color: #ffffff !important;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5) !important;
 }
 
 .category-choice-card:active,

@@ -146,9 +146,37 @@
     if (modal) modal.classList.add('active');
   }
 
+  function getCurrentNavKey() {
+    const fullUrl = (window.location.href + ' ' + window.location.pathname).toLowerCase().replace(/\\/g, '/');
+    const search = window.location.search.toLowerCase();
+
+    // Check Categories first if category parameter or category page
+    if (fullUrl.includes('mens-wear') || fullUrl.includes('womens-wear') || fullUrl.includes('kids-wear') || search.includes('category=')) {
+      return 'categories';
+    }
+
+    // Check Shop & Product Details
+    if (fullUrl.includes('shop') || fullUrl.includes('product-details') || fullUrl.includes('product_details')) {
+      return 'shop';
+    }
+
+    // Check Orders
+    if (fullUrl.includes('orders') || fullUrl.includes('order')) {
+      return 'orders';
+    }
+
+    // Check Account / Profile / Settings / Login / Signup / Admin / Wishlist / Cart
+    if (fullUrl.includes('profile') || fullUrl.includes('settings') || fullUrl.includes('login') || fullUrl.includes('signup') || fullUrl.includes('admin') || fullUrl.includes('wishlist') || fullUrl.includes('account')) {
+      return 'account';
+    }
+
+    // Default: Home page (index.html or root /)
+    return 'home';
+  }
+
   function ensureBottomNav() {
     let nav = document.getElementById('mobile-bottom-nav');
-    const currentPath = window.location.pathname.replace(/\\/g, '/');
+    const activeKey = getCurrentNavKey();
 
     if (!nav) {
       nav = document.createElement('nav');
@@ -159,7 +187,7 @@
     }
 
     nav.innerHTML = navItems.map((item) => {
-      const active = item.match(currentPath) ? ' active' : '';
+      const active = (item.key === activeKey) ? ' active' : '';
       return `
         <a href="${getHref(item)}" class="mobile-bottom-nav-item${active}" data-mobile-nav="${item.key}">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${item.icon}</svg>
@@ -168,14 +196,26 @@
       `;
     }).join('');
 
-    // Attach Categories modal trigger click listener
-    const catBtn = nav.querySelector('[data-mobile-nav="categories"]');
-    if (catBtn) {
-      catBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        openCategoryModal();
+    // Explicitly sync active class state across all nav buttons
+    nav.querySelectorAll('.mobile-bottom-nav-item').forEach((itemBtn) => {
+      const key = itemBtn.getAttribute('data-mobile-nav');
+      if (key === activeKey) {
+        itemBtn.classList.add('active');
+      } else {
+        itemBtn.classList.remove('active');
+      }
+
+      itemBtn.addEventListener('click', (e) => {
+        // Shift active class to clicked button immediately upon click
+        nav.querySelectorAll('.mobile-bottom-nav-item').forEach((b) => b.classList.remove('active'));
+        itemBtn.classList.add('active');
+
+        if (key === 'categories') {
+          e.preventDefault();
+          openCategoryModal();
+        }
       });
-    }
+    });
   }
 
   function enhanceTouchCarousels() {

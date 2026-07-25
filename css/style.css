@@ -1364,21 +1364,24 @@ iframe {
 /* ── Individual Card ── */
 .cat-card {
   position: relative;
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  /* Subtle lift on hover */
-  transition: transform var(--dur-slow) var(--ease-spring),
-              box-shadow var(--dur-slow) var(--ease-smooth);
-  box-shadow: var(--shadow-md);
+  border-radius: 24px !important;
+  overflow: hidden !important;
+  background: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease !important;
   cursor: pointer;
+  isolation: isolate;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .cat-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-xl), 0 0 60px rgba(79,142,247,0.10);
+  transform: translateY(-8px) scale(1.01) !important;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(99, 102, 241, 0.25) !important;
 }
-
-/* All cards — same height (no special featured sizing) */
 
 /* ── Clickable link fills the whole card ── */
 .cat-link {
@@ -1386,6 +1389,8 @@ iframe {
   text-decoration: none;
   color: inherit;
   height: 100%;
+  border-radius: 24px !important;
+  overflow: hidden !important;
 }
 
 /* ── Photo wrapper ── */
@@ -1393,8 +1398,10 @@ iframe {
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 4.2;
-  overflow: hidden;
-  border-radius: var(--radius-xl);
+  overflow: hidden !important;
+  border-radius: 24px !important;
+  background: #0f172a !important;
+  isolation: isolate;
 }
 
 /* ── Photo image ── */
@@ -1403,7 +1410,8 @@ iframe {
   height: 100%;
   object-fit: cover;
   object-position: center top;
-  transition: transform 0.9s var(--ease-smooth);
+  border-radius: 24px !important;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
   display: block;
 }
 
@@ -1413,32 +1421,33 @@ iframe {
 }
 
 .cat-card:hover .cat-photo {
-  transform: scale(1.07);
+  transform: scale(1.06) !important;
 }
 
 /* ── Gradient overlay (dark bottom → transparent top) ── */
 .cat-overlay {
   position: absolute;
   inset: 0;
-  border-radius: var(--radius-xl);
+  border-radius: 24px !important;
   background: linear-gradient(
     to top,
-    rgba(5, 5, 18, 0.90) 0%,
-    rgba(5, 5, 18, 0.55) 40%,
-    rgba(5, 5, 18, 0.10) 70%,
+    rgba(5, 5, 18, 0.92) 0%,
+    rgba(5, 5, 18, 0.58) 40%,
+    rgba(5, 5, 18, 0.12) 70%,
     transparent 100%
-  );
-  transition: opacity var(--dur-slow) var(--ease-smooth);
+  ) !important;
+  transition: opacity 0.4s ease !important;
+  pointer-events: none;
 }
 
 .cat-card:hover .cat-overlay {
   background: linear-gradient(
     to top,
-    rgba(5, 5, 18, 0.95) 0%,
-    rgba(5, 5, 18, 0.65) 45%,
-    rgba(5, 5, 18, 0.15) 75%,
+    rgba(5, 5, 18, 0.96) 0%,
+    rgba(5, 5, 18, 0.68) 45%,
+    rgba(5, 5, 18, 0.18) 75%,
     transparent 100%
-  );
+  ) !important;
 }
 
 /* ── Top badge ── */
@@ -1525,38 +1534,44 @@ iframe {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  background: rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  background: rgba(18, 18, 36, 0.75) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
   border-radius: var(--radius-full);
-  padding: 0.6em 1.3em;
+  padding: 0.65em 1.4em;
   font-family: var(--font-display);
   font-size: 0.875rem;
-  font-weight: 600;
-  color: #ffffff;
-  letter-spacing: 0.01em;
+  font-weight: 700;
+  color: #ffffff !important;
+  letter-spacing: 0.02em;
   white-space: nowrap;
-  transition: background var(--dur-normal) var(--ease-smooth),
-              border-color var(--dur-normal) var(--ease-smooth),
-              transform var(--dur-normal) var(--ease-spring),
-              gap var(--dur-normal) var(--ease-smooth);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.cat-card:hover .cat-cta-btn {
-  background: rgba(255, 255, 255, 0.90);
-  border-color: rgba(255, 255, 255, 1);
-  color: var(--text-primary);
-  gap: var(--space-3);
+.cat-card:hover .cat-cta-btn,
+.cat-link:hover .cat-cta-btn,
+.cat-cta-btn:hover {
+  background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  color: #ffffff !important;
+  gap: var(--space-3) !important;
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.6) !important;
+  transform: translateY(-2px);
 }
 
 .cat-cta-btn svg {
-  transition: transform var(--dur-normal) var(--ease-spring);
+  transition: transform 0.3s ease !important;
   flex-shrink: 0;
+  stroke: #ffffff !important;
 }
 
-.cat-card:hover .cat-cta-btn svg {
-  transform: translateX(3px);
+.cat-card:hover .cat-cta-btn svg,
+.cat-link:hover .cat-cta-btn svg,
+.cat-cta-btn:hover svg {
+  transform: translateX(4px);
+  stroke: #ffffff !important;
 }
 
 
@@ -3674,4 +3689,253 @@ iframe {
   margin-left: auto;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+/* ============================================================
+   GLOBAL UI VISIBILITY & READABILITY ENHANCEMENTS (THEME MATCHED)
+   ============================================================ */
+
+/* 1. Global Contrast & Typography Tokens */
+:root {
+  --text-primary: #ffffff !important;
+  --text-secondary: rgba(255, 255, 255, 0.92) !important;
+  --text-muted: rgba(255, 255, 255, 0.72) !important;
+  --text-white: #ffffff !important;
+}
+
+/* 2. All Text Fields, Inputs, Textareas & Selects */
+input,
+textarea,
+select,
+.glass-input,
+.glass-input-field,
+.form-input,
+.manual-form-input,
+.nav-search-input,
+.filter-price-input,
+.otp-field {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  background: rgba(20, 20, 38, 0.92) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Placeholder Contrast Enhancement */
+::placeholder,
+input::placeholder,
+textarea::placeholder,
+.glass-input-field::placeholder,
+.nav-search-input::placeholder,
+.manual-form-input::placeholder {
+  color: rgba(255, 255, 255, 0.65) !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
+}
+
+/* Input Focus States */
+input:focus,
+textarea:focus,
+select:focus,
+.glass-input:focus,
+.glass-input-field:focus,
+.form-input:focus,
+.manual-form-input:focus,
+.nav-search-input:focus,
+.otp-field:focus {
+  background: rgba(26, 26, 48, 0.96) !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3.5px rgba(99, 102, 241, 0.32), 0 4px 18px rgba(99, 102, 241, 0.20) !important;
+}
+
+/* 3. Input Icons & Labels */
+.form-label-input,
+.checkbox-label,
+.label-row label {
+  color: rgba(255, 255, 255, 0.92) !important;
+  font-weight: 700 !important;
+}
+
+.input-icon,
+.input-wrapper svg,
+.password-toggle-btn svg {
+  color: #a5b4fc !important; /* Visible lavender-indigo icon */
+  opacity: 0.95 !important;
+}
+
+.input-wrapper:focus-within .input-icon,
+.input-wrapper:focus-within svg {
+  color: #818cf8 !important;
+}
+
+/* Password Toggle Button */
+.password-toggle-btn {
+  background: rgba(255, 255, 255, 0.10) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 8px !important;
+  color: #a5b4fc !important;
+  padding: 4px 8px !important;
+}
+
+/* 4. Button Contrast & Hierarchy */
+.btn-primary,
+button[type="submit"] {
+  background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 4px 18px rgba(99, 102, 241, 0.45) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.btn-primary:hover,
+button[type="submit"]:hover {
+  background: linear-gradient(135deg, #818cf8, #6366f1) !important;
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.65) !important;
+}
+
+.btn-ghost,
+.btn-outline,
+.btn-secondary {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  background: rgba(255, 255, 255, 0.10) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+}
+
+.btn-ghost:hover,
+.btn-outline:hover,
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  color: #ffffff !important;
+}
+
+/* Header Nav Icon Buttons — Unboxed White Icons */
+.nav-icon-btn,
+#hamburger,
+#cart-nav-btn,
+#wishlist-nav-btn {
+  color: #ffffff !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 50% !important;
+  transition: all 0.2s ease !important;
+}
+
+.nav-icon-btn svg,
+#hamburger svg,
+#cart-nav-btn svg,
+#wishlist-nav-btn svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+.ham-bar {
+  background-color: #ffffff !important;
+}
+
+.nav-icon-btn:hover,
+#hamburger:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border: none !important;
+  transform: scale(1.1) !important;
+}
+
+.scroll-btn,
+.back-to-top {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+.scroll-btn:hover,
+.back-to-top:hover {
+  background: rgba(99, 102, 241, 0.28) !important;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  color: #ffffff !important;
+}
+
+/* 5. Cards & Containers */
+.product-card,
+.glass-card,
+.cat-card,
+.bento-card,
+.newsletter-glass {
+  background: rgba(18, 18, 34, 0.90) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
+}
+
+.product-card-title,
+.cat-title,
+.hero-title,
+.section-title {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+.product-card-price,
+.hero-price {
+  color: #818cf8 !important;
+  font-weight: 800 !important;
+}
+
+/* 6. Modals, Bottom Sheets & Popups */
+.mobile-categories-sheet,
+.mobile-menu,
+.filter-panel,
+.location-bottom-sheet {
+  background: #111827 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.mobile-sheet-close,
+#close-loc-sheet,
+.close-filter-btn {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  border-radius: 50% !important;
+}
+
+/* 7. Toast & Alert Messages */
+.field-error-message,
+.input-error-msg {
+  color: #fca5a5 !important;
+  font-weight: 600 !important;
+}
+
+.toast.toast-error {
+  background: rgba(239, 68, 68, 0.22) !important;
+  border: 1px solid rgba(239, 68, 68, 0.45) !important;
+  color: #ffffff !important;
+}
+
+.toast.toast-success {
+  background: rgba(34, 197, 94, 0.22) !important;
+  border: 1px solid rgba(34, 197, 94, 0.45) !important;
+  color: #ffffff !important;
+}
+
+/* 8. Admin & Worker Tables */
+.admin-table,
+.table {
+  color: #ffffff !important;
+}
+
+.admin-table th {
+  background: rgba(30, 30, 50, 0.95) !important;
+  color: #a5b4fc !important;
+  font-weight: 800 !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+.admin-table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
 }

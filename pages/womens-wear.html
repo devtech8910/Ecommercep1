@@ -314,8 +314,31 @@
         <p>&copy; 2026 DevTech Solutions. All rights reserved.</p>
         <p style="margin-top: 10px;"><a href="../index.html" style="color: #818cf8; text-decoration: none; font-weight: 700;">← Back to Home</a></p>
       </div>
-    </footer>
+    <!-- Dedicated Mobile Bottom Navigation Bar (Mobile Only) -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Mobile Bottom Navigation">
+      <a href="../index.html" class="mobile-bottom-nav-item" data-mobile-nav="home">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </a>
+      <a href="shop.html" class="mobile-bottom-nav-item" data-mobile-nav="shop">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span>Shop</span>
+      </a>
+      <a href="#" class="mobile-bottom-nav-item active" data-mobile-nav="categories">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Categories</span>
+      </a>
+      <a href="orders.html" class="mobile-bottom-nav-item" data-mobile-nav="orders">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+        <span>My Orders</span>
+      </a>
+      <a href="profile.html" class="mobile-bottom-nav-item" data-mobile-nav="account">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Account</span>
+      </a>
+    </nav>
 
+    <!-- Custom JavaScript -->
     <script src="../js/script.js"></script>
     <script src="../js/mobile-ui.js"></script>
     <script>

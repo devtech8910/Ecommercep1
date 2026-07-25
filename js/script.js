@@ -651,6 +651,57 @@ document.addEventListener('DOMContentLoaded', updateAuthUI);
 })();
 
 /* ============================================================
+   GLOBAL AUTH CHECK & PROTECTION FOR CART / WISHLIST
+   ============================================================ */
+window.isUserLoggedIn = function() {
+  try {
+    const rawUser = localStorage.getItem('dtf_user') || localStorage.getItem('user');
+    const token = localStorage.getItem('token') || localStorage.getItem('dtf_token');
+    if (token) return true;
+    if (rawUser && JSON.parse(rawUser)) return true;
+  } catch (e) {}
+  return false;
+};
+
+(function initCartWishlistAuthProtection() {
+  function getLoginUrl() {
+    const isPagesDir = /\/pages\//i.test(window.location.pathname.replace(/\\/g, '/'));
+    return isPagesDir ? 'login.html' : 'pages/login.html';
+  }
+
+  // Intercept click on any Add to Cart or Wishlist button if unauthenticated
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest(
+      '.btn-add-cart, .add-to-cart, .buy-now-btn, .wishlist-btn, .btn-wishlist, .add-wishlist, .product-card-wishlist, [data-action="add-cart"], [data-action="wishlist"], .quick-add-btn, .cart-add-btn, .product-wishlist-btn, .add-to-wishlist, .cat-add-cart-btn, .add-to-cart-btn'
+    );
+
+    if (trigger) {
+      if (!window.isUserLoggedIn || !window.isUserLoggedIn()) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        const isWishlist = trigger.matches('.wishlist-btn, .btn-wishlist, .add-wishlist, .product-card-wishlist, [data-action="wishlist"], .product-wishlist-btn, .add-to-wishlist');
+        const actionText = isWishlist ? 'add items to your wishlist' : 'add items to your cart';
+        const msg = `Please sign in or create an account to ${actionText}.`;
+
+        if (window.showToast) {
+          window.showToast(msg, 'warning');
+        } else {
+          alert(msg);
+        }
+
+        setTimeout(() => {
+          window.location.href = getLoginUrl();
+        }, 800);
+
+        return false;
+      }
+    }
+  }, true);
+})();
+
+/* ============================================================
    SMOOTH ANCHOR SCROLL (for # links)
    ============================================================ */
 (function initAnchorScroll() {
