@@ -176,6 +176,13 @@
 
   function ensureBottomNav() {
     let nav = document.getElementById('mobile-bottom-nav');
+
+    // Do NOT render or display mobile bottom nav on Login or Signup auth pages
+    if (document.body.classList.contains('auth-page') || window.location.pathname.includes('login.html') || window.location.pathname.includes('signup.html')) {
+      if (nav) nav.style.setProperty('display', 'none', 'important');
+      return;
+    }
+
     const activeKey = getCurrentNavKey();
 
     if (!nav) {

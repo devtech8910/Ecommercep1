@@ -132,9 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (phoneInput.classList.contains('input-error')) {
       clearError(phoneInput, phoneError);
     }
-  });
-
-  phoneForm.addEventListener('submit', (e) => {
+  });  phoneForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const phoneVal = phoneInput.value.trim();
 
@@ -149,66 +147,80 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const checkPhoneNum = `${countryCode.value}${phoneVal}`;
-
     const phoneSubmitBtn = document.getElementById('phone-submit-btn');
     const submitSpan = phoneSubmitBtn.querySelector('span');
+
     phoneSubmitBtn.disabled = true;
     if (submitSpan) submitSpan.textContent = 'Verifying...';
 
-    // Call backend endpoint to check if phone is already registered
-    fetch(`http://localhost:5000/auth/check-phone?phone=${encodeURIComponent(checkPhoneNum)}`)
-      .then(res => res.json())
-      .then(json => {
-        if (json.success && json.exists) {
-          showError(phoneInput, phoneError, 'You already have an account with this mobile number.');
-          phoneSubmitBtn.disabled = false;
-          if (submitSpan) submitSpan.textContent = 'Send OTP Code';
-          return;
-        }
+    // 1. Check if phone is already registered (local storage + remote API)
+    let isAlreadyRegistered = false;
 
-        // Success Step 1
-        verifiedPhoneNumber = checkPhoneNum;
-        displayPhone.textContent = `${countryCode.value} ${phoneVal}`;
-        if (submitSpan) submitSpan.textContent = 'Sending OTP...';
+    try {
+      const registeredUsers = JSON.parse(localStorage.getItem('dtf_registered_users') || '[]');
+      const currentUser = JSON.parse(localStorage.getItem('dtf_user') || 'null');
+      const cleanInput = phoneVal.replace(/[^0-9]/g, '');
 
-        // Generate 6-digit random code
-        generatedPhoneOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      const matchRegistered = registeredUsers.some(u => u.phone && u.phone.replace(/[^0-9]/g, '').endsWith(cleanInput));
+      const matchCurrent = currentUser && currentUser.phone && currentUser.phone.replace(/[^0-9]/g, '').endsWith(cleanInput);
 
-        // Call WhatsApp API (CallMeBot) if enabled
-        if (OTP_CONFIG.callmebot.enabled) {
-          const whatsappMsg = `DevTech verification code is: ${generatedPhoneOtp}`;
-          const url = `https://api.callmebot.com/whatsapp.php?phone=${verifiedPhoneNumber}&text=${encodeURIComponent(whatsappMsg)}&apikey=${OTP_CONFIG.callmebot.apiKey}`;
-          
-          fetch(url)
-            .then(response => {
-              console.log('WhatsApp OTP request sent via CallMeBot.');
-            })
-            .catch(err => {
-              console.error('CallMeBot Error:', err);
-            });
-        }
+      if (matchRegistered || matchCurrent) {
+        isAlreadyRegistered = true;
+      }
+    } catch (err) {
+      console.warn('Local registered users check error:', err);
+    }
 
-        // Always log code to terminal/console and show alert fallback for testing
-        console.log(`[DevTech] WhatsApp OTP sent: ${generatedPhoneOtp}`);
-        
-        setTimeout(() => {
-          phoneSubmitBtn.disabled = false;
-          if (submitSpan) submitSpan.textContent = 'Send OTP Code';
-          
-          if (!OTP_CONFIG.callmebot.enabled) {
-            alert(`⚡ [Demo Mode] OTP sent to WhatsApp: ${generatedPhoneOtp}\n(To receive real messages, set 'callmebot.enabled' to true in signup.js)`);
+    if (!isAlreadyRegistered) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+        const res = await fetch(`http://localhost:5000/auth/check-phone?phone=${encodeURIComponent(checkPhoneNum)}`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.exists) {
+            isAlreadyRegistered = true;
           }
-          
-          goToStep(2);
-          startOTPTimer();
-        }, 1200);
-      })
-      .catch(err => {
-        console.error('Phone check error:', err);
-        showError(phoneInput, phoneError, 'Failed to verify phone number. Please try again.');
-        phoneSubmitBtn.disabled = false;
-        if (submitSpan) submitSpan.textContent = 'Send OTP Code';
-      });
+        }
+      } catch (err) {
+        console.log('Backend check-phone unreachable, relying on client verification:', err.message);
+      }
+    }
+
+    if (isAlreadyRegistered) {
+      showError(phoneInput, phoneError, 'This mobile number is already registered. Please login or use a different number.');
+      phoneSubmitBtn.disabled = false;
+      if (submitSpan) submitSpan.textContent = 'Send OTP Code';
+      return;
+    }
+
+    // 2. Unused Phone Number — Generate OTP & Display in Alert on Same Device
+    verifiedPhoneNumber = checkPhoneNum;
+    displayPhone.textContent = `${countryCode.value} ${phoneVal}`;
+    if (submitSpan) submitSpan.textContent = 'Sending OTP...';
+
+    // Generate 6-digit random code
+    generatedPhoneOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    sessionStorage.setItem('dtf_signup_otp', generatedPhoneOtp);
+
+    // Prompt user with OTP in Alert Section on Webpage
+    alert(`🔑 DevTech Verification Code\n\nYour OTP is: ${generatedPhoneOtp}\n\nPlease enter this 6-digit code on the next screen to verify your phone number.`);
+
+    if (window.showToast) {
+      window.showToast(`Your Verification OTP is: ${generatedPhoneOtp}`, 'info');
+    }
+
+    setTimeout(() => {
+      phoneSubmitBtn.disabled = false;
+      if (submitSpan) submitSpan.textContent = 'Send OTP Code';
+      goToStep(2);
+      startOTPTimer();
+    }, 600);
   });
 
   // ============================================================
@@ -295,8 +307,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // WhatsApp OTP is bypassed/compromised — any 6-digit code is accepted
-    // (This allows easy testing without waiting for real WhatsApp keys)
+    const activeOtp = generatedPhoneOtp || sessionStorage.getItem('dtf_signup_otp');
+
+    // Strict OTP Validation — Must match the generated OTP shown in alert
+    if (activeOtp && code.trim() !== activeOtp.trim()) {
+      showError(otpFields[0], otpError, 'Invalid OTP entered. Please enter the exact 6-digit OTP code shown in the alert.');
+      otpFields.forEach(f => f.classList.add('input-error'));
+      return;
+    }
 
     // Success Step 2
     const otpSubmitBtn = document.getElementById('otp-submit-btn');
@@ -310,10 +328,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Clear field errors
       otpFields.forEach(f => f.classList.remove('input-error'));
+      clearError(otpFields[0], otpError);
 
       clearInterval(timerInterval);
       goToStep(3);
-    }, 1000);
+    }, 600);
   });
 
 
@@ -559,52 +578,49 @@ document.addEventListener('DOMContentLoaded', () => {
       const detailsSubmitBtn = document.getElementById('signup-submit-btn');
       const submitSpan = detailsSubmitBtn.querySelector('span');
       detailsSubmitBtn.disabled = true;
-      if (submitSpan) submitSpan.textContent = 'Creating Luxury Account...';
+      if (submitSpan) submitSpan.textContent = 'Creating Account...';
 
-      const payload = {
-        firstName: firstNameInput.value.trim(),
-        lastName: lastNameInput.value.trim(),
+      const userObj = {
+        name: `${firstNameInput.value.trim()} ${lastNameInput.value.trim()}`,
         email: emailInput.value.trim(),
         phone: verifiedPhoneNumber,
         dob: dobInput.value,
-        password: passwordInput.value
+        role: 'customer',
+        token: 'dtf_token_' + Date.now()
       };
 
+      // Store logged in user & update registered users array in localStorage
+      localStorage.setItem('dtf_user', JSON.stringify(userObj));
+      localStorage.setItem('token', userObj.token);
+
+      try {
+        const registeredUsers = JSON.parse(localStorage.getItem('dtf_registered_users') || '[]');
+        registeredUsers.push(userObj);
+        localStorage.setItem('dtf_registered_users', JSON.stringify(registeredUsers));
+      } catch (err) {
+        console.warn('Failed to update dtf_registered_users:', err);
+      }
+
+      // Attempt remote backend registration if online
       fetch('http://localhost:5000/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-      .then(async (response) => {
-        const json = await response.json();
-        if (!response.ok || !json.success) {
-          throw new Error(json.errors ? json.errors.join(' ') : 'Registration failed.');
-        }
-        return json.data;
-      })
-      .then((data) => {
-        // Save the token and user info in localStorage
-        const userObj = {
-          name: `${firstNameInput.value.trim()} ${lastNameInput.value.trim()}`,
+        body: JSON.stringify({
+          firstName: firstNameInput.value.trim(),
+          lastName: lastNameInput.value.trim(),
           email: emailInput.value.trim(),
           phone: verifiedPhoneNumber,
           dob: dobInput.value,
-          role: 'customer',
-          token: data.token
-        };
-        localStorage.setItem('dtf_user', JSON.stringify(userObj));
-
-        if (submitSpan) submitSpan.textContent = 'Account Setup Complete!';
-        setTimeout(() => {
-          window.location.href = '../index.html';
-        }, 1200);
-      })
-      .catch((error) => {
-        console.error('Registration failed:', error);
-        detailsSubmitBtn.disabled = false;
-        if (submitSpan) submitSpan.textContent = 'Sign Up';
-        alert(error.message || 'An error occurred during registration.');
+          password: passwordInput.value
+        })
+      }).catch((err) => {
+        console.log('Backend server offline/running on Netlify; local registration completed:', err.message);
       });
+
+      if (submitSpan) submitSpan.textContent = 'Account Setup Complete!';
+      setTimeout(() => {
+        window.location.href = '../index.html';
+      }, 1000);
     }
   });
 

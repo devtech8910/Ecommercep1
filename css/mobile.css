@@ -1024,3 +1024,22 @@
   color: #818cf8;
   font-weight: bold;
 }
+
+/* ── Hide Mobile Bottom Nav on Auth Pages (Login / Signup) ── */
+body.auth-page .mobile-bottom-nav,
+body.auth-page #mobile-bottom-nav,
+.auth-page #mobile-bottom-nav {
+  display: none !important;
+}
+
+/* ── Mobile Top-Left Back to Home Button ── */
+@media (max-width: 768px) {
+  .auth-back-home-btn {
+    top: 14px !important;
+    left: 14px !important;
+    padding: 8px 14px !important;
+    font-size: 0.8125rem !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+  }
+}

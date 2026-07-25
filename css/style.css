@@ -1228,14 +1228,10 @@ iframe {
   text-transform: uppercase;
 }
 
-/* Scroll Indicator */
+/* Scroll Indicator — Removed */
 .scroll-indicator {
-  position: absolute;
-  bottom: var(--space-10);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  display: flex;
+  display: none !important;
+}
   flex-direction: column;
   align-items: center;
   gap: var(--space-2);
@@ -3856,7 +3852,51 @@ button[type="submit"]:hover {
 .back-to-top:hover {
   background: rgba(99, 102, 241, 0.28) !important;
   border-color: rgba(99, 102, 241, 0.5) !important;
+}
+
+/* ── Top-Left Back to Home Button on Auth Pages ── */
+.auth-back-home-btn {
+  position: absolute;
+  top: 24px;
+  left: 28px;
+  z-index: 9999;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(18, 18, 36, 0.85) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.28) !important;
+  border-radius: 9999px !important;
   color: #ffffff !important;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.auth-back-home-btn svg {
+  stroke: #ffffff !important;
+  transition: transform 0.3s ease !important;
+  flex-shrink: 0;
+}
+
+.auth-back-home-btn:hover,
+.auth-back-home-btn:focus {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.45), rgba(79, 70, 229, 0.45)) !important;
+  border-color: rgba(129, 140, 248, 0.75) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.55) !important;
+  transform: translateY(-2px);
+}
+
+.auth-back-home-btn:hover svg,
+.auth-back-home-btn:focus svg {
+  transform: translateX(-4px) !important;
+  stroke: #ffffff !important;
 }
 
 /* 5. Cards & Containers */
