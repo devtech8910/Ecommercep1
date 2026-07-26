@@ -78,6 +78,13 @@
   }
 
   function ensureCategoryModal() {
+    // Do NOT render mobile category modal on Login or Signup pages
+    if (document.body.classList.contains('auth-page') || window.location.pathname.includes('login.html') || window.location.pathname.includes('signup.html')) {
+      const existingModal = document.getElementById('mobile-categories-modal');
+      if (existingModal) existingModal.remove();
+      return;
+    }
+
     if (document.getElementById('mobile-categories-modal')) return;
 
     const inPages = isInsidePagesDirectory();

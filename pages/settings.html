@@ -108,6 +108,15 @@
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
       }
     </style>
+    <!-- EmailJS SDK for Client-Side Real-Time Emails -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+      (function(){
+        emailjs.init({
+          publicKey: "d65JAiVI2nOP-tSjB",
+        });
+      })();
+    </script>
   </head>
   <body class="auth-page">
     <!-- Noise overlay -->
@@ -215,25 +224,43 @@
             <h2 style="margin: 0; font-size: 18px; font-weight: 800; color: #ffffff;">🔐 Verify OTPs</h2>
             <button id="close-delete-modal-2" style="background: rgba(255,255,255,0.08); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #94a3b8; font-weight: bold;">&times;</button>
           </div>
-          <p style="margin: 0 0 16px; font-size: 13px; color: #94a3b8; line-height: 1.5;">Verification OTP codes have been sent to both your email and phone number.</p>
+          <p id="delete-otp-info" style="margin: 0 0 16px; font-size: 13px; color: #94a3b8; line-height: 1.5;">Verification OTP codes have been sent to your linked mobile number and email address.</p>
           <div id="delete-modal-error" style="display: none; padding: 10px 14px; border-radius: 10px; background-color: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; font-size: 13px; margin-bottom: 14px; font-weight: 500;"></div>
           
-          <!-- Email OTP -->
+          <!-- Phone OTP -->
           <div style="margin-bottom: 16px;">
-            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; margin-bottom: 6px; display: block;">Email Verification OTP</label>
-            <input type="text" id="delete-email-otp" placeholder="6-digit code" maxLength="6" class="modal-input" />
+            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; margin-bottom: 6px; display: block;">📱 Mobile Verification OTP</label>
+            <input type="text" id="delete-phone-otp" placeholder="6-digit code" maxLength="6" inputmode="numeric" class="modal-input" />
           </div>
 
-          <!-- Phone OTP -->
+          <!-- Email OTP -->
           <div style="margin-bottom: 20px;">
-            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; margin-bottom: 6px; display: block;">Mobile Verification OTP</label>
-            <input type="text" id="delete-phone-otp" placeholder="6-digit code" maxLength="6" class="modal-input" />
+            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; margin-bottom: 6px; display: block;">📧 Email Verification OTP</label>
+            <input type="text" id="delete-email-otp" placeholder="6-digit code" maxLength="6" inputmode="numeric" class="modal-input" />
           </div>
 
           <div style="display: flex; gap: 12px;">
             <button id="back-delete-btn" style="flex: 1; padding: 13px; border: 1.5px solid rgba(255,255,255,0.15); background: transparent; border-radius: 14px; font-size: 13.5px; font-weight: 700; color: #94a3b8; cursor: pointer;">Back</button>
             <button id="confirm-permanent-delete-btn" style="flex: 1; padding: 13px; border: none; background: #ef4444; border-radius: 14px; font-size: 13.5px; font-weight: 700; color: #ffffff; cursor: pointer; box-shadow: 0 4px 14px rgba(239,68,68,0.3);">Permanently Delete</button>
           </div>
+        </div>
+
+        <!-- Step 3: Deletion Scheduled Confirmation -->
+        <div id="delete-step-3" style="padding: 28px; display: none; text-align: center;">
+          <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(239,68,68,0.12); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 30px;">🗑️</div>
+          <h2 style="margin: 0 0 12px; font-size: 20px; font-weight: 800; color: #ef4444;">Account Deletion Scheduled</h2>
+          <p style="margin: 0 0 20px; font-size: 13.5px; color: #cbd5e1; line-height: 1.7;">
+            Your account and all associated data has been <strong>scheduled for permanent deletion</strong>. This action will take effect after <strong style="color: #ef4444;">30 days</strong>.
+          </p>
+          <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 14px; padding: 16px; margin-bottom: 24px; text-align: left;">
+            <p style="margin: 0 0 8px; font-size: 12.5px; color: #f87171; font-weight: 700;">ℹ️ Important Information:</p>
+            <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; color: #94a3b8; line-height: 1.8;">
+              <li>Deletion will be permanent after <strong style="color: #cbd5e1;">30 days</strong> from now.</li>
+              <li>You can <strong style="color: #cbd5e1;">cancel the deletion</strong> by simply logging back into your account before the 30-day period expires.</li>
+              <li>All your orders, wishlist, and personal data will be removed.</li>
+            </ul>
+          </div>
+          <button id="delete-done-btn" style="width: 100%; padding: 14px; border: none; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 14px; font-size: 14px; font-weight: 700; color: #ffffff; cursor: pointer; box-shadow: 0 4px 14px rgba(239,68,68,0.3);">Understood, Log Me Out</button>
         </div>
       </div>
     </div>
@@ -269,103 +296,159 @@
           const deleteModal = document.getElementById('delete-account-modal');
           const deleteStep1 = document.getElementById('delete-step-1');
           const deleteStep2 = document.getElementById('delete-step-2');
+          const deleteStep3 = document.getElementById('delete-step-3');
           const deleteTermsCheckbox = document.getElementById('delete-terms-checkbox');
           const proceedDeleteBtn = document.getElementById('proceed-delete-btn');
           const confirmDeleteBtn = document.getElementById('confirm-permanent-delete-btn');
           const deleteError = document.getElementById('delete-modal-error');
+          const deleteOtpInfo = document.getElementById('delete-otp-info');
 
+          let generatedPhoneOtp = '';
+          let generatedEmailOtp = '';
+
+          function generateOtp() {
+            return String(Math.floor(100000 + Math.random() * 900000));
+          }
+
+          function hideAllSteps() {
+            deleteStep1.style.display = 'none';
+            deleteStep2.style.display = 'none';
+            deleteStep3.style.display = 'none';
+          }
+
+          // Open modal → Step 1
           deleteTriggerBtn.addEventListener('click', () => {
             deleteTermsCheckbox.checked = false;
+            hideAllSteps();
             deleteStep1.style.display = 'block';
-            deleteStep2.style.display = 'none';
             deleteModal.style.display = 'flex';
           });
 
+          // Close buttons
           document.getElementById('close-delete-modal-1').addEventListener('click', () => deleteModal.style.display = 'none');
           document.getElementById('close-delete-modal-2').addEventListener('click', () => deleteModal.style.display = 'none');
           document.getElementById('cancel-delete-btn-1').addEventListener('click', () => deleteModal.style.display = 'none');
+
+          // Back button (Step 2 → Step 1)
           document.getElementById('back-delete-btn').addEventListener('click', () => {
+            hideAllSteps();
             deleteStep1.style.display = 'block';
-            deleteStep2.style.display = 'none';
           });
 
+          // Proceed & Verify → Generate OTPs and go to Step 2
           proceedDeleteBtn.addEventListener('click', async () => {
             if (!deleteTermsCheckbox.checked) {
-              alert('Please accept the terms and conditions to delete your account.');
+              alert('Please accept the terms and conditions to proceed.');
               return;
             }
 
             proceedDeleteBtn.disabled = true;
             proceedDeleteBtn.textContent = 'Generating OTPs...';
 
-            try {
-              const res = await fetch('http://localhost:5000/auth/request-delete-account', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` }
-              });
-              const data = await res.json();
-              if (!res.ok || !data.success) {
-                throw new Error(data.errors ? data.errors.join(' ') : 'OTP request failed.');
+            // Generate local OTPs
+            generatedPhoneOtp = generateOtp();
+            generatedEmailOtp = generateOtp();
+
+            // Send Phone OTP via alert (same pattern as signup)
+            alert(`🔑 DevTech Verification Code\n\nYour account deletion verification OTP is:\n\n📱 ${generatedPhoneOtp}\n\nDo not share this code with anyone.`);
+
+            // Send Email OTP via EmailJS (if available)
+            const userEmail = user.email || '';
+            if (userEmail && typeof emailjs !== 'undefined') {
+              try {
+                await emailjs.send('service_bsuum3h', 'template_mzxvnz9', {
+                  to_email: userEmail,
+                  otp_code: generatedEmailOtp,
+                  to_name: user.name || 'DevTech Member'
+                });
+                console.log('[DevTech] Email OTP sent to', userEmail);
+              } catch (emailErr) {
+                console.warn('[DevTech] EmailJS send failed, showing email OTP in alert:', emailErr);
+                alert(`📧 Email OTP: ${generatedEmailOtp}\n\n(EmailJS delivery failed — use this code instead)`);
               }
-
-              // DEV MODE: Show OTPs in browser alert popup
-              alert(`🔐 DEV MODE — Account Deletion OTPs:\n\n📧 Email OTP: ${data.devEmailOtp}\n📱 Mobile OTP: ${data.devPhoneOtp}`);
-
-              // Transition to OTP verification step
-              deleteStep1.style.display = 'none';
-              deleteStep2.style.display = 'block';
-              document.getElementById('delete-email-otp').value = '';
-              document.getElementById('delete-phone-otp').value = '';
-              deleteError.style.display = 'none';
-            } catch (err) {
-              alert(err.message);
-            } finally {
-              proceedDeleteBtn.disabled = false;
-              proceedDeleteBtn.textContent = 'Proceed & Verify';
+            } else {
+              // No EmailJS or no email — show in alert
+              alert(`📧 Your Email Verification OTP is: ${generatedEmailOtp}`);
             }
+
+            // Update info text with masked identifiers
+            const maskedPhone = user.phone ? ('******' + user.phone.slice(-4)) : 'linked number';
+            const maskedEmail = userEmail ? (userEmail[0] + '***@' + userEmail.split('@')[1]) : 'linked email';
+            deleteOtpInfo.innerHTML = `OTP codes have been sent to <strong>${maskedPhone}</strong> (mobile) and <strong>${maskedEmail}</strong> (email). Enter both codes below.`;
+
+            // Transition to Step 2
+            hideAllSteps();
+            deleteStep2.style.display = 'block';
+            document.getElementById('delete-phone-otp').value = '';
+            document.getElementById('delete-email-otp').value = '';
+            deleteError.style.display = 'none';
+
+            proceedDeleteBtn.disabled = false;
+            proceedDeleteBtn.textContent = 'Proceed & Verify';
           });
 
-          confirmDeleteBtn.addEventListener('click', async () => {
-            const emailOtp = document.getElementById('delete-email-otp').value.trim();
+          // Confirm Permanent Delete → Verify OTPs → Step 3
+          confirmDeleteBtn.addEventListener('click', () => {
             const phoneOtp = document.getElementById('delete-phone-otp').value.trim();
+            const emailOtp = document.getElementById('delete-email-otp').value.trim();
 
-            if (!emailOtp || emailOtp.length !== 6) {
-              deleteError.textContent = 'Please enter a valid 6-digit email OTP.';
-              deleteError.style.display = 'block';
-              return;
-            }
             if (!phoneOtp || phoneOtp.length !== 6) {
               deleteError.textContent = 'Please enter a valid 6-digit mobile OTP.';
               deleteError.style.display = 'block';
               return;
             }
+            if (!emailOtp || emailOtp.length !== 6) {
+              deleteError.textContent = 'Please enter a valid 6-digit email OTP.';
+              deleteError.style.display = 'block';
+              return;
+            }
 
+            if (phoneOtp !== generatedPhoneOtp) {
+              deleteError.textContent = 'Mobile OTP is incorrect. Please check and try again.';
+              deleteError.style.display = 'block';
+              return;
+            }
+            if (emailOtp !== generatedEmailOtp) {
+              deleteError.textContent = 'Email OTP is incorrect. Please check and try again.';
+              deleteError.style.display = 'block';
+              return;
+            }
+
+            // Both OTPs verified — schedule deletion for 30 days
+            deleteError.style.display = 'none';
             confirmDeleteBtn.disabled = true;
             confirmDeleteBtn.textContent = 'Processing deletion...';
-            deleteError.style.display = 'none';
 
+            // Mark account as scheduled for deletion (30 days) in localStorage
             try {
-              const res = await fetch('http://localhost:5000/auth/confirm-delete-account', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
-                body: JSON.stringify({ emailOtp, phoneOtp, acceptedTerms: true })
+              const registeredUsers = JSON.parse(localStorage.getItem('dtf_registered_users') || '[]');
+              const updatedUsers = registeredUsers.map(u => {
+                if (u.email && u.email.toLowerCase() === (user.email || '').toLowerCase()) {
+                  u.deletionScheduled = true;
+                  u.deletionDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+                }
+                return u;
               });
-              const data = await res.json();
-              if (!res.ok || !data.success) {
-                throw new Error(data.errors ? data.errors.join(' ') : 'Verification failed.');
-              }
-
-              deleteModal.style.display = 'none';
-              localStorage.removeItem('dtf_user');
-              alert('Your account deletion request has been scheduled successfully. You will be logged out now.');
-              window.location.href = '../index.html';
+              localStorage.setItem('dtf_registered_users', JSON.stringify(updatedUsers));
             } catch (err) {
-              deleteError.textContent = err.message;
-              deleteError.style.display = 'block';
-            } finally {
+              console.warn('Failed to schedule user for deletion:', err);
+            }
+
+            // Show Step 3 — Deletion Scheduled confirmation
+            setTimeout(() => {
+              hideAllSteps();
+              deleteStep3.style.display = 'block';
               confirmDeleteBtn.disabled = false;
               confirmDeleteBtn.textContent = 'Permanently Delete';
-            }
+            }, 800);
+          });
+
+          // "Understood, Log Me Out" button
+          document.getElementById('delete-done-btn').addEventListener('click', () => {
+            localStorage.removeItem('dtf_user');
+            localStorage.removeItem('token');
+            deleteModal.style.display = 'none';
+            window.location.href = '../index.html';
           });
         }
       });

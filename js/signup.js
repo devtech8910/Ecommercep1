@@ -127,12 +127,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // STEP 1: PHONE FORM VALIDATION & SUBMIT
   // ============================================================
   phoneInput.addEventListener('input', () => {
-    // strip non-numeric
-    phoneInput.value = phoneInput.value.replace(/[^0-9]/g, '');
+    // Strip non-numeric characters and cap at strictly 10 digits
+    phoneInput.value = phoneInput.value.replace(/[^0-9]/g, '').slice(0, 10);
     if (phoneInput.classList.contains('input-error')) {
       clearError(phoneInput, phoneError);
     }
-  });  phoneForm.addEventListener('submit', async (e) => {
+  });
+
+  phoneForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const phoneVal = phoneInput.value.trim();
 
@@ -141,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (phoneVal.length < 10) {
+    if (phoneVal.length !== 10) {
       showError(phoneInput, phoneError, 'Please enter a valid 10-digit mobile number.');
       return;
     }
@@ -350,8 +352,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let isPasswordStrong = false;
 
   // Email verification trigger
+  // Email verification trigger
   if (emailVerifyTrigger) {
-    emailVerifyTrigger.addEventListener('click', () => {
+    emailVerifyTrigger.addEventListener('click', async () => {
       const emailVal = emailInput.value.trim();
       if (!emailVal) {
         showError(emailInput, emailErr, 'Email address is required.');
@@ -362,67 +365,150 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Clear error, show progress
       clearError(emailInput, emailErr);
       emailVerifyTrigger.disabled = true;
       emailVerifyTrigger.textContent = 'Verifying...';
 
-      fetch(`http://localhost:5000/auth/check-email?email=${encodeURIComponent(emailVal)}`)
-        .then(res => res.json())
-        .then(json => {
-          if (json.success && json.exists) {
-            showError(emailInput, emailErr, 'You already have an account with this email address.');
-            emailVerifyTrigger.disabled = false;
-            emailVerifyTrigger.textContent = 'Verify';
-            return;
-          }
+      // 1. Check if email is already registered (local storage + remote API)
+      let isAlreadyRegistered = false;
 
-          emailVerifyTrigger.textContent = 'Sending...';
+      try {
+        const registeredUsers = JSON.parse(localStorage.getItem('dtf_registered_users') || '[]');
+        const currentUser = JSON.parse(localStorage.getItem('dtf_user') || 'null');
+        const cleanEmail = emailVal.toLowerCase();
 
-          // Generate 6-digit random code
-          generatedEmailOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        const matchRegistered = registeredUsers.some(u => u.email && u.email.toLowerCase() === cleanEmail);
+        const matchCurrent = currentUser && currentUser.email && currentUser.email.toLowerCase() === cleanEmail;
 
-          // Call EmailJS if enabled
-          if (OTP_CONFIG.emailjs.enabled) {
-            if (typeof emailjs !== 'undefined') {
-              console.log('Initiating EmailJS OTP transmission...');
-              emailjs.send(OTP_CONFIG.emailjs.serviceId, OTP_CONFIG.emailjs.templateId, {
-                to_email: emailVal,
-                otp_code: generatedEmailOtp,
-                to_name: 'DevTech Member'
-              })
-              .then((response) => {
-                console.log('Email OTP sent successfully via EmailJS! Response status:', response.status, response.text);
-              })
-              .catch((err) => {
-                console.error('EmailJS Error details:', err);
-                alert(`⚠️ EmailJS Send Error: ${err.text || err.message || JSON.stringify(err)}\n\nPlease ensure your Service ID and Template ID are correct.`);
-              });
-            } else {
-              console.error('EmailJS library is not defined on the window object.');
-              alert('⚠️ EmailJS library failed to load. Please check your internet connection and refresh the page.');
+        if (matchRegistered || matchCurrent) {
+          isAlreadyRegistered = true;
+        }
+      } catch (err) {
+        console.warn('Local registered users check error:', err);
+      }
+
+      if (!isAlreadyRegistered) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+          const res = await fetch(`http://localhost:5000/auth/check-email?email=${encodeURIComponent(emailVal)}`, {
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.exists) {
+              isAlreadyRegistered = true;
             }
           }
+        } catch (err) {
+          console.log('Backend check-email unreachable, relying on client verification:', err.message);
+        }
+      }
 
-          console.log(`[DevTech] Email OTP sent: ${generatedEmailOtp}`);
+      if (isAlreadyRegistered) {
+        showError(emailInput, emailErr, 'An account with this email address already exists. Please login or use a different email.');
+        emailVerifyTrigger.disabled = false;
+        emailVerifyTrigger.textContent = 'Verify';
+        return;
+      }
 
-          setTimeout(() => {
-            emailOtpBlock.style.display = 'block';
-            emailVerifyTrigger.textContent = 'Verify';
-            emailVerifyTrigger.disabled = false;
-            emailOtpInput.focus();
+      // 2. Unused Email — Generate 6-digit OTP & display verification modal
+      emailVerifyTrigger.textContent = 'Sending...';
+      generatedEmailOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      sessionStorage.setItem('dtf_email_otp', generatedEmailOtp);
 
-            if (!OTP_CONFIG.emailjs.enabled) {
-              alert(`⚡ [Demo Mode] OTP sent to Email: ${generatedEmailOtp}\n(To receive real emails, configure your EmailJS credentials in signup.js)`);
-            }
-          }, 1000);
-        })
-        .catch(err => {
-          console.error('Email check error:', err);
-          showError(emailInput, emailErr, 'Failed to verify email address. Please try again.');
-          emailVerifyTrigger.disabled = false;
-          emailVerifyTrigger.textContent = 'Verify';
-        });
+      // Call EmailJS to send OTP in realtime to user's email
+      if (OTP_CONFIG.emailjs.enabled && typeof emailjs !== 'undefined') {
+        try {
+          emailjs.send(OTP_CONFIG.emailjs.serviceId, OTP_CONFIG.emailjs.templateId, {
+            to_email: emailVal,
+            otp_code: generatedEmailOtp,
+            to_name: 'DevTech Member'
+          });
+          console.log(`[DevTech] Realtime Email OTP sent to ${emailVal} via EmailJS: ${generatedEmailOtp}`);
+        } catch (err) {
+          console.warn('EmailJS transmission note:', err);
+        }
+      } else {
+        console.log(`[DevTech] Realtime Email OTP generated for ${emailVal}: ${generatedEmailOtp}`);
+      }
+
+      setTimeout(() => {
+        emailOtpBlock.style.display = 'block';
+        emailVerifyTrigger.textContent = 'Verify';
+        emailVerifyTrigger.disabled = false;
+        emailOtpInput.focus();
+        startResendTimer(); // Start 60-second resend cooldown
+      }, 600);
+    });
+  }
+
+  // ============================================================
+  // EMAIL OTP RESEND WITH 60-SECOND COOLDOWN
+  // ============================================================
+  const resendOtpBtn = document.getElementById('resend-email-otp-btn');
+  const resendTimerSpan = document.getElementById('resend-otp-timer');
+  let resendInterval = null;
+
+  function startResendTimer() {
+    let seconds = 60;
+    if (resendOtpBtn) {
+      resendOtpBtn.disabled = true;
+      resendOtpBtn.style.opacity = '0.4';
+      resendOtpBtn.style.cursor = 'not-allowed';
+    }
+    if (resendTimerSpan) resendTimerSpan.textContent = `(${seconds}s)`;
+
+    if (resendInterval) clearInterval(resendInterval);
+    resendInterval = setInterval(() => {
+      seconds--;
+      if (resendTimerSpan) resendTimerSpan.textContent = `(${seconds}s)`;
+      if (seconds <= 0) {
+        clearInterval(resendInterval);
+        resendInterval = null;
+        if (resendOtpBtn) {
+          resendOtpBtn.disabled = false;
+          resendOtpBtn.style.opacity = '1';
+          resendOtpBtn.style.cursor = 'pointer';
+        }
+        if (resendTimerSpan) resendTimerSpan.textContent = '';
+      }
+    }, 1000);
+  }
+
+  if (resendOtpBtn) {
+    resendOtpBtn.addEventListener('click', async () => {
+      const emailVal = emailInput.value.trim();
+      if (!emailVal || !validateEmail(emailVal)) return;
+
+      resendOtpBtn.disabled = true;
+      resendOtpBtn.style.opacity = '0.4';
+
+      // Generate new OTP
+      generatedEmailOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      sessionStorage.setItem('dtf_email_otp', generatedEmailOtp);
+
+      // Send via EmailJS
+      if (OTP_CONFIG.emailjs.enabled && typeof emailjs !== 'undefined') {
+        try {
+          await emailjs.send(OTP_CONFIG.emailjs.serviceId, OTP_CONFIG.emailjs.templateId, {
+            to_email: emailVal,
+            otp_code: generatedEmailOtp,
+            to_name: 'DevTech Member'
+          });
+          console.log(`[DevTech] Resent Email OTP to ${emailVal} via EmailJS: ${generatedEmailOtp}`);
+        } catch (err) {
+          console.warn('EmailJS resend failed:', err);
+        }
+      } else {
+        console.log(`[DevTech] Resent Email OTP for ${emailVal}: ${generatedEmailOtp}`);
+      }
+
+      // Restart 60-second cooldown
+      startResendTimer();
     });
   }
 
@@ -431,12 +517,17 @@ document.addEventListener('DOMContentLoaded', () => {
     emailOtpSubmit.addEventListener('click', () => {
       const otpVal = emailOtpInput.value.trim();
       if (otpVal.length < 6) {
-        showError(emailOtpInput, emailOtpError, 'Please enter the 6-digit code.');
+        showError(emailOtpInput, emailOtpError, 'Please enter all 6 digits of the email verification code.');
         return;
       }
 
-      // Email OTP is bypassed/compromised — any 6-digit code is accepted
-      // (This allows you to verify that the email arrives in your inbox, but lets you type any 6 digits to pass instantly)
+      const activeOtp = generatedEmailOtp || sessionStorage.getItem('dtf_email_otp');
+
+      // Strict Email OTP Validation — Must match generated OTP
+      if (activeOtp && otpVal !== activeOtp.trim()) {
+        showError(emailOtpInput, emailOtpError, 'Invalid OTP entered. Please enter the exact 6-digit code shown in the alert.');
+        return;
+      }
 
       emailOtpSubmit.disabled = true;
       emailOtpSubmit.textContent = 'Confirming...';
@@ -449,7 +540,8 @@ document.addEventListener('DOMContentLoaded', () => {
         emailVerifyTrigger.classList.add('verified');
         emailInput.disabled = true; // Lock email field
         clearError(emailInput, emailErr);
-      }, 1200);
+        clearError(emailOtpInput, emailOtpError);
+      }, 600);
     });
   }
 
@@ -520,6 +612,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function calculateAge(dobString) {
+    if (!dobString) return 0;
+    const dob = new Date(dobString);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    return age;
+  }
+
+  function checkAgeAndShowError() {
+    if (!dobInput.value) {
+      showError(dobInput, dobErr, 'Date of Birth is a mandatory field.');
+      return false;
+    }
+    const userAge = calculateAge(dobInput.value);
+    if (isNaN(userAge) || userAge < 18) {
+      showError(dobInput, dobErr, 'Under 18 years are not allowed to create an account.');
+      return false;
+    }
+    clearError(dobInput, dobErr);
+    return true;
+  }
+
+  // Real-time instant age check on DOB input, change, and blur events
+  ['input', 'change', 'blur'].forEach(evt => {
+    dobInput.addEventListener(evt, checkAgeAndShowError);
+  });
+
   function validateEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
@@ -540,9 +663,8 @@ document.addEventListener('DOMContentLoaded', () => {
       isDetailsValid = false;
     }
 
-    // DOB
-    if (!dobInput.value) {
-      showError(dobInput, dobErr, 'Please select your Date of Birth.');
+    // DOB — Under 18 years not allowed
+    if (!checkAgeAndShowError()) {
       isDetailsValid = false;
     }
 
@@ -585,6 +707,7 @@ document.addEventListener('DOMContentLoaded', () => {
         email: emailInput.value.trim(),
         phone: verifiedPhoneNumber,
         dob: dobInput.value,
+        password: passwordInput.value,
         role: 'customer',
         token: 'dtf_token_' + Date.now()
       };

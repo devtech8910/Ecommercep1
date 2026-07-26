@@ -22,7 +22,15 @@
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/animations.css" />
     <link rel="stylesheet" href="../css/responsive.css" />
-    <link rel="stylesheet" href="../css/mobile.css" />
+    <!-- EmailJS SDK for Client-Side Real-Time Emails -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+      (function(){
+        emailjs.init({
+          publicKey: "d65JAiVI2nOP-tSjB",
+        });
+      })();
+    </script>
   </head>
   <body class="auth-page">
     <!-- Top-Left Back to Home Button -->
@@ -138,10 +146,6 @@
       <div class="container">
         <div class="footer-bottom-content">
           <p class="footer-copy">&copy; <span id="footer-year"></span> DevTech Solutions. All rights reserved.</p>
-          <div class="footer-legal">
-            <a href="#" class="footer-legal-link">Privacy Policy</a>
-            <a href="#" class="footer-legal-link">Terms of Service</a>
-          </div>
         </div>
       </div>
     </footer>
