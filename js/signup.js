@@ -724,21 +724,29 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('Failed to update dtf_registered_users:', err);
       }
 
-      // Attempt remote backend registration if online
-      fetch('http://localhost:5000/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName: firstNameInput.value.trim(),
-          lastName: lastNameInput.value.trim(),
-          email: emailInput.value.trim(),
-          phone: verifiedPhoneNumber,
-          dob: dobInput.value,
-          password: passwordInput.value
-        })
-      }).catch((err) => {
-        console.log('Backend server offline/running on Netlify; local registration completed:', err.message);
-      });
+      // Sync registration to Netlify Serverless Cloud Auth DB (Works 24/7 globally across Mobile & PC)
+      try {
+        const apiUrl = window.location.origin.includes('localhost:5000')
+          ? 'http://localhost:5000/auth/register'
+          : '/.netlify/functions/auth?action=register';
+
+        fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'register',
+            name: userObj.name,
+            email: userObj.email,
+            phone: userObj.phone,
+            dob: userObj.dob,
+            password: userObj.password
+          })
+        }).then(res => res.json()).then(data => {
+          console.log('[DevTech Auth] Global Cloud DB Registration synced:', data);
+        }).catch(err => {
+          console.log('[DevTech Auth] Netlify cloud auth sync note:', err.message);
+        });
+      } catch (err) {}
 
       if (submitSpan) submitSpan.textContent = 'Account Setup Complete!';
       setTimeout(() => {

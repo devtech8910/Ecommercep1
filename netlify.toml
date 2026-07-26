@@ -2,6 +2,13 @@
 [build]
   publish = "."
   command = ""
+  functions = "netlify/functions"
+
+# Netlify Serverless API Functions Redirect
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
 
 # Serve static pages directly
 [[redirects]]

@@ -113,9 +113,68 @@ document.addEventListener('DOMContentLoaded', () => {
     if (submitTextSpan) submitTextSpan.textContent = 'Verifying account...';
 
     const cleanEmail = email.toLowerCase();
-    let foundUser = null;
 
-    // 1. Inspect registered users array & current user in localStorage
+    // 1. Attempt Netlify Serverless Cloud Auth API (Works 24/7 across Mobile & Desktop globally)
+    let cloudUser = null;
+    let cloudErrorMsg = null;
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+      const apiUrl = window.location.origin.includes('localhost:5000') 
+        ? 'http://localhost:5000/auth/login' 
+        : '/.netlify/functions/auth?action=login';
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'login', email: cleanEmail, password }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      const json = await response.json();
+      if (response.ok && json.success && json.user) {
+        cloudUser = json.user;
+      } else if (json.errors && json.errors.length) {
+        cloudErrorMsg = json.errors[0];
+      }
+    } catch (err) {
+      console.log('[DevTech Auth] Netlify cloud auth fallback:', err.message);
+    }
+
+    // If Netlify Cloud Auth succeeded, log in immediately
+    if (cloudUser) {
+      const sessionObj = {
+        email: cloudUser.email,
+        name: cloudUser.name || 'DevTech Member',
+        phone: cloudUser.phone || '',
+        role: cloudUser.role || 'customer',
+        token: cloudUser.token || ('dtf_token_' + Date.now())
+      };
+
+      localStorage.setItem('dtf_user', JSON.stringify(sessionObj));
+      localStorage.setItem('token', sessionObj.token);
+
+      // Save to local registered users list on this device
+      try {
+        const registeredUsers = JSON.parse(localStorage.getItem('dtf_registered_users') || '[]');
+        if (!registeredUsers.some(u => u.email && u.email.toLowerCase() === cleanEmail)) {
+          registeredUsers.push(cloudUser);
+          localStorage.setItem('dtf_registered_users', JSON.stringify(registeredUsers));
+        }
+      } catch (e) {}
+
+      if (submitTextSpan) submitTextSpan.textContent = 'Success! Redirecting...';
+      setTimeout(() => {
+        window.location.href = sessionObj.role === 'admin' ? 'admin-dashboard.html' : '../index.html';
+      }, 600);
+      return;
+    }
+
+    // Inspect local storage as offline fallback
+    let foundUser = null;
     try {
       const registeredUsers = JSON.parse(localStorage.getItem('dtf_registered_users') || '[]');
       const currentUser = JSON.parse(localStorage.getItem('dtf_user') || 'null');
@@ -128,58 +187,15 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn('Local user lookup error:', err);
     }
 
-    // 2. Attempt backend login API if online
-    let remoteUser = null;
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 1500);
-
-      const response = await fetch('http://localhost:5000/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-
-      if (response.ok) {
-        const json = await response.json();
-        if (json.success && json.data) {
-          remoteUser = json.data;
-        }
-      }
-    } catch (err) {
-      console.log('Backend server offline/unreachable, relying on local authentication:', err.message);
-    }
-
-    // Process authentication result
-    if (remoteUser) {
-      const userObj = {
-        email: remoteUser.user.email,
-        name: `${remoteUser.user.first_name} ${remoteUser.user.last_name}`,
-        role: remoteUser.user.role || 'customer',
-        token: remoteUser.token
-      };
-
-      localStorage.setItem('dtf_user', JSON.stringify(userObj));
-      localStorage.setItem('token', userObj.token);
-
-      if (submitTextSpan) submitTextSpan.textContent = 'Success! Redirecting...';
-      setTimeout(() => {
-        window.location.href = userObj.role === 'admin' ? 'admin-dashboard.html' : '../index.html';
-      }, 600);
-      return;
-    }
-
-    // Check account existence locally
+    // Check account existence
     if (!foundUser) {
       submitBtn.disabled = false;
       if (submitTextSpan) submitTextSpan.textContent = 'Sign In';
-      showError(emailInput, emailError, 'No account found with this email address. Please check your email or sign up.');
+      showError(emailInput, emailError, cloudErrorMsg || 'No account found with this email address. Please check your email or sign up.');
       return;
     }
 
-    // Check password correctness locally (must match saved password)
+    // Check password correctness locally
     const storedPassword = foundUser.password || 'Purna@2007';
     if (password !== storedPassword) {
       submitBtn.disabled = false;
@@ -188,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Success Local Authentication
+    // Success Local Fallback Authentication
     const sessionObj = {
       email: foundUser.email,
       name: foundUser.name || 'DevTech Member',
@@ -525,6 +541,21 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         console.warn('Failed to update password in localStorage:', err);
       }
+
+      // Sync password reset to Netlify Serverless Cloud Auth DB (Works 24/7 globally across Mobile & PC)
+      try {
+        const apiUrl = window.location.origin.includes('localhost:5000')
+          ? 'http://localhost:5000/auth/reset-password'
+          : '/.netlify/functions/auth?action=reset-password';
+
+        fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'reset-password', email: emailVal, newPassword: passVal })
+        }).then(res => res.json()).then(data => {
+          console.log('[DevTech Auth] Global Cloud DB Password Reset synced:', data);
+        }).catch(e => {});
+      } catch (err) {}
 
       setTimeout(() => {
         resetBtn.disabled = false;
