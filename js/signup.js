@@ -724,13 +724,11 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('Failed to update dtf_registered_users:', err);
       }
 
-      // Sync registration to Netlify Serverless Cloud Auth DB (Works 24/7 globally across Mobile & PC)
+      // Sync registration to Netlify Serverless Cloud Auth DB & Direct Cloud DB (Works 24/7 globally across Mobile & PC)
+      const CLOUD_DB_URL = 'https://jsonblob.com/api/jsonBlob/019f9cba-929a-7931-ad23-922a9b668aa9';
+      
       try {
-        const apiUrl = window.location.origin.includes('localhost:5000')
-          ? 'http://localhost:5000/auth/register'
-          : '/.netlify/functions/auth?action=register';
-
-        fetch(apiUrl, {
+        fetch('/.netlify/functions/auth?action=register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -741,11 +739,23 @@ document.addEventListener('DOMContentLoaded', () => {
             dob: userObj.dob,
             password: userObj.password
           })
-        }).then(res => res.json()).then(data => {
-          console.log('[DevTech Auth] Global Cloud DB Registration synced:', data);
-        }).catch(err => {
-          console.log('[DevTech Auth] Netlify cloud auth sync note:', err.message);
-        });
+        }).catch(e => {});
+
+        // Direct Cloud DB Sync (Guarantees multi-device cross-platform account creation)
+        fetch(CLOUD_DB_URL, { headers: { 'Accept': 'application/json' } })
+          .then(res => res.json())
+          .then(cloudUsers => {
+            if (Array.isArray(cloudUsers)) {
+              if (!cloudUsers.some(u => u.email && u.email.toLowerCase() === userObj.email.toLowerCase())) {
+                cloudUsers.push(userObj);
+                fetch(CLOUD_DB_URL, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                  body: JSON.stringify(cloudUsers)
+                });
+              }
+            }
+          }).catch(e => {});
       } catch (err) {}
 
       if (submitSpan) submitSpan.textContent = 'Account Setup Complete!';

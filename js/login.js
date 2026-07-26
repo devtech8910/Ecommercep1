@@ -114,19 +114,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cleanEmail = email.toLowerCase();
 
+    const CLOUD_DB_URL = 'https://jsonblob.com/api/jsonBlob/019f9cba-929a-7931-ad23-922a9b668aa9';
+
     // 1. Attempt Netlify Serverless Cloud Auth API (Works 24/7 across Mobile & Desktop globally)
     let cloudUser = null;
     let cloudErrorMsg = null;
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-      const apiUrl = window.location.origin.includes('localhost:5000') 
-        ? 'http://localhost:5000/auth/login' 
-        : '/.netlify/functions/auth?action=login';
-
-      const response = await fetch(apiUrl, {
+      const response = await fetch('/.netlify/functions/auth?action=login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'login', email: cleanEmail, password }),
@@ -134,17 +132,60 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       clearTimeout(timeoutId);
 
-      const json = await response.json();
-      if (response.ok && json.success && json.user) {
-        cloudUser = json.user;
-      } else if (json.errors && json.errors.length) {
-        cloudErrorMsg = json.errors[0];
+      if (response.ok) {
+        const json = await response.json();
+        if (json.success && json.user) {
+          cloudUser = json.user;
+        } else if (json.errors && json.errors.length) {
+          cloudErrorMsg = json.errors[0];
+        }
       }
     } catch (err) {
-      console.log('[DevTech Auth] Netlify cloud auth fallback:', err.message);
+      console.log('[DevTech Auth] Netlify serverless endpoint unreachable, trying direct Cloud DB:', err.message);
     }
 
-    // If Netlify Cloud Auth succeeded, log in immediately
+    // 2. Direct Cloud DB fetch fallback (Guarantees multi-device cross-platform login on all environments)
+    if (!cloudUser && !cloudErrorMsg) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+        const res = await fetch(CLOUD_DB_URL, {
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const cloudUsers = await res.json();
+          if (Array.isArray(cloudUsers)) {
+            const matchedUser = cloudUsers.find(u => u.email && u.email.toLowerCase() === cleanEmail);
+            if (matchedUser) {
+              if (matchedUser.password && matchedUser.password !== password) {
+                cloudErrorMsg = 'Incorrect password. Please enter the correct password.';
+              } else {
+                cloudUser = matchedUser;
+                // If scheduled for deletion, cancel deletion automatically on login
+                if (cloudUser.deletionScheduled) {
+                  cloudUser.deletionScheduled = false;
+                  delete cloudUser.deletionDate;
+                  const updatedUsers = cloudUsers.map(u => (u.email && u.email.toLowerCase() === cleanEmail) ? cloudUser : u);
+                  fetch(CLOUD_DB_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(updatedUsers)
+                  }).catch(e => {});
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[DevTech Auth] Direct Cloud DB fetch note:', err.message);
+      }
+    }
+
+    // If Netlify Cloud Auth or Direct Cloud DB succeeded, log in immediately
     if (cloudUser) {
       const sessionObj = {
         email: cloudUser.email,
