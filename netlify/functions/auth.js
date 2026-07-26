@@ -153,7 +153,38 @@ export async function handler(event, context) {
         return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['Incorrect password. Please enter the correct password.'] }) };
       }
 
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, user: foundUser, token: foundUser.token || ('dtf_token_' + Date.now()) }) };
+      // Check 30-day deletion grace period
+      let deletionCancelled = false;
+      if (foundUser.deletionScheduled) {
+        const deletionExpiry = foundUser.deletionDate ? new Date(foundUser.deletionDate).getTime() : 0;
+        const now = Date.now();
+
+        if (deletionExpiry > 0 && now > deletionExpiry) {
+          // Deletion period expired — account permanently purged
+          const filteredUsers = users.filter(u => !(u.email && u.email.toLowerCase() === cleanEmail));
+          await saveCloudUsers(filteredUsers);
+          return { statusCode: 410, headers, body: JSON.stringify({ success: false, errors: ['This account was permanently deleted after the 30-day grace period.'] }) };
+        } else {
+          // Within 30-day period — cancel deletion automatically!
+          foundUser.deletionScheduled = false;
+          delete foundUser.deletionDate;
+          deletionCancelled = true;
+
+          const updatedUsers = users.map(u => (u.email && u.email.toLowerCase() === cleanEmail) ? foundUser : u);
+          await saveCloudUsers(updatedUsers);
+        }
+      }
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          user: foundUser,
+          token: foundUser.token || ('dtf_token_' + Date.now()),
+          deletionCancelled
+        })
+      };
     }
 
     // === 4. RESET PASSWORD ===
@@ -182,7 +213,7 @@ export async function handler(event, context) {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'Password reset successfully.' }) };
     }
 
-    // === 5. DELETE ACCOUNT ===
+    // === 5. DELETE ACCOUNT (SCHEDULE FOR 30 DAYS) ===
     if (action === 'delete-account') {
       const { email } = body;
       const cleanEmail = (email || '').trim().toLowerCase();
@@ -191,10 +222,21 @@ export async function handler(event, context) {
         return { statusCode: 400, headers, body: JSON.stringify({ success: false, errors: ['Email is required.'] }) };
       }
 
-      const filteredUsers = users.filter(u => !(u.email && u.email.toLowerCase() === cleanEmail));
-      await saveCloudUsers(filteredUsers);
+      let found = false;
+      const updatedUsers = users.map(u => {
+        if (u.email && u.email.toLowerCase() === cleanEmail) {
+          u.deletionScheduled = true;
+          u.deletionDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+          found = true;
+        }
+        return u;
+      });
 
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'Account deleted successfully.' }) };
+      if (found) {
+        await saveCloudUsers(updatedUsers);
+      }
+
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'Account deletion scheduled for 30 days.' }) };
     }
 
     return { statusCode: 400, headers, body: JSON.stringify({ success: false, errors: ['Invalid API action.'] }) };

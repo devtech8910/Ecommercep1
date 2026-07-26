@@ -434,6 +434,19 @@
               console.warn('Failed to schedule user for deletion:', err);
             }
 
+            // Sync deletion schedule to Netlify Serverless Cloud Auth DB
+            try {
+              const apiUrl = window.location.origin.includes('localhost:5000')
+                ? 'http://localhost:5000/auth/delete-account'
+                : '/.netlify/functions/auth?action=delete-account';
+
+              fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete-account', email: user.email })
+              }).catch(e => {});
+            } catch (e) {}
+
             // Show Step 3 — Deletion Scheduled confirmation
             setTimeout(() => {
               hideAllSteps();

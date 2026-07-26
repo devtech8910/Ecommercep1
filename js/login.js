@@ -157,14 +157,25 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('dtf_user', JSON.stringify(sessionObj));
       localStorage.setItem('token', sessionObj.token);
 
-      // Save to local registered users list on this device
+      // Save/update in local registered users list on this device
       try {
         const registeredUsers = JSON.parse(localStorage.getItem('dtf_registered_users') || '[]');
-        if (!registeredUsers.some(u => u.email && u.email.toLowerCase() === cleanEmail)) {
-          registeredUsers.push(cloudUser);
-          localStorage.setItem('dtf_registered_users', JSON.stringify(registeredUsers));
+        const updatedUsers = registeredUsers.map(u => {
+          if (u.email && u.email.toLowerCase() === cleanEmail) {
+            delete u.deletionScheduled;
+            delete u.deletionDate;
+          }
+          return u;
+        });
+        if (!updatedUsers.some(u => u.email && u.email.toLowerCase() === cleanEmail)) {
+          updatedUsers.push(cloudUser);
         }
+        localStorage.setItem('dtf_registered_users', JSON.stringify(updatedUsers));
       } catch (e) {}
+
+      if (cloudUser.deletionScheduled) {
+        alert('ℹ️ Welcome back! Your scheduled account deletion has been cancelled automatically.');
+      }
 
       if (submitTextSpan) submitTextSpan.textContent = 'Success! Redirecting...';
       setTimeout(() => {
@@ -193,6 +204,29 @@ document.addEventListener('DOMContentLoaded', () => {
       if (submitTextSpan) submitTextSpan.textContent = 'Sign In';
       showError(emailInput, emailError, cloudErrorMsg || 'No account found with this email address. Please check your email or sign up.');
       return;
+    }
+
+    // Check 30-day deletion grace period locally
+    if (foundUser.deletionScheduled) {
+      const deletionExpiry = foundUser.deletionDate ? new Date(foundUser.deletionDate).getTime() : 0;
+      const now = Date.now();
+
+      if (deletionExpiry > 0 && now > deletionExpiry) {
+        submitBtn.disabled = false;
+        if (submitTextSpan) submitTextSpan.textContent = 'Sign In';
+        showError(emailInput, emailError, 'This account was permanently deleted after the 30-day grace period.');
+        return;
+      } else {
+        // Cancel scheduled deletion on login
+        foundUser.deletionScheduled = false;
+        delete foundUser.deletionDate;
+        try {
+          const registeredUsers = JSON.parse(localStorage.getItem('dtf_registered_users') || '[]');
+          const updatedUsers = registeredUsers.map(u => (u.email && u.email.toLowerCase() === cleanEmail) ? foundUser : u);
+          localStorage.setItem('dtf_registered_users', JSON.stringify(updatedUsers));
+        } catch (e) {}
+        alert('ℹ️ Welcome back! Your scheduled account deletion has been cancelled automatically.');
+      }
     }
 
     // Check password correctness locally
