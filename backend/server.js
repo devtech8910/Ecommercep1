@@ -65,6 +65,13 @@ app.use(async (req, res, next) => {
   next();
 });
 
+// Serve static uploads directory
+const uploadDirStatic = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDirStatic)) {
+  fs.mkdirSync(uploadDirStatic, { recursive: true });
+}
+app.use('/uploads', express.static(uploadDirStatic));
+
 // Expose API routes
 app.use('/auth', authRouter);
 app.use('/location', locationRouter);
@@ -91,7 +98,12 @@ app.get('/products', async (req, res) => {
 app.get('/products/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await query('SELECT pid AS id, * FROM products WHERE pid = $1;', [id]);
+    let result;
+    if (/^\d+$/.test(String(id).trim())) {
+      result = await query('SELECT pid AS id, * FROM products WHERE pid = $1;', [id]);
+    } else {
+      result = await query('SELECT pid AS id, * FROM products WHERE LOWER(title) = LOWER($1) OR LOWER(pid::text) = LOWER($1) LIMIT 1;', [id]);
+    }
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Product not found.' });
     }
@@ -122,7 +134,7 @@ app.post('/admin/upload', async (req, res) => {
     const filePath = path.join(uploadDir, newFilename);
     fs.writeFileSync(filePath, base64Image, { encoding: 'base64' });
 
-    const url = `http://localhost:3001/uploads/${newFilename}`;
+    const url = `/uploads/${newFilename}`;
     console.log('[Upload] Saved image to:', filePath, 'URL:', url);
     res.status(200).json({ success: true, url });
   } catch (err) {

@@ -591,3 +591,16 @@ html {
     text-decoration: underline;
   }
 }
+
+/* Commercial E-Commerce 2 Products Per Screen Mobile Grid */
+@media (max-width: 768px) {
+  #category-products-grid,
+  #wishlist-grid,
+  .category-products-grid,
+  .products-grid,
+  .shop-products-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+}

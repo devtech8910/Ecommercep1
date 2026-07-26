@@ -946,74 +946,100 @@
 
     </main>
 
-
     <!-- Custom JavaScript -->
     <script src="../js/script.js"></script>
     <script src="../js/mobile-ui.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
-        
-        // --- Fetch URL Product Info ---
         const params = new URLSearchParams(window.location.search);
         const idParam = params.get('id');
         const titleParam = params.get('title') || '';
+        const apiUrl = window.dtfApiUrl || ((path) => {
+          const host = window.location.hostname;
+          const base = host && host !== 'localhost' && host !== '127.0.0.1' ? `http://${host}:5000` : 'http://localhost:5000';
+          return `${base}${path}`;
+        });
 
-        console.log('[ProductDetails] URL params - id:', idParam, 'title:', titleParam);
-
-        // Show loading state and clear static placeholders
         document.getElementById('product-title').textContent = 'Loading...';
         document.getElementById('product-brand').textContent = '';
         document.getElementById('product-snippets').innerHTML = '';
 
         async function initProductDetails() {
           let liveProduct = null;
+          const cleanId = idParam ? String(idParam).trim() : '';
+          const cleanTitle = titleParam ? decodeURIComponent(titleParam).trim().toLowerCase() : '';
 
-          // ── Primary: fetch by ID using dedicated endpoint ──
-          if (idParam) {
+          // 1. Search in local admin products catalog
+          const storedAdminProducts = localStorage.getItem('dtf_admin_products');
+          if (storedAdminProducts !== null) {
             try {
-              console.log('[ProductDetails] Fetching by ID:', idParam);
-              const res = await fetch(`http://localhost:5000/products/${idParam}`);
+              const parsed = JSON.parse(storedAdminProducts);
+              if (Array.isArray(parsed)) {
+                if (cleanId) {
+                  liveProduct = parsed.find(p => String(p.id) === cleanId || String(p.pid) === cleanId) || null;
+                }
+                if (!liveProduct && cleanTitle) {
+                  liveProduct = parsed.find(p => p.title && p.title.trim().toLowerCase() === cleanTitle) || null;
+                }
+              }
+            } catch (e) {}
+          }
+
+          // 2. Fetch from backend API endpoint by ID
+          if (!liveProduct && cleanId) {
+            try {
+              const res = await fetch(apiUrl(`/products/${encodeURIComponent(cleanId)}`));
               const data = await res.json();
-              console.log('[ProductDetails] ID fetch response:', res.status, data);
               if (res.ok && data.success && data.product) {
                 liveProduct = data.product;
-                console.log('[ProductDetails] Found product by ID:', liveProduct.title);
               }
-            } catch (e) {
-              console.warn('[ProductDetails] Product ID fetch error:', e);
-            }
+            } catch (e) {}
           }
 
-          // ── Fallback: search across all products by title ──
+          // 3. Fetch all products from backend API if single endpoint didn't match
           if (!liveProduct) {
             try {
-              console.log('[ProductDetails] Fetching all products for fallback...');
-              const res = await fetch('http://localhost:5000/products?_t=' + Date.now());
+              const res = await fetch(apiUrl('/products'));
               const data = await res.json();
-              console.log('[ProductDetails] All products response:', res.status, data.products ? data.products.length : 0, 'products');
-              if (res.ok && data.success && data.products.length > 0) {
-                // Try match by ID first (from all products list)
-                if (idParam) {
-                  liveProduct = data.products.find(p => String(p.id) === String(idParam)) || null;
-                  if (liveProduct) console.log('[ProductDetails] Matched by ID from all-products list:', liveProduct.title);
+              if (res.ok && data.success && Array.isArray(data.products)) {
+                if (cleanId) {
+                  liveProduct = data.products.find(p => String(p.id) === cleanId || String(p.pid) === cleanId) || null;
                 }
-                // Then try match by title
-                if (!liveProduct && titleParam) {
-                  liveProduct = data.products.find(p => p.title.toLowerCase() === titleParam.toLowerCase()) || null;
-                  if (liveProduct) console.log('[ProductDetails] Matched by title:', liveProduct.title);
-                }
-                // Last resort: if only one product exists, show it
-                if (!liveProduct && data.products.length === 1) {
-                  liveProduct = data.products[0];
-                  console.log('[ProductDetails] Single product fallback:', liveProduct.title);
+                if (!liveProduct && cleanTitle) {
+                  liveProduct = data.products.find(p => p.title && p.title.trim().toLowerCase() === cleanTitle) || null;
                 }
               }
-            } catch (e) {
-              console.warn('[ProductDetails] All-products fetch error:', e);
+            } catch (e) {}
+          }
+
+          // 4. Fallback search in static default items
+          if (!liveProduct) {
+            const defaultCatalog = [
+              { id: 'm1', title: 'Midnight Blue Tuxedo', price: 24999, mrp: 29999, category: "Men", brand: "DevTech Luxury", sizes: "M, L, XL", image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80&fit=crop', description: "Impeccably tailored tuxedo in rich midnight blue.", fabric: "Pure Wool", fit: "Tailored Fit", pattern: "Solid", suitable_for: "Formal" },
+              { id: 'm2', title: 'Oxford Classic Shirt', price: 3499, mrp: 4499, category: "Men", brand: "DevTech Casuals", sizes: "S, M, L", image: 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop', description: "Breathable cotton Oxford shirt for daily elegance.", fabric: "100% Cotton", fit: "Regular Fit", pattern: "Solid", suitable_for: "Casual" },
+              { id: 'm3', title: 'Premium Leather Jacket', price: 12999, mrp: 15999, category: "Men", brand: "DevTech Luxury", sizes: "L, XL", image: 'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&q=80&fit=crop', description: "Genuine top-grain leather jacket with quilted lining.", fabric: "Genuine Leather", fit: "Slim Fit", pattern: "Solid", suitable_for: "Winter / Casual" },
+              { id: 'm4', title: 'Chronograph Luxury Watch', price: 8999, mrp: 11999, category: "Men", brand: "DevTech Accessories", sizes: "One Size", image: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&q=80&fit=crop', description: "Precision quartz movement with stainless steel case.", fabric: "Stainless Steel", fit: "Standard", pattern: "Metallic", suitable_for: "Formal / Casual" },
+              { id: 'm5', title: 'Slim Fit Italian Blazer', price: 16499, mrp: 19999, category: "Men", brand: "DevTech Luxury", sizes: "M, L", image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&q=80&fit=crop', description: "Italian cut blazer featuring soft shoulders and lightweight lining.", fabric: "Wool Blend", fit: "Slim Fit", pattern: "Solid", suitable_for: "Smart Casual" },
+              { id: 'm6', title: 'Tailored Chino Trousers', price: 4299, mrp: 5299, category: "Men", brand: "DevTech Casuals", sizes: "S, M, L, XL", image: 'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=600&q=80&fit=crop', description: "Comfort-stretch cotton chinos tailored for a modern silhouette.", fabric: "Cotton Stretch", fit: "Regular Fit", pattern: "Solid", suitable_for: "Daily Wear" },
+              { id: 'w1', title: 'Silk Evening Gown', price: 18499, mrp: 21999, category: "Women", brand: "DevTech Haute Couture", sizes: "S, M, L", image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600&q=80&fit=crop', description: "Elegant silk evening gown with graceful drape.", fabric: "Pure Silk", fit: "Regular Fit", pattern: "Solid", suitable_for: "Party / Evening" },
+              { id: 'w2', title: 'Floral Wrap Blouse', price: 4299, mrp: 5299, category: "Women", brand: "DevTech Casuals", sizes: "S, M", image: 'https://images.unsplash.com/photo-1550614000-4b95d466f913?w=600&q=80&fit=crop', description: "Vibrant floral wrap blouse for effortless chic.", fabric: "Chiffon", fit: "Regular Fit", pattern: "Floral", suitable_for: "Casual" },
+              { id: 'w3', title: 'Classic Leather Tote', price: 14999, mrp: 17999, category: "Women", brand: "DevTech Accessories", sizes: "One Size", image: 'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&q=80&fit=crop', description: "Spacious classic leather tote bag for everyday essentials.", fabric: "Genuine Leather", fit: "Standard", pattern: "Solid", suitable_for: "Daily / Work" },
+              { id: 'w4', title: 'Stiletto Designer Heels', price: 9999, mrp: 12999, category: "Women", brand: "DevTech Footwear", sizes: "36, 37, 38", image: 'https://images.unsplash.com/photo-1532453288672-3a27e9be9efd?w=600&q=80&fit=crop', description: "High-fashion designer heels crafted for supreme comfort and poise.", fabric: "Patent Leather", fit: "Standard", pattern: "Solid", suitable_for: "Party / Formal" },
+              { id: 'w5', title: 'Cashmere Winter Trenchcoat', price: 21999, mrp: 25999, category: "Women", brand: "DevTech Haute Couture", sizes: "M, L, XL", image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&q=80&fit=crop', description: "Luxurious cashmere winter coat providing warmth without weight.", fabric: "Cashmere Wool", fit: "Regular Fit", pattern: "Solid", suitable_for: "Winter / Formal" },
+              { id: 'w6', title: 'Pleated Designer Skirt', price: 6499, mrp: 7999, category: "Women", brand: "DevTech Casuals", sizes: "S, M, L", image: 'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=600&q=80&fit=crop', description: "Accordion pleated skirt featuring fluid movement and high waist.", fabric: "Polyester Blend", fit: "Regular Fit", pattern: "Solid", suitable_for: "Casual / Smart" },
+              { id: 'k1', title: 'Organic Cotton Party Dress', price: 3499, mrp: 4299, category: "Kids", brand: "DevTech Juniors", sizes: "2-3Y, 4-5Y", image: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=600&q=80&fit=crop', description: "Soft organic cotton dress designed for playful celebrations.", fabric: "Organic Cotton", fit: "Comfort Fit", pattern: "Printed", suitable_for: "Party" },
+              { id: 'k2', title: 'Denim Adventure Overalls', price: 2899, mrp: 3499, category: "Kids", brand: "DevTech Juniors", sizes: "4-5Y, 6-7Y", image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&q=80&fit=crop', description: "Sturdy and comfortable denim overalls built for everyday adventures.", fabric: "Denim", fit: "Regular Fit", pattern: "Solid", suitable_for: "Casual / Play" },
+              { id: 'k3', title: 'Cozy Knit Winter Sweater', price: 2499, mrp: 2999, category: "Kids", brand: "DevTech Juniors", sizes: "2-3Y, 4-5Y, 6-7Y", image: 'https://images.unsplash.com/photo-1503944563220-79d8926ad5e2?w=600&q=80&fit=crop', description: "Ultra-soft knitted sweater keeping juniors cozy in chilly weather.", fabric: "Cotton Knit", fit: "Comfort Fit", pattern: "Solid", suitable_for: "Winter" },
+              { id: 'k4', title: 'Junior Explorer Sneakers', price: 3999, mrp: 4999, category: "Kids", brand: "DevTech Footwear", sizes: "11, 12, 13", image: 'https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=600&q=80&fit=crop', description: "Lightweight and non-slip sneakers for active young explorers.", fabric: "Mesh / Rubber", fit: "Standard", pattern: "Sporty", suitable_for: "Casual / Sports" }
+            ];
+            if (cleanId) {
+              liveProduct = defaultCatalog.find(p => String(p.id) === cleanId || String(p.pid) === cleanId) || null;
+            }
+            if (!liveProduct && cleanTitle) {
+              liveProduct = defaultCatalog.find(p => p.title && p.title.trim().toLowerCase() === cleanTitle) || null;
             }
           }
 
-          // ── If product still not found, show error ──
           if (!liveProduct) {
             document.getElementById('product-title').textContent = 'Product Not Found';
             document.getElementById('product-brand').textContent = 'Please go back and select a product.';
@@ -1026,20 +1052,22 @@
           }
 
           // ── Map live DB row to product object ──
-          const imagesArray = liveProduct.image_url
-            ? liveProduct.image_url.split(',').map(url => url.trim()).filter(Boolean)
+          const normalizeImageUrl = window.dtfNormalizeImageUrl || ((url) => url);
+          const rawImg = liveProduct.image_url || liveProduct.image || liveProduct.imageUrl || '';
+          const imagesArray = rawImg
+            ? rawImg.split(',').map(url => normalizeImageUrl(url.trim())).filter(Boolean)
             : ['https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop'];
 
           const snippetsArray = liveProduct.title_description
             ? liveProduct.title_description.split('.').map(s => s.trim()).filter(s => s.length > 2)
-            : (liveProduct.description ? [liveProduct.description] : ['Premium quality product assured.']);
+            : (liveProduct.description ? [liveProduct.description] : ['High-quality materials tailored for longevity and everyday luxury.', 'Comfortable fit matching premium contemporary cuts.']);
 
           const product = {
-            id: liveProduct.id,
-            title: liveProduct.title,
+            id: liveProduct.id || liveProduct.pid,
+            title: liveProduct.title || 'DevTech Product',
             brand: liveProduct.brand || 'DevTech Luxury',
             price: parseFloat(liveProduct.price) || 0,
-            mrp: parseFloat(liveProduct.mrp) || parseFloat(liveProduct.price) * 1.3 || 0,
+            mrp: parseFloat(liveProduct.mrp) || Math.round(parseFloat(liveProduct.price || 0) * 1.35) || 0,
             category: liveProduct.category,
             images: imagesArray,
             snippets: snippetsArray,
@@ -1047,26 +1075,36 @@
               fabric: liveProduct.fabric || 'Cotton',
               fit: liveProduct.fit || 'Regular Fit',
               pattern: liveProduct.pattern || 'Solid',
-              suitable: liveProduct.suitable_for || 'Casual'
+              suitable: liveProduct.suitable_for || liveProduct.suitable || 'Casual'
             },
             description: liveProduct.description || 'No description provided.',
-            sizes: liveProduct.sizes ? liveProduct.sizes.split(',').map(s => s.trim()).filter(Boolean) : ['S', 'M', 'L'],
+            sizes: liveProduct.sizes ? (typeof liveProduct.sizes === 'string' ? liveProduct.sizes.split(',').map(s => s.trim()).filter(Boolean) : liveProduct.sizes) : ['S', 'M', 'L'],
             sizeStock: liveProduct.size_stock || 'S:10, M:10, L:10',
-            couponApplicable: liveProduct.coupon_applicable !== false,
-            replacementAllowed: liveProduct.replacement_allowed !== false,
-            replacementDays: liveProduct.replacement_days || 7,
-            codAvailable: liveProduct.cod_available !== false
+            couponApplicable: liveProduct.coupon_applicable !== false && liveProduct.couponApplicable !== false,
+            replacementAllowed: liveProduct.replacement_allowed !== false && liveProduct.replacementAllowed !== false,
+            replacementDays: liveProduct.replacement_days || liveProduct.replacementDays || 7,
+            codAvailable: liveProduct.cod_available !== false && liveProduct.codAvailable !== false
           };
 
           // ── Populate all fields ──
-          // Dynamic category back button
           const backBtn = document.getElementById('back-to-category-btn');
           if (backBtn && product.category) {
             const cat = product.category.toLowerCase();
             let catPage = '../index.html';
             let catLabel = 'Back to Home';
-
-
+            if (cat.includes('men') && !cat.includes('women')) {
+              catPage = 'mens-wear.html';
+              catLabel = "Back to Men's Wear";
+            } else if (cat.includes('women') || cat.includes('womens')) {
+              catPage = 'womens-wear.html';
+              catLabel = "Back to Women's Wear";
+            } else if (cat.includes('kid')) {
+              catPage = 'kids-wear.html';
+              catLabel = 'Back to Kids Wear';
+            } else if (cat.includes('access') || cat.includes('bag') || cat.includes('luggage')) {
+              catPage = 'shop.html#accessories-section';
+              catLabel = 'Back to Accessories';
+            }
 
             backBtn.href = catPage;
             backBtn.innerHTML = `
@@ -1257,7 +1295,7 @@
           const sizeContainer = document.querySelector('.size-btn').parentNode;
           // Build custom sizes list from product sizes
           sizeContainer.innerHTML = '';
-          const pSizes = product.sizes || ['S', 'M', 'L'];
+          const pSizes = (product.sizes || ['S', 'M', 'L']).map(s => String(s).trim()).filter(Boolean);
           
           pSizes.forEach((s, idx) => {
             const sUpper = s.toUpperCase();
@@ -1367,23 +1405,41 @@
           });
 
           // --- Add to Cart CTA ---
-          document.getElementById('add-to-cart-cta').addEventListener('click', () => {
+          function buildCartItem() {
+            if (!selectedSize) {
+              alert('Please select an available size before continuing.');
+              return null;
+            }
+            return {
+              id: product.id,
+              pid: product.id,
+              title: product.title,
+              price: product.price,
+              image: product.images[0],
+              size: selectedSize,
+              quantity: 1
+            };
+          }
+
+          function addProductToCart() {
+            const cartItem = buildCartItem();
+            if (!cartItem) return false;
             const cart = JSON.parse(localStorage.getItem('dtf_cart')) || [];
-            const existing = cart.findIndex(c => c.title === product.title);
+            const existing = cart.findIndex(c => String(c.id || c.pid || c.title) === String(cartItem.id || cartItem.title) && String(c.size || '') === String(cartItem.size || ''));
             
             if (existing > -1) {
               cart[existing].quantity = (cart[existing].quantity || 1) + 1;
             } else {
-              cart.push({
-                title: product.title,
-                price: product.price,
-                image: product.images[0],
-                quantity: 1
-              });
+              cart.push(cartItem);
             }
 
             localStorage.setItem('dtf_cart', JSON.stringify(cart));
             window.dispatchEvent(new Event('dtf:cart:updated'));
+            return true;
+          }
+
+          document.getElementById('add-to-cart-cta').addEventListener('click', () => {
+            if (!addProductToCart()) return;
             alert(`🛒 ${product.title} added to checkout bag!`);
           });
 
@@ -1391,22 +1447,7 @@
           const buyNowBtn = document.getElementById('buy-now-cta');
           if (buyNowBtn) {
             buyNowBtn.addEventListener('click', () => {
-              const cart = JSON.parse(localStorage.getItem('dtf_cart')) || [];
-              const existing = cart.findIndex(c => c.title === product.title);
-              
-              if (existing > -1) {
-                cart[existing].quantity = (cart[existing].quantity || 1) + 1;
-              } else {
-                cart.push({
-                  title: product.title,
-                  price: product.price,
-                  image: product.images[0],
-                  quantity: 1
-                });
-              }
-
-              localStorage.setItem('dtf_cart', JSON.stringify(cart));
-              window.dispatchEvent(new Event('dtf:cart:updated'));
+              if (!addProductToCart()) return;
               window.location.href = 'cart.html';
             });
           }
@@ -1418,14 +1459,14 @@
           // Pull live similar items if possible
           let localAlternates = [];
           try {
-            const allRes = await fetch('http://localhost:5000/products?_t=' + Date.now());
+            const allRes = await fetch(apiUrl('/products?_t=' + Date.now()));
             const allData = await allRes.json();
             if (allRes.ok && allData.success && allData.products.length > 0) {
               localAlternates = allData.products.map(lp => ({
                 id: lp.id,
                 title: lp.title,
                 price: parseFloat(lp.price),
-                images: lp.image_url.split(',').map(u => u.trim())
+                images: (lp.image_url || lp.image || '').split(',').map(u => normalizeImageUrl(u.trim())).filter(Boolean)
               }));
             }
           } catch {}
@@ -1454,7 +1495,7 @@
             `;
 
             item.addEventListener('click', () => {
-              window.location.href = `product-details?id=${p.id}&title=${encodeURIComponent(p.title)}`;
+              window.location.href = `product-details.html?id=${p.id}&title=${encodeURIComponent(p.title)}`;
             });
 
             recommender.appendChild(item);

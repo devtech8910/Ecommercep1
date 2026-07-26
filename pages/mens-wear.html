@@ -400,35 +400,55 @@
           });
         });
 
-        let allProducts = [
-          { id: 'm1', title: 'Midnight Blue Tuxedo', price: 24999, category: "Men", brand: "DevTech Luxury", sizes: "M, L, XL", image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80&fit=crop' },
-          { id: 'm2', title: 'Oxford Classic Shirt', price: 3499, category: "Men", brand: "DevTech Casuals", sizes: "S, M, L", image: 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop' },
-          { id: 'm3', title: 'Premium Leather Jacket', price: 12999, category: "Men", brand: "DevTech Luxury", sizes: "L, XL", image: 'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&q=80&fit=crop' },
-          { id: 'm4', title: 'Chronograph Luxury Watch', price: 8999, category: "Men", brand: "DevTech Accessories", sizes: "One Size", image: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&q=80&fit=crop' },
-          { id: 'm5', title: 'Slim Fit Italian Blazer', price: 16499, category: "Men", brand: "DevTech Luxury", sizes: "M, L", image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&q=80&fit=crop' },
-          { id: 'm6', title: 'Tailored Chino Trousers', price: 4299, category: "Men", brand: "DevTech Casuals", sizes: "S, M, L, XL", image: 'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=600&q=80&fit=crop' }
-        ];
+        const apiUrl = window.dtfApiUrl || ((path) => {
+          const host = window.location.hostname;
+          const base = host && host !== 'localhost' && host !== '127.0.0.1' ? `http://${host}:5000` : 'http://localhost:5000';
+          return `${base}${path}`;
+        });
+        let allProducts = [];
+
+        function categoryKey(category) {
+          const cat = String(category || '').trim().toLowerCase();
+          if (cat.includes('women')) return 'womens';
+          if (cat.includes('men')) return 'mens';
+          if (cat.includes('kid')) return 'kids';
+          return cat;
+        }
+
+        function mapMensProduct(p) {
+          const imageRaw = (p.image_url || p.image || p.imageUrl || '').split(',')[0].trim();
+          return {
+            id: p.id || p.pid || ('m_' + Math.random()),
+            title: p.title,
+            price: parseFloat(p.price || 0),
+            mrp: parseFloat(p.mrp || 0),
+            category: p.category,
+            brand: p.brand || 'DevTech Collection',
+            sizes: p.sizes || 'S, M, L, XL',
+            image: (window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl(imageRaw) : imageRaw)
+          };
+        }
 
         try {
-          const res = await fetch('http://localhost:5000/products');
-          if (res.ok) {
-            const data = await res.json();
-            const fetched = data.products || data || [];
-            if (Array.isArray(fetched)) {
-              const catFiltered = fetched.filter(p => p.category && p.category.toLowerCase().includes('men'));
-              allProducts = catFiltered.map(p => ({
-                id: p.id || p.pid,
-                title: p.title,
-                price: parseFloat(p.price || 0),
-                category: p.category,
-                brand: p.brand || 'DevTech Collection',
-                sizes: p.sizes || 'S, M, L, XL',
-                image: p.image_url || p.image || 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80&fit=crop'
-              }));
-            }
+          const res = await fetch(apiUrl('/products'));
+          const data = await res.json();
+          const fetched = data.products || data || [];
+          if (res.ok && Array.isArray(fetched) && fetched.length > 0) {
+            localStorage.setItem('dtf_admin_products', JSON.stringify(fetched));
+            allProducts = fetched.filter(p => categoryKey(p.category) === 'mens').map(mapMensProduct);
           }
-        } catch (e) {
-          console.warn('Backend API fetch fallback used:', e.message);
+        } catch (e) {}
+
+        if (allProducts.length === 0) {
+          const storedAdminProducts = localStorage.getItem('dtf_admin_products');
+          if (storedAdminProducts !== null) {
+            try {
+              const parsed = JSON.parse(storedAdminProducts);
+              if (Array.isArray(parsed)) {
+                allProducts = parsed.filter(p => categoryKey(p.category) === 'mens').map(mapMensProduct);
+              }
+            } catch (e) {}
+          }
         }
 
         const brandContainer = document.getElementById('brands-checkbox-container');
@@ -555,10 +575,11 @@
             const wishlist = JSON.parse(localStorage.getItem('dtf_wishlist') || '[]');
             const isWishlisted = wishlist.some(item => item.title === p.title);
 
+            const imgSrc = (window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl((p.image || p.image_url || p.imageUrl || '').split(',')[0].trim()) : (p.image || p.image_url || p.imageUrl || '').split(',')[0].trim()) || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop';
             card.innerHTML = `
               <div style="position: relative; width: 100%; padding-top: 110%; overflow: hidden; background: #0a0a14;">
                 <a href="${detailsUrl}" style="position: absolute; inset: 0; display: block;">
-                  <img src="${p.image}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;" alt="${p.title}" class="product-card-img" />
+                  <img src="${imgSrc}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;" alt="${p.title}" class="product-card-img" />
                 </a>
                 
                 <span style="position: absolute; top: 10px; left: 10px; background: rgba(10,10,20,0.7); backdrop-filter: blur(8px); color: #9ca3af; border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; pointer-events: none; border: 1px solid rgba(255,255,255,0.1);">

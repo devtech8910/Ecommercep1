@@ -248,6 +248,7 @@
               <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
                 <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #ffffff;">${item.title || 'Classic Product'}</h4>
                 <p style="margin: 0; font-size: 14px; font-weight: 800; color: #818cf8;">₹${parseFloat(item.price || 0).toLocaleString('en-IN')}</p>
+                ${item.size ? `<span style="font-size: 11.5px; font-weight: 700; color: #cbd5e1; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 3px 8px; width: fit-content;">Size: ${item.size}</span>` : ''}
                 
                 <!-- Quantity selector -->
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;">
@@ -328,7 +329,12 @@
           checkoutBtn.textContent = '⏳ Placing Order...';
 
           try {
-            const res = await fetch('http://localhost:5000/orders', {
+            const apiUrl = window.dtfApiUrl || ((path) => {
+              const host = window.location.hostname;
+              const base = host && host !== 'localhost' && host !== '127.0.0.1' ? `http://${host}:5000` : 'http://localhost:5000';
+              return `${base}${path}`;
+            });
+            const res = await fetch(apiUrl('/orders'), {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${token}`,
@@ -336,6 +342,8 @@
               },
               body: JSON.stringify({
                 items: items.map(item => ({
+                  id: item.id || item.pid,
+                  pid: item.pid || item.id,
                   title: item.title || 'Product',
                   price: item.price,
                   quantity: item.quantity || 1,

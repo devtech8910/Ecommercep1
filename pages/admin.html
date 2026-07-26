@@ -257,6 +257,49 @@
                 background: transparent !important;
             }
         }
+
+        /* Clean Square Checkbox Component */
+        .custom-chk-label {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            cursor: pointer !important;
+            user-select: none !important;
+            position: relative !important;
+        }
+        .custom-chk-label input[type="checkbox"] {
+            position: absolute !important;
+            opacity: 0 !important;
+            width: 0 !important;
+            height: 0 !important;
+            pointer-events: none !important;
+        }
+        .custom-chk-box {
+            width: 20px !important;
+            height: 20px !important;
+            border: 2px solid rgba(165, 180, 252, 0.4) !important;
+            border-radius: 5px !important;
+            background-color: #14162e !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.15s ease !important;
+            flex-shrink: 0 !important;
+            box-sizing: border-box !important;
+        }
+        .custom-chk-label:hover .custom-chk-box {
+            border-color: #818cf8 !important;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.4) !important;
+        }
+        .custom-chk-label input[type="checkbox"]:checked + .custom-chk-box {
+            background-color: #6366f1 !important;
+            border-color: #818cf8 !important;
+            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.6) !important;
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e") !important;
+            background-size: 14px 14px !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+        }
     </style>
   </head>
   <body class="bg-background text-on-background min-h-screen font-body-md overflow-x-hidden relative">
@@ -867,36 +910,46 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-surface-container-low/40 p-4 border border-outline-variant/5 rounded-xl">
               <!-- S -->
               <div class="flex items-center justify-between gap-3">
-                <label class="flex gap-2 align-center text-xs font-bold text-on-surface cursor-pointer select-none">
-                  <input type="checkbox" class="size-cb" data-size="S" checked /> S
+                <label class="custom-chk-label">
+                  <input type="checkbox" class="size-cb" data-size="S" checked />
+                  <span class="custom-chk-box"></span>
+                  <span class="text-xs font-bold text-on-surface">S</span>
                 </label>
                 <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none" data-size="S" value="10" min="0" />
               </div>
               <!-- M -->
               <div class="flex items-center justify-between gap-3">
-                <label class="flex gap-2 align-center text-xs font-bold text-on-surface cursor-pointer select-none">
-                  <input type="checkbox" class="size-cb" data-size="M" checked /> M
+                <label class="custom-chk-label">
+                  <input type="checkbox" class="size-cb" data-size="M" checked />
+                  <span class="custom-chk-box"></span>
+                  <span class="text-xs font-bold text-on-surface">M</span>
                 </label>
                 <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none" data-size="M" value="10" min="0" />
               </div>
               <!-- L -->
               <div class="flex items-center justify-between gap-3">
-                <label class="flex gap-2 align-center text-xs font-bold text-on-surface cursor-pointer select-none">
-                  <input type="checkbox" class="size-cb" data-size="L" checked /> L
+                <label class="custom-chk-label">
+                  <input type="checkbox" class="size-cb" data-size="L" checked />
+                  <span class="custom-chk-box"></span>
+                  <span class="text-xs font-bold text-on-surface">L</span>
                 </label>
                 <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none" data-size="L" value="10" min="0" />
               </div>
               <!-- XL -->
               <div class="flex items-center justify-between gap-3">
-                <label class="flex gap-2 align-center text-xs font-bold text-on-surface cursor-pointer select-none">
-                  <input type="checkbox" class="size-cb" data-size="XL" /> XL
+                <label class="custom-chk-label">
+                  <input type="checkbox" class="size-cb" data-size="XL" />
+                  <span class="custom-chk-box"></span>
+                  <span class="text-xs font-bold text-on-surface">XL</span>
                 </label>
                 <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none opacity-50" data-size="XL" value="0" min="0" disabled />
               </div>
               <!-- XXL -->
               <div class="flex items-center justify-between gap-3">
-                <label class="flex gap-2 align-center text-xs font-bold text-on-surface cursor-pointer select-none">
-                  <input type="checkbox" class="size-cb" data-size="XXL" /> XXL
+                <label class="custom-chk-label">
+                  <input type="checkbox" class="size-cb" data-size="XXL" />
+                  <span class="custom-chk-box"></span>
+                  <span class="text-xs font-bold text-on-surface">XXL</span>
                 </label>
                 <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none opacity-50" data-size="XXL" value="0" min="0" disabled />
               </div>
@@ -907,25 +960,30 @@
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-surface-container-low/40 p-4 border border-outline-variant/5 rounded-xl text-xs">
             <div>
               <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Replacement Option</label>
-              <div class="flex gap-2 align-center">
-                <input type="checkbox" id="product-replacement-input" checked />
-                <span class="font-bold text-on-surface">Allow</span>
+              <div class="flex items-center gap-2">
+                <label class="custom-chk-label">
+                  <input type="checkbox" id="product-replacement-input" checked />
+                  <span class="custom-chk-box"></span>
+                  <span class="font-bold text-on-surface text-xs">Allow</span>
+                </label>
                 <input type="number" id="product-replacement-days" value="7" min="1" max="30" class="w-12 p-1 border border-outline-variant/20 rounded bg-surface-container-low text-on-surface text-center" />
-                <span class="text-on-surface-variant/80">Days</span>
+                <span class="text-on-surface-variant/80 text-xs">Days</span>
               </div>
             </div>
             <div>
               <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Cash On Delivery (COD)</label>
-              <label class="flex gap-2 align-center cursor-pointer mt-1">
+              <label class="custom-chk-label mt-1">
                 <input type="checkbox" id="product-cod-input" checked />
-                <span class="font-bold text-on-surface">Available</span>
+                <span class="custom-chk-box"></span>
+                <span class="font-bold text-on-surface text-xs">Available</span>
               </label>
             </div>
             <div>
               <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Coupons Applicable</label>
-              <label class="flex gap-2 align-center cursor-pointer mt-1">
+              <label class="custom-chk-label mt-1">
                 <input type="checkbox" id="product-coupon-input" checked />
-                <span class="font-bold text-on-surface">Allowed</span>
+                <span class="custom-chk-box"></span>
+                <span class="font-bold text-on-surface text-xs">Allowed</span>
               </label>
             </div>
           </div>
@@ -1225,6 +1283,31 @@
     <!-- Custom JavaScript -->
     <script>
       document.addEventListener('DOMContentLoaded', () => {
+        window.dtfNormalizeImageUrl = window.dtfNormalizeImageUrl || function dtfNormalizeImageUrl(url) {
+          if (!url) return '';
+          const raw = String(url).trim();
+          return raw.replace(/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\/uploads\//i, '/uploads/');
+        };
+
+        window.dtfApiBase = window.dtfApiBase || function dtfApiBase() {
+          const host = window.location.hostname;
+          if (host && host !== 'localhost' && host !== '127.0.0.1') {
+            return `http://${host}:5000`;
+          }
+          return 'http://localhost:5000';
+        };
+
+        if (!window.__dtfApiFetchPatched) {
+          const nativeFetch = window.fetch.bind(window);
+          window.fetch = function dtfFetch(resource, options) {
+            if (typeof resource === 'string' && resource.startsWith('http://localhost:5000')) {
+              resource = resource.replace('http://localhost:5000', window.dtfApiBase());
+            }
+            return nativeFetch(resource, options);
+          };
+          window.__dtfApiFetchPatched = true;
+        }
+
         // --- WebGL Shader Background ANIMATION_16 ---
         (() => {
           const canvas = document.getElementById('shader-canvas-ANIMATION_16');
@@ -1658,16 +1741,24 @@ void main() {
           function filterAndRenderProducts() {
             let filtered = cachedProducts;
             if (activeCategory !== 'all') {
-              filtered = cachedProducts.filter(p => p.category === activeCategory);
+              filtered = cachedProducts.filter(p => normalizeCategoryKey(p.category) === activeCategory);
             }
             renderProductTable(filtered);
           }
 
+          function normalizeCategoryKey(category) {
+            const cat = String(category || '').trim().toLowerCase();
+            if (cat.includes('women')) return 'womens';
+            if (cat.includes('men')) return 'mens';
+            if (cat.includes('kid')) return 'kids';
+            return cat;
+          }
+
           function updateCategoryCounts() {
             const countAll = cachedProducts.length;
-            const countMens = cachedProducts.filter(p => (p.category || '').toLowerCase() === 'mens').length;
-            const countWomens = cachedProducts.filter(p => (p.category || '').toLowerCase() === 'womens').length;
-            const countKids = cachedProducts.filter(p => (p.category || '').toLowerCase() === 'kids').length;
+            const countMens = cachedProducts.filter(p => normalizeCategoryKey(p.category) === 'mens').length;
+            const countWomens = cachedProducts.filter(p => normalizeCategoryKey(p.category) === 'womens').length;
+            const countKids = cachedProducts.filter(p => normalizeCategoryKey(p.category) === 'kids').length;
 
             document.getElementById('count-all').textContent = countAll;
             document.getElementById('count-mens').textContent = countMens;
@@ -1692,11 +1783,21 @@ void main() {
               const result = await res.json();
               if (!res.ok || !result.success) throw new Error(result.error);
 
-              cachedProducts = result.products;
+              cachedProducts = result.products || [];
+              localStorage.setItem('dtf_admin_products', JSON.stringify(cachedProducts));
               updateCategoryCounts();
               filterAndRenderProducts();
             } catch (err) {
               console.error('Products load error:', err.message);
+              const stored = localStorage.getItem('dtf_admin_products');
+              if (stored !== null) {
+                try { cachedProducts = JSON.parse(stored); } catch (e) { cachedProducts = []; }
+              } else {
+                cachedProducts = [];
+                localStorage.setItem('dtf_admin_products', JSON.stringify([]));
+              }
+              updateCategoryCounts();
+              filterAndRenderProducts();
             }
           }
 
@@ -1712,11 +1813,11 @@ void main() {
 
             products.forEach(p => {
               const tr = document.createElement('tr');
-              tr.className = "border-b border-outline-variant/5 hover:bg-surface-variant/10 transition-colors";
+              const imgSrc = (window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl((p.image_url || p.image || p.imageUrl || '').split(',')[0].trim()) : (p.image_url || p.image || p.imageUrl || '').split(',')[0].trim()) || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop';
               tr.innerHTML = `
                 <td class="py-4 px-3 flex items-center gap-3">
                   <div class="w-10 h-12 rounded-lg overflow-hidden border border-outline-variant/10 bg-surface-container-low shrink-0">
-                    <img src="${p.image_url.split(',')[0].trim()}" class="w-full h-full object-cover" />
+                    <img src="${imgSrc}" class="w-full h-full object-cover" alt="${p.title}" />
                   </div>
                   <span class="font-semibold text-on-surface text-xs md:text-sm line-clamp-1">${p.title}</span>
                 </td>
@@ -1755,11 +1856,12 @@ void main() {
             });
           }
 
-          // Setup size checkbox toggling
+          // Setup size checkbox & stock input toggling
           document.querySelectorAll('.size-cb').forEach(cb => {
+            const size = cb.getAttribute('data-size');
+            const input = document.querySelector(`.size-stock-input[data-size="${size}"]`);
+
             cb.addEventListener('change', () => {
-              const size = cb.getAttribute('data-size');
-              const input = document.querySelector(`.size-stock-input[data-size="${size}"]`);
               if (cb.checked) {
                 input.disabled = false;
                 input.style.opacity = '1';
@@ -1772,6 +1874,21 @@ void main() {
                 input.value = "0";
               }
             });
+
+            if (input) {
+              input.addEventListener('focus', () => {
+                if (!cb.checked) {
+                  cb.checked = true;
+                  cb.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+              });
+              input.addEventListener('input', () => {
+                if (!cb.checked && parseInt(input.value || 0) > 0) {
+                  cb.checked = true;
+                  cb.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+              });
+            }
           });
 
 
@@ -2074,20 +2191,20 @@ void main() {
               document.getElementById('product-price-input').value = Math.round(parseFloat(product.price));
               
               // Populate image list
-              const imgs = (product.image_url || '').split(',').map(url => url.trim()).filter(Boolean);
+              const imgs = (product.image_url || product.image || product.imageUrl || '').split(',').map(url => window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl(url.trim()) : url.trim()).filter(Boolean);
               if (imgs.length > 0) {
                 activeImagesList = imgs.map(url => ({ src: url, filename: "" }));
                 if (imageCountInput) imageCountInput.value = imgs.length;
               }
 
               // Populate sizes & stocks
-              const productSizes = (product.sizes || 'S, M, L').split(',').map(s => s.trim());
+              const productSizes = (product.sizes || 'S, M, L').split(',').map(s => s.trim().toUpperCase());
               const stockPairs = (product.size_stock || 'S:10, M:10, L:10').split(',').map(s => s.trim());
               const stockMap = {};
               stockPairs.forEach(pair => {
                 const [s, qty] = pair.split(':');
                 if (s && qty) {
-                  stockMap[s.trim()] = qty.trim();
+                  stockMap[s.trim().toUpperCase()] = qty.trim();
                 }
               });
 
@@ -2119,7 +2236,15 @@ void main() {
             } else {
               modalTitle.textContent = 'Add New Product';
               document.getElementById('product-id').value = '';
-              document.getElementById('product-brand-input').value = 'DevTech';
+              document.getElementById('product-title-input').value = '';
+              document.getElementById('product-brand-input').value = '';
+              document.getElementById('product-title-desc-input').value = '';
+              document.getElementById('product-mrp-input').value = '';
+              document.getElementById('product-price-input').value = '';
+              document.getElementById('product-fabric-input').value = '';
+              document.getElementById('product-pattern-input').value = '';
+              document.getElementById('product-fit-input').value = '';
+              document.getElementById('product-suitable-input').value = '';
               
               // Default check S, M, L
               ['S', 'M', 'L'].forEach(size => {
@@ -2137,10 +2262,9 @@ void main() {
               document.getElementById('product-replacement-days').value = 7;
               document.getElementById('product-cod-input').checked = true;
               document.getElementById('product-coupon-input').checked = true;
-              document.getElementById('product-fabric-input').value = 'Cotton';
-              document.getElementById('product-pattern-input').value = 'Solid';
-              document.getElementById('product-fit-input').value = 'Regular Fit';
-              document.getElementById('product-suitable-input').value = 'Casual';
+              
+              const textareas = productForm.querySelectorAll('textarea');
+              if (textareas.length > 0) textareas[0].value = '';
             }
 
             renderSlots();
@@ -2394,32 +2518,39 @@ void main() {
             try {
               const uploadPromises = activeImagesList.map(async (item, index) => {
                 if (!item.src) return "";
-                // If it is already a server image URL, don't re-upload
                 if (!item.src.startsWith('data:')) {
                   return item.src;
                 }
-                // Upload base64
-                const uploadRes = await fetch('http://localhost:5000/admin/upload', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    base64Data: item.src,
-                    filename: item.filename || `product_img_${index}.jpg`
-                  })
-                });
-                const uploadResult = await uploadRes.json();
-                if (!uploadRes.ok || !uploadResult.success) {
-                  throw new Error(uploadResult.error || 'Upload failed.');
+                // Attempt backend upload with timeout fallback
+                try {
+                  const controller = new AbortController();
+                  const timeoutId = setTimeout(() => controller.abort(), 15000);
+                  const uploadRes = await fetch('http://localhost:5000/admin/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      base64Data: item.src,
+                      filename: item.filename || `product_img_${index}.jpg`
+                    }),
+                    signal: controller.signal
+                  });
+                  clearTimeout(timeoutId);
+                  if (uploadRes.ok) {
+                    const uploadResult = await uploadRes.json();
+                    if (uploadResult.success && uploadResult.url) {
+                      return uploadResult.url;
+                    }
+                  }
+                } catch (e) {
+                  console.log('[DevTech Admin] Backend upload server offline, keeping image source directly.');
                 }
-                return uploadResult.url;
+                return item.src;
               });
 
               const uploadedUrls = await Promise.all(uploadPromises);
               finalImageUrl = uploadedUrls.filter(Boolean).join(', ');
             } catch (uploadErr) {
-              modalError.textContent = 'Image Processing Failed: ' + uploadErr.message;
-              modalError.style.display = 'block';
-              return;
+              finalImageUrl = activeImagesList.map(item => item.src).filter(Boolean).join(', ');
             }
 
             if (price > mrp) {
@@ -2444,24 +2575,62 @@ void main() {
               sizeStock, couponApplicable
             };
 
+            let savedProduct = null;
             try {
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 2500);
               const res = await fetch(url, {
                 method,
                 headers: {
                   'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${user.token}`
+                  'Authorization': `Bearer ${user ? user.token : ''}`
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
+                signal: controller.signal
               });
+              clearTimeout(timeoutId);
               const result = await res.json();
-              if (!res.ok || !result.success) throw new Error(result.error || 'Request failed.');
-
-              closeModal();
-              fetchProducts();
+              if (res.ok && result.success && result.product) {
+                savedProduct = result.product;
+              }
             } catch (err) {
-              modalError.textContent = err.message;
-              modalError.style.display = 'block';
+              console.log('[DevTech Admin] Backend server offline, saving product to local catalog.');
             }
+
+            const newProductObj = savedProduct || {
+              id: id || ('prod_' + Date.now()),
+              title: payload.title,
+              brand: payload.brand,
+              category: payload.category,
+              title_description: payload.titleDescription,
+              mrp: payload.mrp,
+              price: payload.price,
+              image_url: payload.imageUrl,
+              sizes: payload.sizes,
+              replacement_allowed: payload.replacementAllowed,
+              replacement_days: payload.replacementDays,
+              cod_available: payload.codAvailable,
+              coupon_applicable: payload.couponApplicable,
+              fabric: payload.fabric,
+              pattern: payload.pattern,
+              fit: payload.fit,
+              suitable_for: payload.suitableFor,
+              description: payload.description,
+              size_stock: payload.sizeStock
+            };
+
+            if (id) {
+              const idx = cachedProducts.findIndex(p => String(p.id) === String(id));
+              if (idx > -1) cachedProducts[idx] = newProductObj;
+              else cachedProducts.unshift(newProductObj);
+            } else {
+              cachedProducts.unshift(newProductObj);
+            }
+
+            localStorage.setItem('dtf_admin_products', JSON.stringify(cachedProducts));
+            closeModal();
+            updateCategoryCounts();
+            filterAndRenderProducts();
           });
 
           // Fetch orders list for admin
@@ -3072,7 +3241,7 @@ void main() {
 
               card.innerHTML = `
                 <div class="flex gap-4 p-5">
-                  <img src="${p.image_url || ''}" class="w-16 h-16 rounded-xl object-cover bg-surface-container-low flex-shrink-0" alt="" />
+                  <img src="${(window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl((p.image_url || p.image || p.imageUrl || '').split(',')[0].trim()) : (p.image_url || p.image || p.imageUrl || '').split(',')[0].trim()) || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop'}" class="w-16 h-16 rounded-xl object-cover bg-surface-container-low flex-shrink-0" alt="" />
                   <div class="flex-1 min-w-0">
                     <div class="font-semibold text-on-surface text-sm truncate">${p.title}</div>
                     <div class="text-[10px] text-on-surface-variant/60 mt-0.5">${p.category || ''} · ${p.brand || ''}</div>

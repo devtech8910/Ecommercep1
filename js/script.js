@@ -6,6 +6,36 @@
 
 'use strict';
 
+window.dtfNormalizeImageUrl = function dtfNormalizeImageUrl(url) {
+  if (!url) return '';
+  const raw = String(url).trim();
+  return raw.replace(/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\/uploads\//i, '/uploads/');
+};
+
+window.dtfApiBase = function dtfApiBase() {
+  const host = window.location.hostname;
+  if (host && host !== 'localhost' && host !== '127.0.0.1') {
+    return `http://${host}:5000`;
+  }
+  return 'http://localhost:5000';
+};
+
+window.dtfApiUrl = function dtfApiUrl(path) {
+  return `${window.dtfApiBase()}${path}`;
+};
+
+(function routeLocalApiFetchesForLan() {
+  if (window.__dtfApiFetchPatched) return;
+  const nativeFetch = window.fetch.bind(window);
+  window.fetch = function dtfFetch(resource, options) {
+    if (typeof resource === 'string' && resource.startsWith('http://localhost:5000')) {
+      resource = resource.replace('http://localhost:5000', window.dtfApiBase());
+    }
+    return nativeFetch(resource, options);
+  };
+  window.__dtfApiFetchPatched = true;
+})();
+
 /* ============================================================
    DOM UTILITY HELPERS
    ============================================================ */
