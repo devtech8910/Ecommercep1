@@ -3,39 +3,50 @@
 // Enables 24/7 global multi-device login across Mobile & Desktop
 // ============================================================
 
-const JSONBIN_BIN_ID = process.env.JSONBIN_BIN_ID || '67c8be37e4104c4768ab5432';
-const JSONBIN_SECRET = process.env.JSONBIN_SECRET || '$2a$10$VjQ3jU4w7J.z4k2H8L5Xn.X2P4Q1W0E9R8T7Y6U5I4O3P2A1S0D9F';
+const CLOUD_DB_URL = process.env.CLOUD_DB_URL || 'https://jsonblob.com/api/jsonBlob/019f9cba-929a-7931-ad23-922a9b668aa9';
 
-// In-memory fallback cache for fast serverless execution
+// Default Admin user seeded automatically
+const DEFAULT_ADMIN = {
+  name: 'DevTech Administrator',
+  email: 'admin@devtech.com',
+  phone: '9999999999',
+  dob: '1990-01-01',
+  password: 'Purna@2007',
+  role: 'admin',
+  token: 'dtf_token_admin_global'
+};
+
 let memoryUsersCache = null;
 
 async function getCloudUsers() {
   try {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-      headers: {
-        'X-Master-Key': JSONBIN_SECRET
-      }
+    const res = await fetch(CLOUD_DB_URL, {
+      headers: { 'Accept': 'application/json' }
     });
     if (res.ok) {
       const data = await res.json();
-      const users = Array.isArray(data.record) ? data.record : [];
+      let users = Array.isArray(data) ? data : [];
+      if (!users.some(u => u.email && u.email.toLowerCase() === 'admin@devtech.com')) {
+        users.push(DEFAULT_ADMIN);
+        saveCloudUsers(users);
+      }
       memoryUsersCache = users;
       return users;
     }
   } catch (err) {
     console.warn('[Netlify Auth] Cloud fetch error, using memory cache:', err.message);
   }
-  return memoryUsersCache || [];
+  return memoryUsersCache || [DEFAULT_ADMIN];
 }
 
 async function saveCloudUsers(users) {
   memoryUsersCache = users;
   try {
-    await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+    await fetch(CLOUD_DB_URL, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'X-Master-Key': JSONBIN_SECRET
+        'Accept': 'application/json'
       },
       body: JSON.stringify(users)
     });
@@ -112,7 +123,7 @@ export async function handler(event, context) {
         phone: phone || '',
         dob: dob || '',
         password: password,
-        role: 'customer',
+        role: body.role || 'customer',
         token: 'dtf_token_' + Date.now(),
         createdAt: new Date().toISOString()
       };
