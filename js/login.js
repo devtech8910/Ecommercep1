@@ -114,6 +114,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cleanEmail = email.toLowerCase();
 
+    // 0. Primary: Local Express Node API Server Authentication
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+      const localRes = await fetch('http://localhost:5000/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, password }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      const localResult = await localRes.json();
+      if (localRes.ok && localResult.success && localResult.data) {
+        const uData = localResult.data.user;
+        const sessionObj = {
+          id: uData.id,
+          email: uData.email,
+          name: `${uData.first_name || ''} ${uData.last_name || ''}`.trim() || 'DevTech Member',
+          first_name: uData.first_name,
+          last_name: uData.last_name,
+          phone: uData.phone || '',
+          role: uData.role || 'customer',
+          token: localResult.data.token
+        };
+
+        localStorage.setItem('dtf_user', JSON.stringify(sessionObj));
+        localStorage.setItem('token', sessionObj.token);
+        window.dispatchEvent(new Event('dtf:auth:updated'));
+
+        if (submitTextSpan) submitTextSpan.textContent = 'Success! Redirecting...';
+        setTimeout(() => {
+          if (sessionObj.role === 'admin') {
+            window.location.href = 'admin.html';
+          } else {
+            window.location.href = '../index.html';
+          }
+        }, 500);
+        return;
+      } else if (localRes.status === 400 || localRes.status === 401) {
+        submitBtn.disabled = false;
+        if (submitTextSpan) submitTextSpan.textContent = 'Sign In';
+        const errorMsg = localResult.errors ? localResult.errors.join(' ') : (localResult.error || 'Incorrect password. Please enter the correct password.');
+        showError(passwordInput, passwordError, errorMsg);
+        return;
+      }
+    } catch (err) {
+      console.log('[DevTech Auth] Express backend server not reachable locally, trying cloud fallback:', err.message);
+    }
+
     const CLOUD_DB_URL = 'https://jsonblob.com/api/jsonBlob/019f9cba-929a-7931-ad23-922a9b668aa9';
 
     // 1. Attempt Netlify Serverless Cloud Auth API (Works 24/7 across Mobile & Desktop globally)

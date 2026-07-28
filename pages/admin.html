@@ -135,6 +135,8 @@
             direction: ltr;
             -webkit-font-feature-settings: 'liga';
             -webkit-font-smoothing: antialiased;
+        }
+
         @media print {
           #admin-sidebar, #admin-top-navbar, #logged-out-back-btn, #shader-canvas-ANIMATION_16, .print-hidden, .no-print {
             display: none !important;
@@ -244,61 +246,655 @@
             }
         }
 
-        /* Mobile (< 769px): Hide scrollbars completely for smooth touch */
+        /* Disable storefront body top padding on Admin Panel */
+        html, body {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+        }
+
+        /* Completely hide Customer Mobile Bottom Navigation Dock when user is in Admin Dashboard */
+        .mobile-bottom-nav,
+        #mobile-bottom-nav,
+        [aria-label="Mobile Bottom Navigation"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            height: 0 !important;
+            width: 0 !important;
+            overflow: hidden !important;
+        }
+
+        /* Mobile Adjustments for Admin Executive Panel */
         @media (max-width: 768px) {
-            html, body, *, *::before, *::after {
-                scrollbar-width: none !important;
-                -ms-overflow-style: none !important;
+            html, body {
+                padding-top: 0 !important;
+                margin-top: 0 !important;
             }
-            ::-webkit-scrollbar {
-                width: 0px !important;
-                height: 0px !important;
-                display: none !important;
-                background: transparent !important;
+            #admin-main-content {
+                padding-top: 0 !important;
+                margin-top: 0 !important;
+            }
+            #admin-top-navbar {
+                height: 64px !important;
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+                top: 0 !important;
+                margin-top: 0 !important;
+            }
+            #dashboard-panel {
+                padding-top: 16px !important;
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+                padding-bottom: 24px !important;
             }
         }
 
-        /* Clean Square Checkbox Component */
+        /* Add/Edit Product modal, matched to catalog mockup */
+        #product-modal {
+            background: rgba(8, 9, 24, 0.72) !important;
+        }
+        #product-modal > div {
+            width: min(720px, calc(100vw - 32px)) !important;
+            max-width: 720px !important;
+            max-height: min(92vh, 820px) !important;
+            background: #0d0e20 !important;
+            border: 1px solid rgba(125, 132, 255, 0.16) !important;
+            border-radius: 18px !important;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.56) !important;
+            overflow: hidden !important;
+        }
+        #product-modal > div > div:first-child {
+            padding: 30px 30px !important;
+            min-height: 102px !important;
+            background: #0d0e20 !important;
+            border-bottom: 1px solid rgba(125, 132, 255, 0.14) !important;
+        }
+        #modal-title {
+            color: #f8fafc !important;
+            font-size: 24px !important;
+            line-height: 1.15 !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.01em !important;
+        }
+        #close-modal-btn {
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 999px !important;
+            background: #171936 !important;
+            color: #e2e8f0 !important;
+            font-size: 28px !important;
+            line-height: 1 !important;
+        }
+        #close-modal-btn:hover {
+            background: #232652 !important;
+            color: #ffffff !important;
+        }
+        #product-form {
+            padding: 28px 30px 0 !important;
+            gap: 20px !important;
+            max-height: calc(min(92vh, 820px) - 102px) !important;
+            overflow-y: auto !important;
+            background: #0d0e20 !important;
+        }
+        #product-form label:not(.custom-chk-label) {
+            color: #b9c3dc !important;
+            font-size: 12px !important;
+            line-height: 1.2 !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.04em !important;
+        }
+        #product-form input[type="text"],
+        #product-form input[type="number"],
+        #product-form select,
+        #product-form textarea {
+            min-height: 52px !important;
+            padding: 0 20px !important;
+            border-radius: 16px !important;
+            border: 1.5px solid rgba(148, 163, 184, 0.34) !important;
+            background: #121326 !important;
+            color: #f8fafc !important;
+            font-size: 15px !important;
+            font-weight: 750 !important;
+            box-shadow: none !important;
+        }
+        #product-form textarea {
+            min-height: 92px !important;
+            padding-top: 18px !important;
+            line-height: 1.55 !important;
+        }
+        #product-form input::placeholder,
+        #product-form textarea::placeholder {
+            color: #c5cbe0 !important;
+            opacity: 0.95 !important;
+        }
+        #product-form input:focus,
+        #product-form select:focus,
+        #product-form textarea:focus {
+            border-color: #7c83ff !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+        }
+        #product-form select {
+            appearance: none !important;
+            background-image: linear-gradient(45deg, transparent 50%, #aab2ff 50%), linear-gradient(135deg, #aab2ff 50%, transparent 50%) !important;
+            background-position: calc(100% - 22px) 50%, calc(100% - 16px) 50% !important;
+            background-size: 6px 6px, 6px 6px !important;
+            background-repeat: no-repeat !important;
+        }
+        .admin-panel-box {
+            background: #101225 !important;
+            border: 1px solid rgba(125, 132, 255, 0.12) !important;
+            border-radius: 18px !important;
+            padding: 18px 20px !important;
+        }
         .custom-chk-label {
             display: inline-flex !important;
             align-items: center !important;
-            gap: 8px !important;
+            gap: 10px !important;
             cursor: pointer !important;
             user-select: none !important;
             position: relative !important;
+            color: #f8fafc !important;
+            font-weight: 800 !important;
         }
         .custom-chk-label input[type="checkbox"] {
             position: absolute !important;
             opacity: 0 !important;
-            width: 0 !important;
-            height: 0 !important;
+            width: 1px !important;
+            height: 1px !important;
             pointer-events: none !important;
         }
         .custom-chk-box {
             width: 20px !important;
             height: 20px !important;
-            border: 2px solid rgba(165, 180, 252, 0.4) !important;
+            border: 1.5px solid rgba(148, 163, 184, 0.42) !important;
             border-radius: 5px !important;
-            background-color: #14162e !important;
+            background: #111326 !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            transition: all 0.15s ease !important;
-            flex-shrink: 0 !important;
-            box-sizing: border-box !important;
-        }
-        .custom-chk-label:hover .custom-chk-box {
-            border-color: #818cf8 !important;
-            box-shadow: 0 0 10px rgba(99, 102, 241, 0.4) !important;
+            flex: 0 0 20px !important;
         }
         .custom-chk-label input[type="checkbox"]:checked + .custom-chk-box {
-            background-color: #6366f1 !important;
-            border-color: #818cf8 !important;
-            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.6) !important;
+            background: #6366f1 !important;
+            border-color: #8b92ff !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
             background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e") !important;
-            background-size: 14px 14px !important;
-            background-position: center !important;
             background-repeat: no-repeat !important;
+            background-position: center !important;
+            background-size: 14px 14px !important;
+        }
+        /* Hide native spin buttons on number inputs for clean 3-digit visibility */
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        .size-stock-input,
+        #product-replacement-days {
+            min-width: 90px !important;
+            width: 90px !important;
+            max-width: 110px !important;
+            min-height: 42px !important;
+            padding: 0 12px !important;
+            font-size: 15px !important;
+            font-weight: 700 !important;
+            border-radius: 12px !important;
+            text-align: center !important;
+            letter-spacing: 0.5px !important;
+        }
+        .admin-image-slot {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background: #111328;
+            padding: 18px 20px;
+            border-radius: 20px;
+            border: 1.5px solid rgba(125, 132, 255, 0.18);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            transition: border-color 0.2s ease;
+        }
+        .admin-image-slot:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+        .admin-image-slot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .admin-image-badge-main {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            background: rgba(201, 168, 76, 0.15);
+            border: 1px solid rgba(201, 168, 76, 0.35);
+            color: #fbbf24;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+        }
+        .admin-image-badge-gallery {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+        }
+        .admin-image-slot-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .image-move-btn,
+        .remove-slot-btn {
+            min-height: 36px;
+            padding: 0 14px !important;
+            border-radius: 10px !important;
+            font-size: 12px !important;
+            font-weight: 800 !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+            transition: all 0.2s ease !important;
+        }
+        .image-move-btn {
+            border: 1px solid rgba(148, 163, 184, 0.24) !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: #cbd5e1 !important;
+        }
+        .image-move-btn:hover:not(:disabled) {
+            background: rgba(99, 102, 241, 0.2) !important;
+            border-color: #6366f1 !important;
+            color: #ffffff !important;
+        }
+        .image-move-btn:disabled {
+            opacity: 0.3 !important;
+            cursor: not-allowed !important;
+        }
+        .remove-slot-btn {
+            border: 1px solid rgba(239, 68, 68, 0.35) !important;
+            background: rgba(239, 68, 68, 0.12) !important;
+            color: #fca5a5 !important;
+        }
+        .remove-slot-btn:hover {
+            background: rgba(239, 68, 68, 0.25) !important;
+            border-color: #ef4444 !important;
+            color: #ffffff !important;
+        }
+        .admin-image-input-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+        .admin-image-thumb {
+            width: 72px;
+            height: 90px;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #090a16;
+            border: 1.5px solid rgba(148, 163, 184, 0.24);
+            flex-shrink: 0;
+            transition: border-color 0.2s ease;
+        }
+        .admin-image-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .admin-image-thumb-empty {
+            color: #64748b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .slot-url-input {
+            flex: 1 1 0% !important;
+            min-width: 0 !important;
+            min-height: 50px !important;
+            padding: 0 16px !important;
+            border-radius: 14px !important;
+            border: 1.5px solid rgba(148, 163, 184, 0.3) !important;
+            background: #090a16 !important;
+            color: #f8fafc !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            outline: none !important;
+        }
+        .slot-url-input:focus {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+        }
+        .slot-file-btn {
+            min-height: 50px;
+            padding: 0 18px !important;
+            border-radius: 14px !important;
+            border: 1.5px solid #6366f1 !important;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(79, 70, 229, 0.35)) !important;
+            color: #ffffff !important;
+            font-size: 13px !important;
+            font-weight: 800 !important;
+            white-space: nowrap;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+        .slot-file-btn:hover {
+            background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Mobile Viewports: Clean 2-row Grid Layout so buttons never overflow */
+        @media (max-width: 640px) {
+            .admin-image-slot {
+                padding: 14px 14px !important;
+                gap: 12px !important;
+            }
+            .admin-image-slot-header {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 8px !important;
+            }
+            .admin-image-slot-actions {
+                width: 100% !important;
+                justify-content: flex-start !important;
+                flex-wrap: wrap !important;
+            }
+            .admin-image-input-row {
+                display: grid !important;
+                grid-template-columns: 64px 1fr !important;
+                gap: 10px 12px !important;
+                align-items: center !important;
+            }
+            .admin-image-thumb {
+                width: 64px !important;
+                height: 84px !important;
+                grid-row: span 2 !important;
+            }
+            .slot-url-input {
+                width: 100% !important;
+                min-height: 42px !important;
+                font-size: 12.5px !important;
+                padding: 0 12px !important;
+            }
+            .slot-file-btn {
+                width: 100% !important;
+                min-height: 40px !important;
+                padding: 0 12px !important;
+                font-size: 12px !important;
+            }
+        }
+        /* Luxury Header Search Bar */
+        .admin-search-box {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            width: 320px !important;
+            max-width: calc(100vw - 160px) !important;
+            height: 44px !important;
+            padding: 0 16px !important;
+            border-radius: 999px !important;
+            background: rgba(18, 19, 38, 0.75) !important;
+            border: 1.5px solid rgba(165, 180, 252, 0.18) !important;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25) !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-sizing: border-box !important;
+        }
+        .admin-search-box:focus-within {
+            border-color: #6366f1 !important;
+            background: rgba(22, 24, 48, 0.95) !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+            width: 360px !important;
+            max-width: calc(100vw - 140px) !important;
+        }
+        .admin-search-box .material-symbols-outlined {
+            font-size: 20px !important;
+            color: #818cf8 !important;
+            flex-shrink: 0 !important;
+        }
+        .admin-search-input {
+            flex: 1 !important;
+            min-width: 0 !important;
+            height: 100% !important;
+            min-height: unset !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+            border-radius: 0 !important;
+            outline: none !important;
+            background: transparent !important;
+            color: #f8fafc !important;
+            font-size: 13.5px !important;
+            font-weight: 600 !important;
+            box-shadow: none !important;
+        }
+        .admin-search-input::placeholder {
+            color: #94a3b8 !important;
+            font-weight: 500 !important;
+            opacity: 0.85 !important;
+        }
+        .admin-search-input:focus,
+        .admin-search-input:focus-visible {
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            --tw-ring-color: transparent !important;
+        }
+        .admin-search-kbd {
+            font-family: inherit !important;
+            font-size: 10px !important;
+            font-weight: 800 !important;
+            color: #a5b4fc !important;
+            background: rgba(99, 102, 241, 0.12) !important;
+            border: 1px solid rgba(165, 180, 252, 0.25) !important;
+            border-radius: 6px !important;
+            padding: 2px 6px !important;
+            line-height: 1 !important;
+            letter-spacing: 0.05em !important;
+            pointer-events: none !important;
+            user-select: none !important;
+            flex-shrink: 0 !important;
+        }
+
+        /* Mobile boundary fix for Top Header Search */
+        @media (max-width: 768px) {
+            #admin-top-navbar {
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+                max-width: 100vw !important;
+                overflow: hidden !important;
+            }
+            .admin-search-box {
+                width: 100% !important;
+                max-width: calc(100vw - 165px) !important;
+                height: 38px !important;
+                padding: 0 10px !important;
+                gap: 6px !important;
+            }
+            .admin-search-box:focus-within {
+                width: 100% !important;
+                max-width: calc(100vw - 140px) !important;
+            }
+            .admin-search-kbd {
+                display: none !important;
+            }
+            .admin-search-input {
+                font-size: 12px !important;
+            }
+            .admin-search-input::placeholder {
+                font-size: 11px !important;
+            }
+        }
+
+        .add-image-bottom-btn {
+            width: 100%;
+            min-height: 54px;
+            border-radius: 16px;
+            border: 1.5px dashed rgba(99, 102, 241, 0.55);
+            background: rgba(99, 102, 241, 0.08);
+            color: #a5b4fc;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        .add-image-bottom-btn:hover {
+            background: rgba(99, 102, 241, 0.18);
+            border-color: #6366f1;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        #modal-error-banner {
+            border-radius: 12px !important;
+        }
+        #product-form > .sticky.bottom-0 {
+            margin: 4px -30px 0 !important;
+            padding: 18px 30px 22px !important;
+            background: #0d0e20 !important;
+            border-top: 1px solid rgba(125, 132, 255, 0.14) !important;
+            box-shadow: 0 -18px 36px rgba(13, 14, 32, 0.92) !important;
+        }
+        #cancel-modal-btn,
+        #preview-product-btn,
+        #save-product-btn {
+            min-height: 52px !important;
+            border-radius: 16px !important;
+            font-size: 15px !important;
+            font-weight: 900 !important;
+        }
+        #cancel-modal-btn {
+            border-color: transparent !important;
+            color: #f8fafc !important;
+        }
+        #preview-product-btn {
+            border-color: transparent !important;
+            color: #8b92ff !important;
+        }
+        #save-product-btn {
+            background: #5e5bf3 !important;
+            color: #ffffff !important;
+            box-shadow: 0 14px 34px rgba(94, 91, 243, 0.34) !important;
+        }
+        @media (max-width: 720px) {
+            #product-modal {
+                align-items: stretch !important;
+                padding: 0 !important;
+            }
+            #product-modal > div {
+                width: 100vw !important;
+                max-width: 100vw !important;
+                max-height: 100vh !important;
+                border-radius: 0 !important;
+            }
+            #product-modal > div > div:first-child {
+                min-height: 88px !important;
+                padding: 24px 18px !important;
+            }
+            #modal-title {
+                font-size: 22px !important;
+            }
+            #product-form {
+                padding: 24px 18px 0 !important;
+                max-height: calc(100vh - 88px) !important;
+            }
+            .admin-image-input-row {
+                grid-template-columns: 58px 1fr;
+            }
+            .slot-file-btn {
+                grid-column: 1 / -1;
+            }
+            #product-form > .sticky.bottom-0 {
+                margin-left: -18px !important;
+                margin-right: -18px !important;
+                padding: 14px 18px 18px !important;
+            }
+        }
+        /* Strip blue glow / focus halo from checkboxes */
+        input[type="checkbox"] {
+            outline: none !important;
+            box-shadow: none !important;
+            filter: none !important;
+        }
+        input[type="checkbox"]:focus,
+        input[type="checkbox"]:focus-visible,
+        input[type="checkbox"]:active {
+            outline: none !important;
+            box-shadow: none !important;
+            --tw-ring-color: transparent !important;
+        }
+
+        #product-modal .custom-chk-label > input[type="checkbox"] {
+            position: absolute !important;
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            opacity: 0 !important;
+            width: 1px !important;
+            height: 1px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: 0 !important;
+            pointer-events: none !important;
+        }
+        #product-modal .custom-chk-label > .custom-chk-box {
+            box-sizing: border-box !important;
+            width: 20px !important;
+            height: 20px !important;
+            min-width: 20px !important;
+            min-height: 20px !important;
+            border: 1.5px solid rgba(148, 163, 184, 0.45) !important;
+            border-radius: 5px !important;
+            background-color: #111326 !important;
+            background-image: none !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: none !important;
+        }
+        #product-modal .custom-chk-label > input[type="checkbox"]:checked + .custom-chk-box {
+            border-color: #7775ff !important;
+            background-color: #5551dc !important;
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: center !important;
+            background-size: 13px 13px !important;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.18) !important;
         }
     </style>
   </head>
@@ -411,9 +1007,10 @@
             <span class="admin-ham-line w-6 h-0.5 bg-on-surface rounded-full transition-all duration-300"></span>
           </button>
           <div class="md:hidden font-headline-md text-xl font-medium text-on-surface">DevTech Panel</div>
-          <div class="hidden md:flex items-center gap-3 bg-surface-container-low/50 border border-outline-variant/10 rounded-full px-4 py-2 focus-within:border-primary/50 transition-colors w-64">
-            <span class="material-symbols-outlined text-on-surface-variant text-sm">search</span>
-            <input class="bg-transparent border-none outline-none text-xs text-on-surface placeholder:text-on-surface-variant/40 w-full focus:ring-0 p-0" placeholder="Search operations..." type="text"/>
+          <div id="admin-search-container" class="admin-search-box" style="display: none !important;">
+            <span class="material-symbols-outlined">search</span>
+            <input id="admin-global-search" class="admin-search-input" placeholder="Search catalog, orders, inventory..." type="text" autocomplete="off" />
+            <kbd class="admin-search-kbd">⌘K</kbd>
           </div>
         </div>
         
@@ -798,7 +1395,6 @@
 
           <!-- Quick Actions Bar -->
           <div class="flex flex-wrap gap-3">
-            <button id="perf-add-product-btn" class="px-4 py-2.5 bg-primary text-on-primary font-label-caps text-[10px] tracking-wider rounded-xl hover:bg-primary/90 transition-all font-bold flex items-center gap-1.5 shadow-[0_4px_20px_rgba(165,180,252,0.15)]">➕ Add Product</button>
             <button id="perf-bulk-restock-btn" class="px-4 py-2.5 bg-surface-container-high text-on-surface font-label-caps text-[10px] tracking-wider rounded-xl hover:bg-surface-variant/60 transition-all font-bold flex items-center gap-1.5 border border-outline-variant/10">📦 Bulk Restock</button>
             <button id="perf-export-csv-btn" class="px-4 py-2.5 bg-surface-container-high text-on-surface font-label-caps text-[10px] tracking-wider rounded-xl hover:bg-surface-variant/60 transition-all font-bold flex items-center gap-1.5 border border-outline-variant/10">📥 Export CSV</button>
             <button class="px-4 py-2.5 bg-surface-container-low/40 text-on-surface-variant/50 font-label-caps text-[10px] tracking-wider rounded-xl font-bold flex items-center gap-1.5 border border-outline-variant/5 cursor-not-allowed" disabled>📤 Import CSV <span class="text-[8px] ml-1 opacity-60">SOON</span></button>
@@ -820,9 +1416,13 @@
       </div>
     </main>
 
+
+
+
+
     <!-- Add/Edit Product Modal -->
     <div id="product-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-background/50 backdrop-blur-md p-4">
-      <div class="bg-surface border border-outline-variant/10 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col font-body-md">
+      <div class="bg-surface border border-outline-variant/10 rounded-2xl w-full max-w-[720px] max-h-[92vh] shadow-2xl flex flex-col font-body-md">
         <div class="p-6 border-b border-outline-variant/10 flex items-center justify-between sticky top-0 bg-surface z-10">
           <h2 id="modal-title" class="margin-0 text-lg font-bold text-on-surface">Add New Product</h2>
           <button id="close-modal-btn" class="bg-surface-variant/20 hover:bg-surface-variant/40 border-none w-8 h-8 rounded-full cursor-pointer text-lg text-on-surface-variant font-bold flex items-center justify-center transition-all">&times;</button>
@@ -834,68 +1434,57 @@
           <!-- Title & Brand -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Product Title *</label>
-              <input type="text" id="product-title-input" placeholder="e.g. Midnight Blue Tuxedo" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+              <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">Product Title *</label>
+              <input type="text" id="product-title-input" placeholder="e.g. Midnight Blue Tuxedo" class="w-full px-4 py-3.5 text-sm font-semibold border-2 border-outline-variant/30 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary focus:bg-surface transition-all min-h-[48px]" required />
             </div>
             <div>
-              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Brand Name *</label>
-              <input type="text" id="product-brand-input" placeholder="e.g. DevTech Premium" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+              <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">Brand Name *</label>
+              <input type="text" id="product-brand-input" placeholder="e.g. DevTech Premium" class="w-full px-4 py-3.5 text-sm font-semibold border-2 border-outline-variant/30 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary focus:bg-surface transition-all min-h-[48px]" required />
             </div>
           </div>
 
           <!-- Category & Snippet -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Category *</label>
-              <select id="product-category-input" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required>
+              <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">Category *</label>
+              <select id="product-category-input" class="w-full px-4 py-3.5 text-sm font-semibold border-2 border-outline-variant/30 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary focus:bg-surface transition-all min-h-[48px]" required>
                 <option value="mens">Men's Wear</option>
                 <option value="womens">Women's Wear</option>
                 <option value="kids">Kids Wear</option>
               </select>
             </div>
             <div>
-              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Highlights Description *</label>
-              <input type="text" id="product-title-desc-input" placeholder="e.g. Slim fit. Wool blend. Peak lapels." class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+              <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">Highlights Description *</label>
+              <input type="text" id="product-title-desc-input" placeholder="e.g. Slim fit. Wool blend. Peak lapels." class="w-full px-4 py-3.5 text-sm font-semibold border-2 border-outline-variant/30 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary focus:bg-surface transition-all min-h-[48px]" required />
             </div>
           </div>
 
           <!-- Pricing: MRP & Price -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">MRP (Strikethrough Price ₹) *</label>
-              <input type="number" id="product-mrp-input" placeholder="MRP" min="1" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+              <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">MRP (Strikethrough Price ₹) *</label>
+              <input type="number" id="product-mrp-input" placeholder="MRP" min="1" class="w-full px-4 py-3.5 text-sm font-bold border-2 border-outline-variant/30 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary focus:bg-surface transition-all min-h-[48px]" required />
             </div>
             <div>
-              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Special Price (Offer Price ₹) *</label>
-              <input type="number" id="product-price-input" placeholder="Offer Price" min="1" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+              <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">Special Price (Offer Price ₹) *</label>
+              <input type="number" id="product-price-input" placeholder="Offer Price" min="1" class="w-full px-4 py-3.5 text-sm font-bold border-2 border-outline-variant/30 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary focus:bg-surface transition-all min-h-[48px]" required />
             </div>
           </div>
 
           <!-- Real-Time Price Validation Warning Message -->
-          <div id="mrp-price-error-msg" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1.5px solid rgba(239, 68, 68, 0.4); color: #f87171; padding: 10px 14px; border-radius: 12px; font-size: 11.5px; font-weight: 700; margin-top: -6px;">
+          <div id="mrp-price-error-msg" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1.5px solid rgba(239, 68, 68, 0.4); color: #f87171; padding: 10px 14px; border-radius: 12px; font-size: 12px; font-weight: 700; margin-top: -6px;">
             ⚠️ MRP must be greater than or equal to Special Offer Price!
           </div>
 
-
           <!-- Dynamic Slots for Image Uploads -->
           <div id="image-slots-container" class="flex flex-col gap-3"></div>
-
-          <!-- Global Cropper Viewport -->
-          <div id="cropper-container-wrapper" class="hidden rounded-xl overflow-hidden bg-black/80 border border-outline-variant/10 h-[260px] justify-center items-center relative">
-            <img id="cropper-target-img" class="max-w-full max-h-[260px] block" />
-          </div>
-
-          <div id="cropper-actions" class="hidden justify-end gap-2">
-            <button type="button" id="crop-cancel-btn" class="px-4 py-2 border border-outline-variant/30 rounded-lg text-on-surface-variant hover:text-on-surface font-semibold text-xs transition-colors">Cancel Crop</button>
-            <button type="button" id="crop-confirm-btn" class="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold text-xs hover:bg-green-600 transition-colors shadow-lg shadow-green-500/10">✂️ Crop & Confirm</button>
-          </div>
 
           <!-- Image Sequence Panel -->
           <div id="image-sequence-section" class="hidden bg-surface-container-low/40 p-4 border border-outline-variant/5 rounded-xl flex flex-col gap-3">
             <div class="flex justify-between items-center flex-wrap gap-2">
               <div>
-                <label class="text-[10px] font-bold uppercase tracking-wider text-primary block">Image Sequence Panel</label>
-                <span class="text-[10px] text-on-surface-variant/70">Rearrange slide order using arrows.</span>
+                <label class="text-xs font-bold uppercase tracking-wider text-primary block">Image Sequence Panel</label>
+                <span class="text-xs text-on-surface-variant/70">Rearrange slide order using arrows.</span>
               </div>
               <label class="flex items-center gap-2 text-xs font-bold text-green-400 cursor-pointer user-select-none">
                 <input type="checkbox" id="verify-upload-checkbox" checked /> Verify Images
@@ -906,72 +1495,72 @@
 
           <!-- Sizes & Stock Selection UI -->
           <div>
-            <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Sizes & Stock Availability *</label>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-surface-container-low/40 p-4 border border-outline-variant/5 rounded-xl">
+            <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">Sizes & Stock Availability *</label>
+            <div class="admin-panel-box grid grid-cols-1 sm:grid-cols-3 gap-5">
               <!-- S -->
               <div class="flex items-center justify-between gap-3">
                 <label class="custom-chk-label">
                   <input type="checkbox" class="size-cb" data-size="S" checked />
                   <span class="custom-chk-box"></span>
-                  <span class="text-xs font-bold text-on-surface">S</span>
+                  <span class="text-sm font-bold text-on-surface">S</span>
                 </label>
-                <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none" data-size="S" value="10" min="0" />
+                <input type="number" class="size-stock-input w-28 px-3 py-2 text-sm font-bold text-center border-2 border-outline-variant/30 rounded-xl bg-surface-container-low text-on-surface outline-none focus:border-primary focus:bg-surface transition-all" data-size="S" value="10" min="0" max="999" placeholder="0" />
               </div>
               <!-- M -->
               <div class="flex items-center justify-between gap-3">
                 <label class="custom-chk-label">
                   <input type="checkbox" class="size-cb" data-size="M" checked />
                   <span class="custom-chk-box"></span>
-                  <span class="text-xs font-bold text-on-surface">M</span>
+                  <span class="text-sm font-bold text-on-surface">M</span>
                 </label>
-                <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none" data-size="M" value="10" min="0" />
+                <input type="number" class="size-stock-input w-28 px-3 py-2 text-sm font-bold text-center border-2 border-outline-variant/30 rounded-xl bg-surface-container-low text-on-surface outline-none focus:border-primary focus:bg-surface transition-all" data-size="M" value="10" min="0" max="999" placeholder="0" />
               </div>
               <!-- L -->
               <div class="flex items-center justify-between gap-3">
                 <label class="custom-chk-label">
                   <input type="checkbox" class="size-cb" data-size="L" checked />
                   <span class="custom-chk-box"></span>
-                  <span class="text-xs font-bold text-on-surface">L</span>
+                  <span class="text-sm font-bold text-on-surface">L</span>
                 </label>
-                <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none" data-size="L" value="10" min="0" />
+                <input type="number" class="size-stock-input w-28 px-3 py-2 text-sm font-bold text-center border-2 border-outline-variant/30 rounded-xl bg-surface-container-low text-on-surface outline-none focus:border-primary focus:bg-surface transition-all" data-size="L" value="10" min="0" max="999" placeholder="0" />
               </div>
               <!-- XL -->
               <div class="flex items-center justify-between gap-3">
                 <label class="custom-chk-label">
                   <input type="checkbox" class="size-cb" data-size="XL" />
                   <span class="custom-chk-box"></span>
-                  <span class="text-xs font-bold text-on-surface">XL</span>
+                  <span class="text-sm font-bold text-on-surface">XL</span>
                 </label>
-                <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none opacity-50" data-size="XL" value="0" min="0" disabled />
+                <input type="number" class="size-stock-input w-28 px-3 py-2 text-sm font-bold text-center border-2 border-outline-variant/30 rounded-xl bg-surface-container-low text-on-surface outline-none focus:border-primary focus:bg-surface transition-all opacity-50" data-size="XL" value="0" min="0" max="999" placeholder="0" disabled />
               </div>
               <!-- XXL -->
               <div class="flex items-center justify-between gap-3">
                 <label class="custom-chk-label">
                   <input type="checkbox" class="size-cb" data-size="XXL" />
                   <span class="custom-chk-box"></span>
-                  <span class="text-xs font-bold text-on-surface">XXL</span>
+                  <span class="text-sm font-bold text-on-surface">XXL</span>
                 </label>
-                <input type="number" class="size-stock-input w-16 p-1.5 text-xs text-center border border-outline-variant/20 rounded-lg bg-surface-container-low text-on-surface outline-none opacity-50" data-size="XXL" value="0" min="0" disabled />
+                <input type="number" class="size-stock-input w-28 px-3 py-2 text-sm font-bold text-center border-2 border-outline-variant/30 rounded-xl bg-surface-container-low text-on-surface outline-none focus:border-primary focus:bg-surface transition-all opacity-50" data-size="XXL" value="0" min="0" max="999" placeholder="0" disabled />
               </div>
             </div>
           </div>
 
           <!-- Logistics Toggles -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-surface-container-low/40 p-4 border border-outline-variant/5 rounded-xl text-xs">
+          <div class="admin-panel-box grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
             <div>
-              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Replacement Option</label>
+              <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">Replacement Option</label>
               <div class="flex items-center gap-2">
                 <label class="custom-chk-label">
                   <input type="checkbox" id="product-replacement-input" checked />
                   <span class="custom-chk-box"></span>
                   <span class="font-bold text-on-surface text-xs">Allow</span>
                 </label>
-                <input type="number" id="product-replacement-days" value="7" min="1" max="30" class="w-12 p-1 border border-outline-variant/20 rounded bg-surface-container-low text-on-surface text-center" />
-                <span class="text-on-surface-variant/80 text-xs">Days</span>
+                <input type="number" id="product-replacement-days" value="7" min="1" max="30" class="w-20 px-3 py-2 text-sm font-bold border-2 border-outline-variant/30 rounded-xl bg-surface-container-low text-on-surface text-center outline-none focus:border-primary" />
+                <span class="text-on-surface-variant/90 text-xs font-semibold">Days</span>
               </div>
             </div>
             <div>
-              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Cash On Delivery (COD)</label>
+              <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">Cash On Delivery (COD)</label>
               <label class="custom-chk-label mt-1">
                 <input type="checkbox" id="product-cod-input" checked />
                 <span class="custom-chk-box"></span>
@@ -979,7 +1568,7 @@
               </label>
             </div>
             <div>
-              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Coupons Applicable</label>
+              <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">Coupons Applicable</label>
               <label class="custom-chk-label mt-1">
                 <input type="checkbox" id="product-coupon-input" checked />
                 <span class="custom-chk-box"></span>
@@ -991,30 +1580,30 @@
           <!-- Fabric, Pattern, Fit, Suitable For -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Fabric *</label>
-              <input type="text" id="product-fabric-input" placeholder="e.g. Wool Blend" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+              <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">Fabric *</label>
+              <input type="text" id="product-fabric-input" placeholder="e.g. Wool Blend" class="w-full px-4 py-3.5 text-sm font-semibold border-2 border-outline-variant/30 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary focus:bg-surface transition-all min-h-[48px]" required />
             </div>
             <div>
-              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Pattern *</label>
-              <input type="text" id="product-pattern-input" placeholder="e.g. Solid" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+              <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">Pattern *</label>
+              <input type="text" id="product-pattern-input" placeholder="e.g. Solid" class="w-full px-4 py-3.5 text-sm font-semibold border-2 border-outline-variant/30 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary focus:bg-surface transition-all min-h-[48px]" required />
             </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Fit *</label>
-              <input type="text" id="product-fit-input" placeholder="e.g. Slim Fit" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+              <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">Fit *</label>
+              <input type="text" id="product-fit-input" placeholder="e.g. Slim Fit" class="w-full px-4 py-3.5 text-sm font-semibold border-2 border-outline-variant/30 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary focus:bg-surface transition-all min-h-[48px]" required />
             </div>
             <div>
-              <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Suitable For *</label>
-              <input type="text" id="product-suitable-input" placeholder="e.g. Formal Wear" class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all" required />
+              <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">Suitable For *</label>
+              <input type="text" id="product-suitable-input" placeholder="e.g. Formal Wear" class="w-full px-4 py-3.5 text-sm font-semibold border-2 border-outline-variant/30 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary focus:bg-surface transition-all min-h-[48px]" required />
             </div>
           </div>
 
           <!-- Detailed Description -->
           <div>
-            <label class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-2 block">Detailed Description</label>
-            <textarea id="product-desc-input" rows="3" placeholder="Enter full details..." class="w-full px-4 py-3 text-xs border border-outline-variant/20 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary transition-all font-body-md resize-none"></textarea>
+            <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/90 mb-2 block">Detailed Description</label>
+            <textarea id="product-desc-input" rows="3" placeholder="Enter full details..." class="w-full px-4 py-3.5 text-sm font-semibold border-2 border-outline-variant/30 rounded-xl outline-none bg-surface-container-low text-on-surface focus:border-primary focus:bg-surface transition-all font-body-md resize-none"></textarea>
           </div>
 
           <!-- Error banner -->
@@ -1022,11 +1611,47 @@
 
           <!-- Modal footer actions -->
           <div class="flex gap-3 mt-4 border-t border-outline-variant/10 pt-4 sticky bottom-0 bg-surface z-10">
-            <button type="button" id="cancel-modal-btn" class="flex-1 py-3 border border-outline-variant/30 rounded-xl text-on-surface-variant hover:text-on-surface font-bold text-xs transition-colors">Cancel</button>
-            <button type="button" id="preview-product-btn" class="flex-[1.2] py-3 border border-primary text-primary hover:bg-primary/5 rounded-xl font-bold text-xs transition-all">👁️ Preview Product</button>
-            <button type="submit" id="save-product-btn" class="flex-[1.2] py-3 bg-primary text-on-primary hover:bg-primary/90 rounded-xl font-bold text-xs transition-all shadow-[0_4px_20px_rgba(165,180,252,0.15)]">Save Product</button>
+            <button type="button" id="cancel-modal-btn" class="flex-1 py-3 border border-outline-variant/30 rounded-xl text-on-surface-variant hover:text-on-surface font-bold text-xs transition-colors cursor-pointer">Cancel</button>
+            <button type="button" id="preview-product-btn" class="flex-[1.2] py-3 border border-primary text-primary hover:bg-primary/5 rounded-xl font-bold text-xs transition-all cursor-pointer">👁️ Preview Product</button>
+            <button type="submit" id="save-product-btn" class="flex-[1.2] py-3 bg-primary text-on-primary hover:bg-primary/90 rounded-xl font-bold text-xs transition-all shadow-[0_4px_20px_rgba(165,180,252,0.15)] cursor-pointer">Save Product</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Dedicated Image Crop Pop-up Modal -->
+    <div id="crop-popup-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-entrance">
+      <div class="bg-surface border border-outline-variant/20 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col overflow-hidden">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-outline-variant/10 flex items-center justify-between bg-surface-container-low">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">✂️</span>
+            <h3 class="text-base font-bold text-on-surface">Crop & Adjust Product Photo</h3>
+          </div>
+          <button type="button" id="crop-popup-close-btn" class="bg-surface-variant/20 hover:bg-surface-variant/40 border-none w-8 h-8 rounded-full cursor-pointer text-lg text-on-surface-variant font-bold flex items-center justify-center transition-all">&times;</button>
+        </div>
+        
+        <!-- Crop Viewport -->
+        <div class="p-4 bg-black/90 flex justify-center items-center h-[380px] relative overflow-hidden">
+          <img id="cropper-popup-target-img" class="max-w-full max-h-[380px] block" />
+        </div>
+
+        <!-- Quick Tools Toolbar -->
+        <div class="px-6 py-3 bg-surface-container-low border-t border-b border-outline-variant/10 flex flex-wrap justify-between items-center gap-2">
+          <div class="flex gap-2">
+            <button type="button" id="crop-tool-zoom-in" class="px-3 py-1.5 bg-surface-variant/30 hover:bg-surface-variant/60 rounded-lg text-xs font-bold text-on-surface flex items-center gap-1 cursor-pointer">🔍+ Zoom In</button>
+            <button type="button" id="crop-tool-zoom-out" class="px-3 py-1.5 bg-surface-variant/30 hover:bg-surface-variant/60 rounded-lg text-xs font-bold text-on-surface flex items-center gap-1 cursor-pointer">🔍- Zoom Out</button>
+            <button type="button" id="crop-tool-rotate-left" class="px-3 py-1.5 bg-surface-variant/30 hover:bg-surface-variant/60 rounded-lg text-xs font-bold text-on-surface flex items-center gap-1 cursor-pointer">🔄 Left</button>
+            <button type="button" id="crop-tool-rotate-right" class="px-3 py-1.5 bg-surface-variant/30 hover:bg-surface-variant/60 rounded-lg text-xs font-bold text-on-surface flex items-center gap-1 cursor-pointer">🔄 Right</button>
+          </div>
+          <button type="button" id="crop-tool-reset" class="px-3 py-1.5 bg-outline-variant/20 hover:bg-outline-variant/40 rounded-lg text-xs font-bold text-on-surface-variant cursor-pointer">🎯 Reset</button>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="px-6 py-4 bg-surface flex justify-end gap-3">
+          <button type="button" id="crop-popup-cancel-btn" class="px-5 py-2.5 border border-outline-variant/30 rounded-xl text-on-surface-variant hover:text-on-surface font-bold text-xs transition-colors cursor-pointer">Cancel</button>
+          <button type="button" id="crop-popup-confirm-btn" class="px-6 py-2.5 bg-green-500 hover:bg-green-600 text-white font-bold text-xs rounded-xl transition-all shadow-lg shadow-green-500/20 flex items-center gap-1.5 cursor-pointer">✂️ Crop & Confirm</button>
+        </div>
       </div>
     </div>
 
@@ -1280,9 +1905,91 @@
       </div>
     </div>
 
-    <!-- Custom JavaScript -->
     <script>
+      window.dtfSplitImages = function dtfSplitImages(str) {
+        if (!str) return [];
+        const parts = String(str).split(',');
+        const results = [];
+        for (let i = 0; i < parts.length; i++) {
+          const part = parts[i].trim();
+          if (part.startsWith('data:image/') && part.includes(';base64')) {
+            const next = parts[i + 1] ? parts[i + 1].trim() : '';
+            results.push(part + ',' + next);
+            i++;
+          } else {
+            results.push(part);
+          }
+        }
+        return results.filter(Boolean);
+      };
+
+      window.dtfNormalizeImageUrl = function dtfNormalizeImageUrl(url) {
+        if (!url) return '';
+        const raw = String(url).trim();
+        return raw.replace(/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\/uploads\//i, '/uploads/');
+      };
+
       document.addEventListener('DOMContentLoaded', () => {
+        // Ensure customer mobile bottom navigation bar is completely removed on Admin Panel
+        const purgeMobileBottomNav = () => {
+          const nav = document.getElementById('mobile-bottom-nav');
+          if (nav) nav.remove();
+          document.querySelectorAll('.mobile-bottom-nav, [aria-label="Mobile Bottom Navigation"]').forEach(el => el.remove());
+        };
+        purgeMobileBottomNav();
+        setInterval(purgeMobileBottomNav, 200);
+
+        // Powerful Real-time Global Search Controller
+        const globalSearchInput = document.getElementById('admin-global-search');
+        if (globalSearchInput) {
+          // Keyboard shortcut (Ctrl+K or Cmd+K)
+          document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+              e.preventDefault();
+              globalSearchInput.focus();
+              globalSearchInput.select();
+            }
+          });
+
+          const performRealtimeSearch = () => {
+            const query = globalSearchInput.value.toLowerCase().trim();
+
+            const targetTbodies = [
+              '#product-table-body',
+              '#order-table-body',
+              '#stock-alerts-body',
+              '#movement-history-body',
+              '#inv-items-body'
+            ];
+
+            targetTbodies.forEach(selector => {
+              const tbody = document.querySelector(selector);
+              if (!tbody) return;
+              
+              const rows = Array.from(tbody.querySelectorAll('tr'));
+              rows.forEach(row => {
+                // If it's a "No records found" placeholder row, skip filtering
+                if (row.cells.length === 1 && (row.innerText.includes('No ') || row.innerText.includes('healthy'))) {
+                  return;
+                }
+
+                const rowText = row.innerText.toLowerCase();
+                if (!query || rowText.includes(query)) {
+                  row.style.display = '';
+                } else {
+                  row.style.display = 'none';
+                }
+              });
+            });
+          };
+
+          // Filter instantly on input & keyup
+          globalSearchInput.addEventListener('input', performRealtimeSearch);
+          globalSearchInput.addEventListener('keyup', performRealtimeSearch);
+          globalSearchInput.addEventListener('search', performRealtimeSearch);
+          window.dtfPerformAdminSearch = performRealtimeSearch;
+        }
+
         window.dtfNormalizeImageUrl = window.dtfNormalizeImageUrl || function dtfNormalizeImageUrl(url) {
           if (!url) return '';
           const raw = String(url).trim();
@@ -1540,11 +2247,43 @@ void main() {
             });
           }
 
+          // Option B: Search bar visibility controller & mobile Print Report button toggle
+          let currentActiveSection = 'overview-section';
+          const updateSearchBarVisibility = (sectionId) => {
+            currentActiveSection = sectionId || currentActiveSection;
+            const searchContainer = document.getElementById('admin-search-container');
+            const printBtn = document.getElementById('admin-print-dashboard-btn');
+            const isMobile = window.innerWidth <= 768;
+
+            const isDataTab = (currentActiveSection === 'catalog-section' || currentActiveSection === 'orders-section' || currentActiveSection === 'inventory-section' || currentActiveSection === 'performance-section');
+
+            if (isDataTab) {
+              if (searchContainer) searchContainer.style.setProperty('display', 'flex', 'important');
+              // On mobile viewports, when search bar is present, hide the Print Report button
+              if (printBtn && isMobile) {
+                printBtn.style.setProperty('display', 'none', 'important');
+              } else if (printBtn) {
+                printBtn.style.removeProperty('display');
+              }
+            } else {
+              if (searchContainer) searchContainer.style.setProperty('display', 'none', 'important');
+              if (printBtn) printBtn.style.removeProperty('display');
+            }
+          };
+
+          window.addEventListener('resize', () => updateSearchBarVisibility(currentActiveSection));
+
+          // Initial state: Overview tab is active by default -> Hide Search Bar
+          updateSearchBarVisibility('overview-section');
+
           // Tab click handling
           navTabs.forEach(tab => {
             tab.addEventListener('click', (e) => {
               e.preventDefault();
               const targetSectionId = tab.getAttribute('data-section');
+
+              // Toggle search bar visibility for target tab
+              updateSearchBarVisibility(targetSectionId);
               
               // Update nav active classes
               navTabs.forEach(t => {
@@ -1813,7 +2552,8 @@ void main() {
 
             products.forEach(p => {
               const tr = document.createElement('tr');
-              const imgSrc = (window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl((p.image_url || p.image || p.imageUrl || '').split(',')[0].trim()) : (p.image_url || p.image || p.imageUrl || '').split(',')[0].trim()) || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop';
+              const rawImagesArray = window.dtfSplitImages ? window.dtfSplitImages(p.image_url || p.image || p.imageUrl || '') : (p.image_url || p.image || p.imageUrl || '').split(',');
+              const imgSrc = (window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl(rawImagesArray[0] ? rawImagesArray[0].trim() : '') : (rawImagesArray[0] ? rawImagesArray[0].trim() : '')) || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop';
               tr.innerHTML = `
                 <td class="py-4 px-3 flex items-center gap-3">
                   <div class="w-10 h-12 rounded-lg overflow-hidden border border-outline-variant/10 bg-surface-container-low shrink-0">
@@ -1896,11 +2636,18 @@ void main() {
           // --- Dynamic Multi-Image Slot Controller ---
           const slotsContainer = document.getElementById('image-slots-container');
           const imageCountInput = document.getElementById('image-count-limit');
-          const cropperWrapper = document.getElementById('cropper-container-wrapper');
-          const cropperTarget = document.getElementById('cropper-target-img');
-          const cropperActions = document.getElementById('cropper-actions');
-          const cropCancelBtn = document.getElementById('crop-cancel-btn');
-          const cropConfirmBtn = document.getElementById('crop-confirm-btn');
+          
+          const cropPopupModal = document.getElementById('crop-popup-modal');
+          const cropperPopupTarget = document.getElementById('cropper-popup-target-img');
+          const cropPopupCloseBtn = document.getElementById('crop-popup-close-btn');
+          const cropPopupCancelBtn = document.getElementById('crop-popup-cancel-btn');
+          const cropPopupConfirmBtn = document.getElementById('crop-popup-confirm-btn');
+
+          const cropToolZoomIn = document.getElementById('crop-tool-zoom-in');
+          const cropToolZoomOut = document.getElementById('crop-tool-zoom-out');
+          const cropToolRotateLeft = document.getElementById('crop-tool-rotate-left');
+          const cropToolRotateRight = document.getElementById('crop-tool-rotate-right');
+          const cropToolReset = document.getElementById('crop-tool-reset');
 
           let cropperInstance = null;
           let activeCropIndex = null;
@@ -1915,8 +2662,40 @@ void main() {
               cropperInstance.destroy();
               cropperInstance = null;
             }
-            cropperWrapper.style.display = 'none';
-            cropperActions.style.display = 'none';
+            if (cropPopupModal) {
+              cropPopupModal.classList.add('hidden');
+              cropPopupModal.style.display = 'none';
+            }
+          }
+
+          // Toolbar event listeners
+          if (cropToolZoomIn) cropToolZoomIn.addEventListener('click', () => cropperInstance && cropperInstance.zoom(0.1));
+          if (cropToolZoomOut) cropToolZoomOut.addEventListener('click', () => cropperInstance && cropperInstance.zoom(-0.1));
+          if (cropToolRotateLeft) cropToolRotateLeft.addEventListener('click', () => cropperInstance && cropperInstance.rotate(-90));
+          if (cropToolRotateRight) cropToolRotateRight.addEventListener('click', () => cropperInstance && cropperInstance.rotate(90));
+          if (cropToolReset) cropToolReset.addEventListener('click', () => cropperInstance && cropperInstance.reset());
+
+          if (cropPopupCloseBtn) cropPopupCloseBtn.addEventListener('click', resetCropper);
+          if (cropPopupCancelBtn) cropPopupCancelBtn.addEventListener('click', resetCropper);
+
+          if (cropPopupConfirmBtn) {
+            cropPopupConfirmBtn.addEventListener('click', () => {
+              if (!cropperInstance || activeCropIndex === null) return;
+
+              const canvas = cropperInstance.getCroppedCanvas({
+                width: 600,
+                height: 800
+              });
+
+              const base64 = canvas.toDataURL('image/jpeg', 0.85);
+              activeImagesList[activeCropIndex] = {
+                src: base64,
+                filename: originalFilename
+              };
+
+              resetCropper();
+              renderSlots();
+            });
           }
 
           // Render slots based on activeImagesList
@@ -1925,48 +2704,45 @@ void main() {
             
             activeImagesList.forEach((item, index) => {
               const slot = document.createElement('div');
-              slot.style.display = 'flex';
-              slot.style.flexDirection = 'column';
-              slot.style.gap = '8px';
-              slot.style.background = 'rgba(255,255,255,0.03)';
-              slot.style.padding = '14px';
-              slot.style.borderRadius = '14px';
-              slot.style.border = '1px solid rgba(255,255,255,0.1)';
-              slot.style.boxSizing = 'border-box';
+              slot.className = 'admin-image-slot';
 
               // Header of slot
               const isMain = index === 0;
-              const titleText = isMain ? `Image #${index + 1} (🌟 Main Cover Thumbnail)` : `Image #${index + 1} (Gallery Angle)`;
+              const badgeHTML = isMain 
+                ? `<span class="admin-image-badge-main">⭐ Image #1 — Primary Cover</span>` 
+                : `<span class="admin-image-badge-gallery">📷 Image #${index + 1} — Gallery Angle</span>`;
 
               const canMoveLeft = index > 0;
               const canMoveRight = index < activeImagesList.length - 1;
 
               slot.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                  <span style="font-size: 11.5px; font-weight: 800; color: ${isMain ? '#818cf8' : '#94a3b8'}; text-transform: uppercase; letter-spacing: 0.05em;">${titleText}</span>
-                  <div style="display: flex; gap: 8px; align-items: center;">
-                    <button type="button" class="move-up-btn" data-index="${index}" style="padding: 6px 14px !important; font-size: 11.5px !important; font-weight: 800 !important; border: 1.5px solid ${canMoveLeft ? '#6366f1 !important' : 'rgba(255,255,255,0.15) !important'}; background: ${canMoveLeft ? '#4f46e5 !important' : 'rgba(255,255,255,0.06) !important'}; color: ${canMoveLeft ? '#ffffff !important' : '#64748b !important'}; border-radius: 8px !important; cursor: ${canMoveLeft ? 'pointer !important' : 'not-allowed !important'}; opacity: ${canMoveLeft ? '1 !important' : '0.4 !important'}; transition: all 0.2s !important; display: inline-flex !important; align-items: center !important; gap: 4px !important;" ${canMoveLeft ? '' : 'disabled'}>
-                      ◀ Move Left
+                <div class="admin-image-slot-header">
+                  ${badgeHTML}
+                  <div class="admin-image-slot-actions">
+                    <button type="button" class="move-up-btn image-move-btn" data-index="${index}" ${canMoveLeft ? '' : 'disabled'} title="Move position left">
+                      ← Left
                     </button>
-                    <button type="button" class="move-down-btn" data-index="${index}" style="padding: 6px 14px !important; font-size: 11.5px !important; font-weight: 800 !important; border: 1.5px solid ${canMoveRight ? '#6366f1 !important' : 'rgba(255,255,255,0.15) !important'}; background: ${canMoveRight ? '#4f46e5 !important' : 'rgba(255,255,255,0.06) !important'}; color: ${canMoveRight ? '#ffffff !important' : '#64748b !important'}; border-radius: 8px !important; cursor: ${canMoveRight ? 'pointer !important' : 'not-allowed !important'}; opacity: ${canMoveRight ? '1 !important' : '0.4 !important'}; transition: all 0.2s !important; display: inline-flex !important; align-items: center !important; gap: 4px !important;" ${canMoveRight ? '' : 'disabled'}>
-                      Move Right ▶
+                    <button type="button" class="move-down-btn image-move-btn" data-index="${index}" ${canMoveRight ? '' : 'disabled'} title="Move position right">
+                      Right →
                     </button>
                     ${activeImagesList.length > 1 ? `
-                      <button type="button" class="remove-slot-btn" data-index="${index}" style="padding: 6px 12px !important; font-size: 11px !important; font-weight: 800 !important; border: 1px solid rgba(239, 68, 68, 0.4) !important; background: rgba(239, 68, 68, 0.15) !important; color: #f87171 !important; border-radius: 8px !important; cursor: pointer !important; transition: all 0.2s !important; margin-left: 4px !important;" title="Remove this image slot">
+                      <button type="button" class="remove-slot-btn" data-index="${index}" title="Remove this image slot">
                         🗑️ Remove
                       </button>
                     ` : ''}
                   </div>
                 </div>
-                <div style="display: flex; gap: 12px; align-items: center;">
+                <div class="admin-image-input-row">
                   <!-- Thumbnail preview -->
-                  <div style="width: 54px; height: 66px; background: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                    ${item.src ? `<img src="${item.src}" style="width: 100%; height: 100%; object-fit: cover;" />` : `<span style="font-size: 20px;">🖼️</span>`}
+                  <div class="admin-image-thumb">
+                    ${item.src 
+                      ? `<img src="${item.src}" alt="Product image ${index + 1}" />` 
+                      : `<div class="admin-image-thumb-empty"><span style="font-size: 20px;">📸</span><span>No Image</span></div>`}
                   </div>
                   <!-- URL input -->
-                  <input type="text" class="slot-url-input" data-index="${index}" placeholder="Paste Image URL or click File button..." value="${item.src.startsWith('data:') ? '[Cropped Local Image]' : item.src}" style="flex: 1; padding: 10px 14px; font-size: 13px; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px; outline: none; background-color: #0f172a; color: #ffffff;" ${item.src.startsWith('data:') ? 'disabled' : ''} />
+                  <input type="text" class="slot-url-input" data-index="${index}" placeholder="Paste image web URL (https://...)..." value="${item.src.startsWith('data:') ? '[Cropped Local Image]' : item.src}" ${item.src.startsWith('data:') ? 'disabled' : ''} />
                   <!-- File Selector button -->
-                  <button type="button" class="slot-file-btn" data-index="${index}" style="padding: 10px 14px; font-size: 12px; font-weight: 700; border: 1.5px solid #6366f1; background: rgba(99,102,241,0.1); color: #818cf8; border-radius: 10px; cursor: pointer; white-space: nowrap;">📁 Choose File</button>
+                  <button type="button" class="slot-file-btn" data-index="${index}">📁 Choose File</button>
                   <input type="file" class="slot-file-input" data-index="${index}" accept="image/*, .heic, .heif" style="display: none;" />
                 </div>
               `;
@@ -1976,11 +2752,11 @@ void main() {
               urlInput.addEventListener('input', (e) => {
                 activeImagesList[index].src = e.target.value.trim();
                 activeImagesList[index].filename = "";
-                const thumb = slot.querySelector('img');
-                if (thumb) {
-                  thumb.src = e.target.value.trim();
-                } else if (e.target.value.trim()) {
-                  renderSlots();
+                const thumb = slot.querySelector('.admin-image-thumb');
+                if (e.target.value.trim()) {
+                  thumb.innerHTML = `<img src="${e.target.value.trim()}" alt="Product preview" />`;
+                } else {
+                  thumb.innerHTML = `<div class="admin-image-thumb-empty"><span style="font-size: 20px;">📸</span><span>No Image</span></div>`;
                 }
               });
 
@@ -2024,7 +2800,7 @@ void main() {
                 fileIn.click();
               });
 
-              // File selector change
+              // File selector change -> Triggers Crop Pop-up Modal
               fileIn.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -2058,13 +2834,13 @@ void main() {
 
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                  cropperTarget.src = event.target.result;
-                  cropperWrapper.style.display = 'flex';
-                  cropperActions.style.display = 'flex';
+                  cropperPopupTarget.src = event.target.result;
+                  cropPopupModal.classList.remove('hidden');
+                  cropPopupModal.style.display = 'flex';
 
                   if (cropperInstance) cropperInstance.destroy();
 
-                  cropperInstance = new Cropper(cropperTarget, {
+                  cropperInstance = new Cropper(cropperPopupTarget, {
                     aspectRatio: 3 / 4,
                     viewMode: 1,
                     autoCropArea: 0.9,
@@ -2088,8 +2864,8 @@ void main() {
             const addMoreDiv = document.createElement('div');
             addMoreDiv.style.marginTop = '4px';
             addMoreDiv.innerHTML = `
-              <button type="button" class="add-image-bottom-btn" style="width: 100%; padding: 12px; font-size: 13px; font-weight: 700; color: #818cf8; background: rgba(99, 102, 241, 0.1); border: 1.5px dashed rgba(99, 102, 241, 0.4); border-radius: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                ➕ Add Another Image
+              <button type="button" class="add-image-bottom-btn">
+                ➕ Add Another Photo Angle
               </button>
             `;
             addMoreDiv.querySelector('.add-image-bottom-btn').addEventListener('click', () => {
@@ -2107,30 +2883,6 @@ void main() {
               renderSlots();
             });
           }
-
-          // Cancel Crop click
-          cropCancelBtn.addEventListener('click', () => {
-            resetCropper();
-          });
-
-          // Crop Confirm click
-          cropConfirmBtn.addEventListener('click', () => {
-            if (!cropperInstance || activeCropIndex === null) return;
-
-            const canvas = cropperInstance.getCroppedCanvas({
-              width: 600,
-              height: 800
-            });
-
-            const base64 = canvas.toDataURL('image/jpeg', 0.85);
-            activeImagesList[activeCropIndex] = {
-              src: base64,
-              filename: originalFilename
-            };
-
-            resetCropper();
-            renderSlots();
-          });
 
           // Modal actions
           function openModal(mode, product = null) {
@@ -2191,7 +2943,9 @@ void main() {
               document.getElementById('product-price-input').value = Math.round(parseFloat(product.price));
               
               // Populate image list
-              const imgs = (product.image_url || product.image || product.imageUrl || '').split(',').map(url => window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl(url.trim()) : url.trim()).filter(Boolean);
+              const rawImgStr = product.image_url || product.image || product.imageUrl || '';
+              const rawImagesArray = window.dtfSplitImages ? window.dtfSplitImages(rawImgStr) : rawImgStr.split(',');
+              const imgs = rawImagesArray.map(url => window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl(url.trim()) : url.trim()).filter(Boolean);
               if (imgs.length > 0) {
                 activeImagesList = imgs.map(url => ({ src: url, filename: "" }));
                 if (imageCountInput) imageCountInput.value = imgs.length;
@@ -2597,30 +3351,41 @@ void main() {
               console.log('[DevTech Admin] Backend server offline, saving product to local catalog.');
             }
 
-            const newProductObj = savedProduct || {
-              id: id || ('prod_' + Date.now()),
+            const prodIdVal = (savedProduct && (savedProduct.id || savedProduct.pid)) || id || ('prod_' + Date.now());
+            const newProductObj = {
+              ...(savedProduct || {}),
+              id: prodIdVal,
+              pid: prodIdVal,
               title: payload.title,
               brand: payload.brand,
               category: payload.category,
               title_description: payload.titleDescription,
+              titleDescription: payload.titleDescription,
               mrp: payload.mrp,
               price: payload.price,
               image_url: payload.imageUrl,
+              imageUrl: payload.imageUrl,
               sizes: payload.sizes,
               replacement_allowed: payload.replacementAllowed,
+              replacementAllowed: payload.replacementAllowed,
               replacement_days: payload.replacementDays,
+              replacementDays: payload.replacementDays,
               cod_available: payload.codAvailable,
+              codAvailable: payload.codAvailable,
               coupon_applicable: payload.couponApplicable,
+              couponApplicable: payload.couponApplicable,
               fabric: payload.fabric,
               pattern: payload.pattern,
               fit: payload.fit,
               suitable_for: payload.suitableFor,
+              suitableFor: payload.suitableFor,
               description: payload.description,
-              size_stock: payload.sizeStock
+              size_stock: payload.sizeStock,
+              sizeStock: payload.sizeStock
             };
 
             if (id) {
-              const idx = cachedProducts.findIndex(p => String(p.id) === String(id));
+              const idx = cachedProducts.findIndex(p => String(p.id || p.pid) === String(id));
               if (idx > -1) cachedProducts[idx] = newProductObj;
               else cachedProducts.unshift(newProductObj);
             } else {
@@ -2628,6 +3393,7 @@ void main() {
             }
 
             localStorage.setItem('dtf_admin_products', JSON.stringify(cachedProducts));
+            window.dispatchEvent(new Event('dtf:admin:products:updated'));
             closeModal();
             updateCategoryCounts();
             filterAndRenderProducts();
@@ -3241,7 +4007,7 @@ void main() {
 
               card.innerHTML = `
                 <div class="flex gap-4 p-5">
-                  <img src="${(window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl((p.image_url || p.image || p.imageUrl || '').split(',')[0].trim()) : (p.image_url || p.image || p.imageUrl || '').split(',')[0].trim()) || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop'}" class="w-16 h-16 rounded-xl object-cover bg-surface-container-low flex-shrink-0" alt="" />
+                  <img src="${(window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl((window.dtfSplitImages ? window.dtfSplitImages(p.image_url || p.image || p.imageUrl || '') : (p.image_url || p.image || p.imageUrl || '').split(','))[0].trim()) : (window.dtfSplitImages ? window.dtfSplitImages(p.image_url || p.image || p.imageUrl || '') : (p.image_url || p.image || p.imageUrl || '').split(','))[0].trim()) || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop'}" class="w-16 h-16 rounded-xl object-cover bg-surface-container-low flex-shrink-0" alt="" />
                   <div class="flex-1 min-w-0">
                     <div class="font-semibold text-on-surface text-sm truncate">${p.title}</div>
                     <div class="text-[10px] text-on-surface-variant/60 mt-0.5">${p.category || ''} · ${p.brand || ''}</div>

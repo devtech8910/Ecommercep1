@@ -242,16 +242,46 @@
   function initMobileScrollControls() {
     let lastScrollY = window.scrollY;
     let ticking = false;
-    const SCROLL_THRESHOLD = 6;
-    const MIN_SCROLL_TOP = 80;
+    const SCROLL_THRESHOLD = 4;
+    const MIN_SCROLL_TOP = 60;
+
+    function showHeaderAndControls() {
+      const navbar = document.querySelector('.navbar');
+      if (navbar) {
+        navbar.classList.remove('mobile-nav-hidden');
+      }
+      document.querySelectorAll('.cat-controls-bar').forEach((bar) => {
+        bar.classList.remove('mobile-controls-hidden');
+      });
+    }
+
+    function hideHeaderAndControls() {
+      // Don't hide if a menu or modal drawer is currently open
+      if (document.body.classList.contains('mobile-menu-open') || document.body.classList.contains('filter-modal-open')) {
+        return;
+      }
+      const navbar = document.querySelector('.navbar');
+      if (navbar) {
+        navbar.classList.add('mobile-nav-hidden');
+      }
+      document.querySelectorAll('.cat-controls-bar').forEach((bar) => {
+        bar.classList.add('mobile-controls-hidden');
+      });
+    }
 
     function update() {
       const currentScrollY = window.scrollY;
 
       if (window.innerWidth > 768) {
-        document.querySelectorAll('.cat-controls-bar').forEach((bar) => {
-          bar.classList.remove('mobile-controls-hidden');
-        });
+        showHeaderAndControls();
+        lastScrollY = currentScrollY;
+        ticking = false;
+        return;
+      }
+
+      // If near top of page, keep visible
+      if (currentScrollY <= MIN_SCROLL_TOP) {
+        showHeaderAndControls();
         lastScrollY = currentScrollY;
         ticking = false;
         return;
@@ -259,17 +289,13 @@
 
       const delta = currentScrollY - lastScrollY;
 
-      // Scroll Down -> Hide controls bar smoothly
-      if (delta > SCROLL_THRESHOLD && currentScrollY > MIN_SCROLL_TOP) {
-        document.querySelectorAll('.cat-controls-bar').forEach((bar) => {
-          bar.classList.add('mobile-controls-hidden');
-        });
+      // Scroll DOWN -> Immediately HIDE both search bar & filters bar
+      if (delta > SCROLL_THRESHOLD) {
+        hideHeaderAndControls();
       }
-      // Scroll Up or near Top -> Show controls bar smoothly
-      else if (delta < -SCROLL_THRESHOLD || currentScrollY <= MIN_SCROLL_TOP) {
-        document.querySelectorAll('.cat-controls-bar').forEach((bar) => {
-          bar.classList.remove('mobile-controls-hidden');
-        });
+      // Scroll UP -> Immediately SHOW both search bar & filters bar docked together
+      else if (delta < -SCROLL_THRESHOLD) {
+        showHeaderAndControls();
       }
 
       lastScrollY = currentScrollY;
@@ -285,9 +311,7 @@
 
     window.addEventListener('resize', () => {
       if (window.innerWidth > 768) {
-        document.querySelectorAll('.cat-controls-bar').forEach((bar) => {
-          bar.classList.remove('mobile-controls-hidden');
-        });
+        showHeaderAndControls();
       }
     }, { passive: true });
   }

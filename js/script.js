@@ -12,6 +12,23 @@ window.dtfNormalizeImageUrl = function dtfNormalizeImageUrl(url) {
   return raw.replace(/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\/uploads\//i, '/uploads/');
 };
 
+window.dtfSplitImages = function dtfSplitImages(str) {
+  if (!str) return [];
+  const parts = String(str).split(',');
+  const results = [];
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i].trim();
+    if (part.startsWith('data:image/') && part.includes(';base64')) {
+      const next = parts[i + 1] ? parts[i + 1].trim() : '';
+      results.push(part + ',' + next);
+      i++;
+    } else {
+      results.push(part);
+    }
+  }
+  return results.filter(Boolean);
+};
+
 window.dtfApiBase = function dtfApiBase() {
   const host = window.location.hostname;
   if (host && host !== 'localhost' && host !== '127.0.0.1') {
@@ -699,10 +716,10 @@ window.isUserLoggedIn = function() {
     return isPagesDir ? 'login.html' : 'pages/login.html';
   }
 
-  // Intercept click on any Add to Cart or Wishlist button if unauthenticated
+  // Allow guest cart additions & handle wishlist auth protection cleanly
   document.addEventListener('click', (e) => {
     const trigger = e.target.closest(
-      '.btn-add-cart, .add-to-cart, .buy-now-btn, .wishlist-btn, .btn-wishlist, .add-wishlist, .product-card-wishlist, [data-action="add-cart"], [data-action="wishlist"], .quick-add-btn, .cart-add-btn, .product-wishlist-btn, .add-to-wishlist, .cat-add-cart-btn, .add-to-cart-btn'
+      '.wishlist-btn, .btn-wishlist, .add-wishlist, .product-card-wishlist, [data-action="wishlist"], .product-wishlist-btn, .add-to-wishlist'
     );
 
     if (trigger) {
@@ -711,10 +728,7 @@ window.isUserLoggedIn = function() {
         e.stopPropagation();
         e.stopImmediatePropagation();
 
-        const isWishlist = trigger.matches('.wishlist-btn, .btn-wishlist, .add-wishlist, .product-card-wishlist, [data-action="wishlist"], .product-wishlist-btn, .add-to-wishlist');
-        const actionText = isWishlist ? 'add items to your wishlist' : 'add items to your cart';
-        const msg = `Please sign in or create an account to ${actionText}.`;
-
+        const msg = 'Please sign in or create an account to save items to your wishlist.';
         if (window.showToast) {
           window.showToast(msg, 'warning');
         } else {

@@ -33,76 +33,128 @@
       }
       
       body {
-        background: var(--bg-base);
+        background: #080912;
         color: var(--text-primary);
         margin: 0;
         font-family: 'Inter', sans-serif;
       }
 
+      .ambient-container,
+      .noise-overlay {
+        display: none !important;
+      }
+
       .main-container {
-        max-width: 1200px;
+        max-width: 1280px;
         margin: 0 auto;
-        padding: 40px 20px 80px;
+        padding: 24px 18px 72px;
         display: flex;
         flex-direction: column;
-        gap: 40px;
+        gap: 28px;
       }
 
       .dark-glass-card {
-        background: var(--glass-bg);
-        border: 1px solid var(--glass-border);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-radius: 24px;
-        padding: 40px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        background: #111321;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 8px;
+        padding: 28px;
+        box-shadow: 0 16px 50px rgba(0, 0, 0, 0.28);
       }
 
-      .hero-grid {
-        display: flex;
-        gap: 40px;
+      html, body {
+        overflow-x: clip !important;
+        overflow-y: visible !important;
+      }
+
+      .product-main-layout {
+        display: grid;
+        grid-template-columns: minmax(420px, 0.95fr) minmax(420px, 1.05fr);
+        gap: 24px;
         align-items: flex-start;
       }
 
-      .gallery-col {
-        flex: 1.2;
-        min-width: 320px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
+      .layout-left-col {
+        position: sticky;
+        top: 100px;
+        align-self: flex-start;
+        z-index: 10;
       }
 
-      .info-col {
-        flex: 1;
-        min-width: 280px;
+      .layout-right-col {
         display: flex;
         flex-direction: column;
         gap: 24px;
+        min-width: 0;
+      }
+
+      .gallery-col {
+        position: relative;
+        min-width: 0;
+      }
+
+      .info-col {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
       }
 
       @media (min-width: 769px) {
         .info-col {
-          position: sticky;
-          top: 24px;
-          max-height: calc(100vh - 48px);
-          overflow-y: auto;
-          scrollbar-width: none !important;
-          -ms-overflow-style: none !important;
+          max-height: none;
+          overflow: visible;
         }
-        .info-col::-webkit-scrollbar {
-          display: none !important;
-          width: 0px !important;
-        }
+      }
+
+      .flipkart-gallery-shell {
+        display: grid;
+        grid-template-columns: 76px minmax(0, 1fr);
+        gap: 14px;
+      }
+
+      #thumbnail-strip {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-height: 620px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #6366f1 rgba(255, 255, 255, 0.05);
+      }
+
+      .thumb-btn {
+        width: 72px;
+        height: 88px;
+        border: 1.5px solid rgba(148, 163, 184, 0.24);
+        border-radius: 6px;
+        background: #0b0d18;
+        padding: 4px;
+        cursor: pointer;
+        transition: border-color 0.16s ease, box-shadow 0.16s ease;
+      }
+
+      .thumb-btn.active,
+      .thumb-btn:hover {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.16);
+      }
+
+      .thumb-btn img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
       }
 
       .image-viewer {
         position: relative;
         width: 100%;
-        padding-top: 125%;
-        background: var(--bg-elevated);
-        border-radius: 20px;
+        aspect-ratio: 4 / 5;
+        padding-top: 0;
+        background: #0b0d18;
+        border-radius: 8px;
         overflow: hidden;
-        border: 1px solid var(--glass-border);
+        border: 1px solid rgba(148, 163, 184, 0.16);
       }
 
       #image-carousel-container {
@@ -115,8 +167,18 @@
       #image-carousel-container img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
         flex-shrink: 0;
+        background: #0b0d18;
+      }
+
+      .gallery-slide {
+        min-width: 100%;
+        height: 100%;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .carousel-control {
@@ -212,37 +274,67 @@
       }
 
       #product-brand {
-        font-size: 13px;
-        font-weight: 700;
+        font-size: 16px;
+        font-weight: 800;
         text-transform: uppercase;
-        color: var(--accent-indigo);
-        letter-spacing: 0.1em;
+        color: #f8fafc;
+        letter-spacing: 0.02em;
       }
 
       #product-title {
-        font-size: 32px;
-        font-weight: 800;
-        color: var(--text-primary);
-        margin: 8px 0 16px;
+        font-size: 22px;
+        font-weight: 750;
+        color: #d4d6e4;
+        margin: 10px 0 12px;
         font-family: 'Outfit', sans-serif;
+        line-height: 1.28;
+      }
+
+      .product-meta-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+
+      .mini-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 9px;
+        border-radius: 6px;
+        border: 1px solid rgba(14, 165, 233, 0.35);
+        background: rgba(14, 165, 233, 0.12);
+        color: #5ac8ff;
+        font-size: 12px;
+        font-weight: 800;
       }
 
       #product-snippets {
         margin: 0;
-        padding: 0 0 0 16px;
+        padding: 0;
         font-size: 14px;
         color: var(--text-secondary);
         line-height: 1.6;
         display: flex;
-        flex-direction: column;
-        gap: 6px;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        list-style: none;
+      }
+
+      #product-snippets li::before {
+        content: "•";
+        color: #fbbf24;
+        font-weight: 900;
+        margin-right: 6px;
       }
 
       .price-card {
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 16px;
-        padding: 24px;
-        border: 1px solid var(--glass-border);
+        background: transparent;
+        border-radius: 0;
+        padding: 0;
+        border: 0;
       }
 
       .price-row {
@@ -253,10 +345,10 @@
       }
 
       #product-price {
-        font-size: 28px;
+        font-size: 30px;
         font-weight: 800;
         color: var(--text-primary);
-        font-family: 'Cormorant Garamond', serif;
+        font-family: 'Inter', sans-serif;
       }
 
       #product-mrp {
@@ -269,11 +361,11 @@
         font-size: 13px;
         font-weight: 700;
         color: var(--accent-green);
-        background: rgba(16, 185, 129, 0.1);
-        padding: 4px 10px;
-        border-radius: 6px;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        border: 0;
+        box-shadow: none;
       }
 
       #savings-tracker {
@@ -298,25 +390,27 @@
 
       .section-label {
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 800;
         text-transform: uppercase;
-        color: var(--text-muted);
-        letter-spacing: 0.1em;
+        color: #c5c9d6;
+        letter-spacing: 0.08em;
         display: block;
         margin-bottom: 12px;
       }
 
       .size-selector {
         display: flex;
-        gap: 12px;
+        gap: 10px;
+        flex-wrap: wrap;
       }
 
       .size-btn {
-        width: 48px;
-        height: 48px;
+        min-width: 52px;
+        height: 44px;
+        padding: 0 14px;
         font-size: 13px;
         font-weight: 700;
-        border-radius: 12px;
+        border-radius: 4px;
         border: 1px solid var(--glass-border);
         background: rgba(255, 255, 255, 0.05);
         color: var(--text-primary);
@@ -355,8 +449,8 @@
 
       .coupons-container {
         border-top: 1px solid var(--glass-border);
-        padding-top: 20px;
-        margin-top: 20px;
+        padding-top: 18px;
+        margin-top: 2px;
       }
 
       #coupons-dropdown-btn {
@@ -418,17 +512,17 @@
 
       .delivery-section {
         border-top: 1px solid var(--glass-border);
-        padding-top: 20px;
-        margin-top: 20px;
+        padding-top: 18px;
+        margin-top: 2px;
       }
 
       .cta-btn {
         width: 100%;
-        padding: 16px;
+        padding: 18px;
         border: none;
-        border-radius: 12px;
+        border-radius: 6px;
         font-weight: 800;
-        font-size: 16px;
+        font-size: 18px;
         cursor: pointer;
         transition: all 0.3s ease;
         font-family: 'Inter', sans-serif;
@@ -463,23 +557,22 @@
       }
 
       .trust-badges {
-        display: flex;
-        gap: 16px;
-        justify-content: space-around;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        justify-content: stretch;
         border-top: 1px solid var(--glass-border);
-        padding-top: 24px;
-        margin-top: 24px;
-        flex-wrap: wrap;
+        padding-top: 18px;
+        margin-top: 4px;
       }
 
       .trust-badge {
         text-align: center;
         background: rgba(255, 255, 255, 0.03);
-        padding: 12px;
-        border-radius: 12px;
+        padding: 16px 10px;
+        border-radius: 6px;
         border: 1px solid var(--glass-border);
-        flex: 1;
-        min-width: 90px;
+        min-width: 0;
         transition: transform 0.2s;
       }
 
@@ -499,14 +592,13 @@
       }
 
       .deep-dive-grid {
-        display: flex;
-        gap: 40px;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+        gap: 28px;
       }
 
       .highlights-col {
-        flex: 1;
-        min-width: 280px;
+        min-width: 0;
       }
 
       .highlights-grid {
@@ -516,8 +608,10 @@
       }
 
       .highlight-item {
-        border-bottom: 1px solid var(--glass-border);
-        padding-bottom: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: #0d0f1c;
+        border-radius: 6px;
+        padding: 14px;
       }
 
       .highlight-label {
@@ -534,14 +628,13 @@
       }
 
       .desc-col {
-        flex: 1.2;
-        min-width: 280px;
+        min-width: 0;
         border-left: 1px solid var(--glass-border);
         padding-left: 24px;
       }
 
       .section-title {
-        font-size: 24px;
+        font-size: 28px;
         font-weight: 800;
         color: var(--text-primary);
         margin: 0 0 24px;
@@ -596,18 +689,95 @@
       }
 
       #recommendations-carousel {
-        display: flex;
-        gap: 20px;
-        overflow-x: auto;
-        padding-bottom: 16px;
-        scroll-behavior: smooth;
-        scrollbar-width: none !important;
-        -ms-overflow-style: none !important;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 14px;
+        overflow: visible;
+        padding-bottom: 0;
       }
 
       #recommendations-carousel::-webkit-scrollbar {
         display: none !important;
         height: 0px !important;
+      }
+
+      .similar-product-card {
+        background: #111321;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .similar-product-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(99, 102, 241, 0.55);
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
+      }
+
+      .similar-product-image {
+        aspect-ratio: 4 / 5;
+        background: #0b0d18;
+        padding: 10px;
+      }
+
+      .similar-product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+      }
+
+      .similar-product-info {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .similar-product-info span {
+        color: #f8fafc;
+        font-size: 12px;
+        font-weight: 850;
+        text-transform: uppercase;
+      }
+
+      .similar-product-info h4 {
+        margin: 0;
+        color: #c9ceda;
+        font-size: 13px;
+        line-height: 1.35;
+        min-height: 36px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .similar-product-info p {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        flex-wrap: wrap;
+      }
+
+      .similar-product-info strong {
+        color: #f8fafc;
+        font-size: 15px;
+      }
+
+      .similar-product-info s {
+        color: #71717a;
+        font-size: 12px;
+      }
+
+      .similar-product-info em {
+        color: #10b981;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 800;
       }
 
       #react-address-picker-root {
@@ -619,13 +789,69 @@
 
       @media (max-width: 768px) {
         .main-container {
-          padding: 20px 16px 40px;
+          padding: 12px 10px 84px;
+          gap: 14px;
         }
         .dark-glass-card {
-          padding: 24px;
+          padding: 16px;
+          border-radius: 8px;
         }
-        .hero-grid {
-          flex-wrap: wrap;
+        .product-main-layout {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+        .layout-left-col {
+          position: relative;
+          top: auto;
+          width: 100%;
+        }
+        .layout-right-col {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+        .gallery-col {
+          position: relative;
+          top: auto;
+          width: 100%;
+        }
+        .flipkart-gallery-shell {
+          display: flex;
+          flex-direction: column-reverse;
+          gap: 10px;
+        }
+        #thumbnail-strip {
+          flex-direction: row;
+          max-height: none;
+          overflow-x: auto;
+          overflow-y: hidden;
+          padding-bottom: 2px;
+        }
+        .thumb-btn {
+          width: 58px;
+          height: 72px;
+          flex: 0 0 58px;
+        }
+        .image-viewer {
+          aspect-ratio: 1 / 1.12;
+        }
+        .info-col {
+          width: 100%;
+        }
+        #product-title {
+          font-size: 19px;
+        }
+        #product-price {
+          font-size: 26px;
+        }
+        .trust-badges,
+        .deep-dive-grid {
+          grid-template-columns: 1fr;
+        }
+        .highlights-grid {
+          grid-template-columns: 1fr;
         }
         .desc-col {
           border-left: none;
@@ -633,8 +859,92 @@
           border-top: 1px solid var(--glass-border);
           padding-top: 24px;
         }
+        #recommendations-carousel {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .desktop-ctas {
+          position: static;
+          margin-top: 16px;
+          padding: 0;
+          background: transparent;
+          border-top: none;
+        }
+        .cta-btn {
+          min-height: 52px;
+          padding: 14px;
+          font-size: 15px;
+        }
       }
-      
+
+      /* Fullscreen Lightbox Modal */
+      #lightbox-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(4, 5, 12, 0.95);
+        backdrop-filter: blur(16px);
+        z-index: 99999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+      #lightbox-img {
+        max-width: 90vw;
+        max-height: 85vh;
+        object-fit: contain;
+        border-radius: 16px;
+        box-shadow: 0 25px 80px rgba(0,0,0,0.85);
+        border: 1px solid rgba(255,255,255,0.12);
+      }
+      #lightbox-close {
+        position: absolute;
+        top: 24px;
+        right: 28px;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: #fff;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.25s ease;
+      }
+      #lightbox-close:hover {
+        background: rgba(255,255,255,0.25);
+        transform: scale(1.1);
+      }
+      .deep-inspect-btn {
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        background: rgba(15, 17, 32, 0.75);
+        border: 1px solid rgba(165, 180, 252, 0.25);
+        backdrop-filter: blur(10px);
+        color: #a5b4fc;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        cursor: pointer;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.25s ease;
+      }
+      .deep-inspect-btn:hover {
+        background: #6366f1;
+        color: #ffffff;
+        transform: translateY(-2px);
+      }
     </style>
   </head>
   <body class="auth-page">
@@ -647,65 +957,77 @@
       <div class="orb orb-2"></div>
       <div class="orb orb-3"></div>
     </div>
-
     <main class="main-container">
       
-      <!-- Top Layout -->
-      <div class="fade-in-up hero-grid">
+      <!-- Main Split Layout -->
+      <div class="product-main-layout">
           
-          <!-- LEFT COLUMN: Image Gallery & Overlays -->
-          <div class="gallery-col dark-glass-card" style="padding: 24px;">
-            <div class="image-viewer">
-              
-              <!-- Media Carousel Images -->
-              <div id="image-carousel-container">
-                <!-- Imgs populate dynamically -->
+          <!-- LEFT COLUMN: Image Gallery & Overlays (Sticky) -->
+          <div class="layout-left-col">
+            <div class="gallery-col dark-glass-card" style="padding: 24px;">
+            <div class="flipkart-gallery-shell">
+              <div id="thumbnail-strip" aria-label="Product image thumbnails">
+                <!-- Thumbnails populate dynamically -->
               </div>
+              <div class="image-viewer">
+                
+                <!-- Media Carousel Images -->
+                <div id="image-carousel-container">
+                  <!-- Imgs populate dynamically -->
+                </div>
 
-              <!-- Carousel Controls -->
-              <button id="carousel-prev" class="carousel-control" aria-label="Previous image">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              </button>
-              <button id="carousel-next" class="carousel-control" aria-label="Next image">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-              </button>
-
-              <!-- Bottom-Left Rating Overlay -->
-              <button id="rating-scroll-btn" class="overlay-btn">
-                <span id="rating-badge-val">4.2</span>
-                <span style="color: #fbbf24;">★</span>
-              </button>
-
-              <!-- Top-Right Action Overlays -->
-              <div class="top-right-actions">
-                <button id="share-product-btn" class="overlay-btn action-btn" title="Share Product">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                <!-- Carousel Controls -->
+                <button id="carousel-prev" class="carousel-control" aria-label="Previous image">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
-                <button id="wishlist-toggle-btn" class="overlay-btn action-btn" title="Save to Wishlist">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                <button id="carousel-next" class="carousel-control" aria-label="Next image">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+
+                <!-- Bottom-Left Rating Overlay -->
+                <button id="rating-scroll-btn" class="overlay-btn">
+                  <span id="rating-badge-val">4.2</span>
+                  <span style="color: #fbbf24;">★</span>
+                </button>
+
+                <!-- Top-Right Action Overlays -->
+                <div class="top-right-actions">
+                  <button id="share-product-btn" class="overlay-btn action-btn" title="Share Product">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                  </button>
+                  <button id="wishlist-toggle-btn" class="overlay-btn action-btn" title="Save to Wishlist">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                  </button>
+                </div>
+                <!-- Bottom-Right Deep View Zoom Button -->
+                <button id="deep-inspect-trigger-btn" class="deep-inspect-btn" title="Inspect HD Deep View">
+                  🔍 Deep View
                 </button>
               </div>
-
             </div>
 
             <!-- Dots Indicators -->
             <div id="carousel-dots">
               <!-- Dots populate dynamically -->
             </div>
+            </div>
           </div>
-
-          <!-- RIGHT COLUMN: Product Configurator -->
-          <div class="info-col dark-glass-card" style="padding: 32px;">
+          
+          <!-- RIGHT COLUMN: Product Configurator, Specs, Reviews, Recommendations -->
+          <div class="layout-right-col">
+            <div class="info-col dark-glass-card" style="padding: 32px;">
             
             <!-- Brand & Title -->
             <div>
               <span id="product-brand">DEVTECH LUXURY</span>
               <h1 id="product-title">Loading...</h1>
+              <div class="product-meta-row">
+                <span id="product-category-pill" class="mini-pill">Category</span>
+                <span class="mini-pill">🛡️ Assured</span>
+              </div>
               
               <!-- Product Bullet Snippets -->
               <ul id="product-snippets">
-                <li>Premium quality materials</li>
-                <li>Exclusive design</li>
               </ul>
             </div>
 
@@ -734,10 +1056,7 @@
             <div>
               <label class="section-label">Select size</label>
               <div class="size-selector">
-                <button type="button" class="size-btn" data-size="S">S</button>
-                <button type="button" class="size-btn" data-size="M">M</button>
-                <button type="button" class="size-btn" data-size="L">L</button>
-                <button type="button" class="size-btn" data-size="XL" disabled>XL</button>
+                <!-- Sizes dynamically injected based on Admin configuration -->
               </div>
             </div>
 
@@ -799,57 +1118,56 @@
                 <div class="trust-text">Brand Assured</div>
               </div>
             </div>
+          </div> <!-- Closes .info-col -->
 
-          </div>
+          <!-- Product Deep Dive: Highlights & Description -->
+          <div class="fade-in-up" style="animation-delay: 0.2s;">
+            <div class="dark-glass-card">
+              <h2 class="section-title">Product Deep Dive</h2>
+              
+              <div class="deep-dive-grid">
+                <!-- Highlights Grid -->
+                <div class="highlights-col">
+                  <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 20px;">Highlights</h3>
+                  <div class="highlights-grid">
+                    <div class="highlight-item">
+                      <span class="highlight-label">Fabric</span>
+                      <span id="spec-fabric" class="highlight-val">—</span>
+                    </div>
+                    <div class="highlight-item">
+                      <span class="highlight-label">Fit</span>
+                      <span id="spec-fit" class="highlight-val">—</span>
+                    </div>
+                    <div class="highlight-item">
+                      <span class="highlight-label">Pattern</span>
+                      <span id="spec-pattern" class="highlight-val">—</span>
+                    </div>
+                    <div class="highlight-item">
+                      <span class="highlight-label">Suitable For</span>
+                      <span id="spec-suitable" class="highlight-val">—</span>
+                    </div>
+                  </div>
+                </div>
 
-      </div>
-
-      <!-- ========================================
-           SECONDARY CONTENT (BELOW THE FOLD)
-      ========================================= -->
-      <div class="fade-in-up" style="animation-delay: 0.2s;">
-        
-        <!-- Product Deep Dive: Highlights & Description -->
-        <div class="dark-glass-card">
-          <h2 class="section-title">Product Deep Dive</h2>
-          
-          <div class="deep-dive-grid">
-            <!-- Highlights Grid -->
-            <div class="highlights-col">
-              <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 20px;">Highlights</h3>
-              <div class="highlights-grid">
-                <div class="highlight-item">
-                  <span class="highlight-label">Fabric</span>
-                  <span id="spec-fabric" class="highlight-val">Loading...</span>
-                </div>
-                <div class="highlight-item">
-                  <span class="highlight-label">Fit</span>
-                  <span id="spec-fit" class="highlight-val">Loading...</span>
-                </div>
-                <div class="highlight-item">
-                  <span class="highlight-label">Pattern</span>
-                  <span id="spec-pattern" class="highlight-val">Loading...</span>
-                </div>
-                <div class="highlight-item">
-                  <span class="highlight-label">Suitable For</span>
-                  <span id="spec-suitable" class="highlight-val">Loading...</span>
+                <!-- Description -->
+                <div class="desc-col">
+                  <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 20px;">Description</h3>
+                  <p id="product-description-text" style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; margin: 0;">
+                  </p>
                 </div>
               </div>
             </div>
-
-            <!-- Description -->
-            <div class="desc-col">
-              <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 20px;">Description</h3>
-              <p id="product-description-text" style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; margin: 0;">
-                Loading description...
-              </p>
-            </div>
           </div>
-        </div>
-      </div>
 
+        </div> <!-- Closes .layout-right-col -->
+      </div> <!-- Closes .product-main-layout -->
+
+      <!-- ========================================
+           FULL WIDTH SECONDARY CONTENT (BELOW SPLIT LAYOUT)
+      ========================================= -->
+      
+      <!-- Social Proof & Feedback (Ratings & Reviews) - Full Width -->
       <div class="fade-in-up" style="animation-delay: 0.4s;">
-        <!-- Social Proof & Feedback (Ratings & Reviews) -->
         <div id="ratings-reviews-section" class="dark-glass-card">
           <h2 class="section-title">Customer Reviews</h2>
           
@@ -929,13 +1247,12 @@
               </div>
 
             </div>
-
           </div>
         </div>
       </div>
 
+      <!-- Discovery & Recommendations (Similar products) - Full Width -->
       <div class="fade-in-up" style="animation-delay: 0.6s;">
-        <!-- Discovery & Recommendations (Similar products) -->
         <div>
           <h3 class="section-title">Similar Products</h3>
           <div id="recommendations-carousel">
@@ -943,8 +1260,6 @@
           </div>
         </div>
       </div>
-
-    </main>
 
     <!-- Custom JavaScript -->
     <script src="../js/script.js"></script>
@@ -960,642 +1275,370 @@
           return `${base}${path}`;
         });
 
-        document.getElementById('product-title').textContent = 'Loading...';
-        document.getElementById('product-brand').textContent = '';
-        document.getElementById('product-snippets').innerHTML = '';
+        function setTxt(id, text) {
+          const el = document.getElementById(id);
+          if (el) el.textContent = text !== undefined && text !== null ? String(text) : '';
+        }
+
+        function setHTML(id, html) {
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = html !== undefined && html !== null ? String(html) : '';
+        }
+
+        function addEv(id, event, fn) {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener(event, fn);
+        }
+
+        setTxt('product-title', 'Loading...');
+        setTxt('product-brand', '');
+        setHTML('product-snippets', '');
 
         async function initProductDetails() {
           let liveProduct = null;
-          const cleanId = idParam ? String(idParam).trim() : '';
-          const cleanTitle = titleParam ? decodeURIComponent(titleParam).trim().toLowerCase() : '';
+          const rawId = idParam ? String(idParam).trim() : '';
+          const cleanId = (rawId && rawId.toLowerCase() !== 'undefined' && rawId.toLowerCase() !== 'null') ? rawId : '';
+          const cleanTitle = titleParam ? String(titleParam).trim().toLowerCase() : '';
 
-          // 1. Search in local admin products catalog
-          const storedAdminProducts = localStorage.getItem('dtf_admin_products');
-          if (storedAdminProducts !== null) {
-            try {
+          let parsedAdminProducts = [];
+          let allApiProducts = [];
+
+          const defaultCatalog = [
+            { id: 'm1', title: 'Midnight Blue Tuxedo', price: 24999, mrp: 29999, category: "Men", brand: "DevTech Luxury", sizes: "M, L, XL", image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80&fit=crop', description: "Impeccably tailored tuxedo in rich midnight blue.", fabric: "Pure Wool", fit: "Tailored Fit", pattern: "Solid", suitable_for: "Formal" },
+            { id: 'm2', title: 'Oxford Classic Shirt', price: 3499, mrp: 4499, category: "Men", brand: "DevTech Casuals", sizes: "S, M, L", image: 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop', description: "Breathable cotton Oxford shirt for daily elegance.", fabric: "100% Cotton", fit: "Regular Fit", pattern: "Solid", suitable_for: "Casual" },
+            { id: 'm3', title: 'Premium Leather Jacket', price: 12999, mrp: 15999, category: "Men", brand: "DevTech Luxury", sizes: "L, XL", image: 'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&q=80&fit=crop', description: "Genuine top-grain leather jacket with quilted lining.", fabric: "Genuine Leather", fit: "Slim Fit", pattern: "Solid", suitable_for: "Winter / Casual" },
+            { id: 'm4', title: 'Chronograph Luxury Watch', price: 8999, mrp: 11999, category: "Men", brand: "DevTech Accessories", sizes: "One Size", image: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&q=80&fit=crop', description: "Precision quartz movement with stainless steel case.", fabric: "Stainless Steel", fit: "Standard", pattern: "Metallic", suitable_for: "Formal / Casual" },
+            { id: 'm5', title: 'Slim Fit Italian Blazer', price: 16499, mrp: 19999, category: "Men", brand: "DevTech Luxury", sizes: "M, L", image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&q=80&fit=crop', description: "Italian cut blazer featuring soft shoulders and lightweight lining.", fabric: "Wool Blend", fit: "Slim Fit", pattern: "Solid", suitable_for: "Smart Casual" },
+            { id: 'm6', title: 'Tailored Chino Trousers', price: 4299, mrp: 5299, category: "Men", brand: "DevTech Casuals", sizes: "S, M, L, XL", image: 'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=600&q=80&fit=crop', description: "Comfort-stretch cotton chinos tailored for a modern silhouette.", fabric: "Cotton Stretch", fit: "Regular Fit", pattern: "Solid", suitable_for: "Daily Wear" },
+            { id: 'w1', title: 'Silk Evening Gown', price: 18499, mrp: 21999, category: "Women", brand: "DevTech Haute Couture", sizes: "S, M, L", image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600&q=80&fit=crop', description: "Elegant silk evening gown with graceful drape.", fabric: "Pure Silk", fit: "Regular Fit", pattern: "Solid", suitable_for: "Party / Evening" },
+            { id: 'w2', title: 'Floral Wrap Blouse', price: 4299, mrp: 5299, category: "Women", brand: "DevTech Casuals", sizes: "S, M", image: 'https://images.unsplash.com/photo-1550614000-4b95d466f913?w=600&q=80&fit=crop', description: "Vibrant floral wrap blouse for effortless chic.", fabric: "Chiffon", fit: "Regular Fit", pattern: "Floral", suitable_for: "Casual" },
+            { id: 'w3', title: 'Classic Leather Tote', price: 14999, mrp: 17999, category: "Women", brand: "DevTech Accessories", sizes: "One Size", image: 'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&q=80&fit=crop', description: "Spacious classic leather tote bag for everyday essentials.", fabric: "Genuine Leather", fit: "Standard", pattern: "Solid", suitable_for: "Daily / Work" },
+            { id: 'w4', title: 'Stiletto Designer Heels', price: 9999, mrp: 12999, category: "Women", brand: "DevTech Footwear", sizes: "36, 37, 38", image: 'https://images.unsplash.com/photo-1532453288672-3a27e9be9efd?w=600&q=80&fit=crop', description: "High-fashion designer heels crafted for supreme comfort and poise.", fabric: "Patent Leather", fit: "Standard", pattern: "Solid", suitable_for: "Party / Formal" },
+            { id: 'w5', title: 'Cashmere Winter Trenchcoat', price: 21999, mrp: 25999, category: "Women", brand: "DevTech Haute Couture", sizes: "M, L, XL", image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&q=80&fit=crop', description: "Luxurious cashmere winter coat providing warmth without weight.", fabric: "Cashmere Wool", fit: "Regular Fit", pattern: "Solid", suitable_for: "Winter / Formal" },
+            { id: 'w6', title: 'Pleated Designer Skirt', price: 6499, mrp: 7999, category: "Women", brand: "DevTech Casuals", sizes: "S, M, L", image: 'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=600&q=80&fit=crop', description: "Accordion pleated skirt featuring fluid movement and high waist.", fabric: "Polyester Blend", fit: "Regular Fit", pattern: "Solid", suitable_for: "Casual / Smart" },
+            { id: 'k1', title: 'Organic Cotton Party Dress', price: 3499, mrp: 4299, category: "Kids", brand: "DevTech Juniors", sizes: "2-3Y, 4-5Y", image: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=600&q=80&fit=crop', description: "Soft organic cotton dress designed for playful celebrations.", fabric: "Organic Cotton", fit: "Comfort Fit", pattern: "Printed", suitable_for: "Party" },
+            { id: 'k2', title: 'Denim Adventure Overalls', price: 2899, mrp: 3499, category: "Kids", brand: "DevTech Juniors", sizes: "4-5Y, 6-7Y", image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&q=80&fit=crop', description: "Sturdy and comfortable denim overalls built for everyday adventures.", fabric: "Denim", fit: "Regular Fit", pattern: "Solid", suitable_for: "Casual / Play" },
+            { id: 'k3', title: 'Cozy Knit Winter Sweater', price: 2499, mrp: 2999, category: "Kids", brand: "DevTech Juniors", sizes: "2-3Y, 4-5Y, 6-7Y", image: 'https://images.unsplash.com/photo-1503944563220-79d8926ad5e2?w=600&q=80&fit=crop', description: "Ultra-soft knitted sweater keeping juniors cozy in chilly weather.", fabric: "Cotton Knit", fit: "Comfort Fit", pattern: "Solid", suitable_for: "Winter" },
+            { id: 'k4', title: 'Junior Explorer Sneakers', price: 3999, mrp: 4999, category: "Kids", brand: "DevTech Footwear", sizes: "11, 12, 13", image: 'https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=600&q=80&fit=crop', description: "Lightweight and non-slip sneakers for active young explorers.", fabric: "Mesh / Rubber", fit: "Standard", pattern: "Sporty", suitable_for: "Casual / Sports" }
+          ];
+
+          try {
+            const storedAdminProducts = localStorage.getItem('dtf_admin_products');
+            if (storedAdminProducts) {
               const parsed = JSON.parse(storedAdminProducts);
               if (Array.isArray(parsed)) {
-                if (cleanId) {
-                  liveProduct = parsed.find(p => String(p.id) === cleanId || String(p.pid) === cleanId) || null;
-                }
-                if (!liveProduct && cleanTitle) {
-                  liveProduct = parsed.find(p => p.title && p.title.trim().toLowerCase() === cleanTitle) || null;
-                }
+                parsedAdminProducts = parsed.filter(p => p && typeof p === 'object');
+                if (cleanId) liveProduct = parsedAdminProducts.find(p => String(p.id || p.pid || '') === cleanId) || null;
+                if (!liveProduct && cleanTitle) liveProduct = parsedAdminProducts.find(p => p.title && String(p.title).trim().toLowerCase() === cleanTitle) || null;
               }
-            } catch (e) {}
-          }
+            }
+          } catch (e) {}
 
-          // 2. Fetch from backend API endpoint by ID
           if (!liveProduct && cleanId) {
             try {
               const res = await fetch(apiUrl(`/products/${encodeURIComponent(cleanId)}`));
               const data = await res.json();
-              if (res.ok && data.success && data.product) {
-                liveProduct = data.product;
-              }
+              if (res.ok && data && data.success && data.product) liveProduct = data.product;
             } catch (e) {}
           }
 
-          // 3. Fetch all products from backend API if single endpoint didn't match
           if (!liveProduct) {
             try {
               const res = await fetch(apiUrl('/products'));
               const data = await res.json();
-              if (res.ok && data.success && Array.isArray(data.products)) {
-                if (cleanId) {
-                  liveProduct = data.products.find(p => String(p.id) === cleanId || String(p.pid) === cleanId) || null;
-                }
-                if (!liveProduct && cleanTitle) {
-                  liveProduct = data.products.find(p => p.title && p.title.trim().toLowerCase() === cleanTitle) || null;
-                }
+              if (res.ok && data && data.success && Array.isArray(data.products)) {
+                allApiProducts = data.products.filter(p => p && typeof p === 'object');
+                if (cleanId) liveProduct = allApiProducts.find(p => String(p.id || p.pid || '') === cleanId) || null;
+                if (!liveProduct && cleanTitle) liveProduct = allApiProducts.find(p => p.title && String(p.title).trim().toLowerCase() === cleanTitle) || null;
               }
             } catch (e) {}
           }
 
-          // 4. Fallback search in static default items
           if (!liveProduct) {
-            const defaultCatalog = [
-              { id: 'm1', title: 'Midnight Blue Tuxedo', price: 24999, mrp: 29999, category: "Men", brand: "DevTech Luxury", sizes: "M, L, XL", image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80&fit=crop', description: "Impeccably tailored tuxedo in rich midnight blue.", fabric: "Pure Wool", fit: "Tailored Fit", pattern: "Solid", suitable_for: "Formal" },
-              { id: 'm2', title: 'Oxford Classic Shirt', price: 3499, mrp: 4499, category: "Men", brand: "DevTech Casuals", sizes: "S, M, L", image: 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop', description: "Breathable cotton Oxford shirt for daily elegance.", fabric: "100% Cotton", fit: "Regular Fit", pattern: "Solid", suitable_for: "Casual" },
-              { id: 'm3', title: 'Premium Leather Jacket', price: 12999, mrp: 15999, category: "Men", brand: "DevTech Luxury", sizes: "L, XL", image: 'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&q=80&fit=crop', description: "Genuine top-grain leather jacket with quilted lining.", fabric: "Genuine Leather", fit: "Slim Fit", pattern: "Solid", suitable_for: "Winter / Casual" },
-              { id: 'm4', title: 'Chronograph Luxury Watch', price: 8999, mrp: 11999, category: "Men", brand: "DevTech Accessories", sizes: "One Size", image: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&q=80&fit=crop', description: "Precision quartz movement with stainless steel case.", fabric: "Stainless Steel", fit: "Standard", pattern: "Metallic", suitable_for: "Formal / Casual" },
-              { id: 'm5', title: 'Slim Fit Italian Blazer', price: 16499, mrp: 19999, category: "Men", brand: "DevTech Luxury", sizes: "M, L", image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&q=80&fit=crop', description: "Italian cut blazer featuring soft shoulders and lightweight lining.", fabric: "Wool Blend", fit: "Slim Fit", pattern: "Solid", suitable_for: "Smart Casual" },
-              { id: 'm6', title: 'Tailored Chino Trousers', price: 4299, mrp: 5299, category: "Men", brand: "DevTech Casuals", sizes: "S, M, L, XL", image: 'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=600&q=80&fit=crop', description: "Comfort-stretch cotton chinos tailored for a modern silhouette.", fabric: "Cotton Stretch", fit: "Regular Fit", pattern: "Solid", suitable_for: "Daily Wear" },
-              { id: 'w1', title: 'Silk Evening Gown', price: 18499, mrp: 21999, category: "Women", brand: "DevTech Haute Couture", sizes: "S, M, L", image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600&q=80&fit=crop', description: "Elegant silk evening gown with graceful drape.", fabric: "Pure Silk", fit: "Regular Fit", pattern: "Solid", suitable_for: "Party / Evening" },
-              { id: 'w2', title: 'Floral Wrap Blouse', price: 4299, mrp: 5299, category: "Women", brand: "DevTech Casuals", sizes: "S, M", image: 'https://images.unsplash.com/photo-1550614000-4b95d466f913?w=600&q=80&fit=crop', description: "Vibrant floral wrap blouse for effortless chic.", fabric: "Chiffon", fit: "Regular Fit", pattern: "Floral", suitable_for: "Casual" },
-              { id: 'w3', title: 'Classic Leather Tote', price: 14999, mrp: 17999, category: "Women", brand: "DevTech Accessories", sizes: "One Size", image: 'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&q=80&fit=crop', description: "Spacious classic leather tote bag for everyday essentials.", fabric: "Genuine Leather", fit: "Standard", pattern: "Solid", suitable_for: "Daily / Work" },
-              { id: 'w4', title: 'Stiletto Designer Heels', price: 9999, mrp: 12999, category: "Women", brand: "DevTech Footwear", sizes: "36, 37, 38", image: 'https://images.unsplash.com/photo-1532453288672-3a27e9be9efd?w=600&q=80&fit=crop', description: "High-fashion designer heels crafted for supreme comfort and poise.", fabric: "Patent Leather", fit: "Standard", pattern: "Solid", suitable_for: "Party / Formal" },
-              { id: 'w5', title: 'Cashmere Winter Trenchcoat', price: 21999, mrp: 25999, category: "Women", brand: "DevTech Haute Couture", sizes: "M, L, XL", image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&q=80&fit=crop', description: "Luxurious cashmere winter coat providing warmth without weight.", fabric: "Cashmere Wool", fit: "Regular Fit", pattern: "Solid", suitable_for: "Winter / Formal" },
-              { id: 'w6', title: 'Pleated Designer Skirt', price: 6499, mrp: 7999, category: "Women", brand: "DevTech Casuals", sizes: "S, M, L", image: 'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=600&q=80&fit=crop', description: "Accordion pleated skirt featuring fluid movement and high waist.", fabric: "Polyester Blend", fit: "Regular Fit", pattern: "Solid", suitable_for: "Casual / Smart" },
-              { id: 'k1', title: 'Organic Cotton Party Dress', price: 3499, mrp: 4299, category: "Kids", brand: "DevTech Juniors", sizes: "2-3Y, 4-5Y", image: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=600&q=80&fit=crop', description: "Soft organic cotton dress designed for playful celebrations.", fabric: "Organic Cotton", fit: "Comfort Fit", pattern: "Printed", suitable_for: "Party" },
-              { id: 'k2', title: 'Denim Adventure Overalls', price: 2899, mrp: 3499, category: "Kids", brand: "DevTech Juniors", sizes: "4-5Y, 6-7Y", image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&q=80&fit=crop', description: "Sturdy and comfortable denim overalls built for everyday adventures.", fabric: "Denim", fit: "Regular Fit", pattern: "Solid", suitable_for: "Casual / Play" },
-              { id: 'k3', title: 'Cozy Knit Winter Sweater', price: 2499, mrp: 2999, category: "Kids", brand: "DevTech Juniors", sizes: "2-3Y, 4-5Y, 6-7Y", image: 'https://images.unsplash.com/photo-1503944563220-79d8926ad5e2?w=600&q=80&fit=crop', description: "Ultra-soft knitted sweater keeping juniors cozy in chilly weather.", fabric: "Cotton Knit", fit: "Comfort Fit", pattern: "Solid", suitable_for: "Winter" },
-              { id: 'k4', title: 'Junior Explorer Sneakers', price: 3999, mrp: 4999, category: "Kids", brand: "DevTech Footwear", sizes: "11, 12, 13", image: 'https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=600&q=80&fit=crop', description: "Lightweight and non-slip sneakers for active young explorers.", fabric: "Mesh / Rubber", fit: "Standard", pattern: "Sporty", suitable_for: "Casual / Sports" }
-            ];
-            if (cleanId) {
-              liveProduct = defaultCatalog.find(p => String(p.id) === cleanId || String(p.pid) === cleanId) || null;
-            }
-            if (!liveProduct && cleanTitle) {
-              liveProduct = defaultCatalog.find(p => p.title && p.title.trim().toLowerCase() === cleanTitle) || null;
-            }
+            if (cleanId) liveProduct = defaultCatalog.find(p => String(p.id || p.pid || '') === cleanId) || null;
+            if (!liveProduct && cleanTitle) liveProduct = defaultCatalog.find(p => p.title && String(p.title).trim().toLowerCase() === cleanTitle) || null;
+          }
+
+          if (!liveProduct && cleanTitle) {
+            liveProduct = parsedAdminProducts.find(p => p.title && String(p.title).toLowerCase().includes(cleanTitle)) || null;
+            if (!liveProduct) liveProduct = allApiProducts.find(p => p.title && String(p.title).toLowerCase().includes(cleanTitle)) || null;
           }
 
           if (!liveProduct) {
-            document.getElementById('product-title').textContent = 'Product Not Found';
-            document.getElementById('product-brand').textContent = 'Please go back and select a product.';
-            document.getElementById('product-price').textContent = '';
-            document.getElementById('product-mrp').textContent = '';
-            document.getElementById('product-discount').textContent = '';
-            document.getElementById('savings-tracker').textContent = '';
-            document.getElementById('coupons-section').style.display = 'none';
+            if (parsedAdminProducts.length > 0) liveProduct = parsedAdminProducts[0];
+            else if (allApiProducts.length > 0) liveProduct = allApiProducts[0];
+            else liveProduct = defaultCatalog[0];
+          }
+
+          if (!liveProduct) {
+            setTxt('product-title', 'Product Not Found');
+            setTxt('product-brand', 'The product you are looking for is unavailable.');
+            setTxt('product-price', '');
+            setTxt('product-mrp', '');
+            setTxt('product-discount', '');
+            setTxt('savings-tracker', '');
+            setTxt('spec-fabric', '—');
+            setTxt('spec-fit', '—');
+            setTxt('spec-pattern', '—');
+            setTxt('spec-suitable', '—');
+            setTxt('product-description-text', 'No details available.');
+            const couponsSection = document.getElementById('coupons-section');
+            if (couponsSection) couponsSection.style.display = 'none';
             return;
           }
 
-          // ── Map live DB row to product object ──
           const normalizeImageUrl = window.dtfNormalizeImageUrl || ((url) => url);
-          const rawImg = liveProduct.image_url || liveProduct.image || liveProduct.imageUrl || '';
-          const imagesArray = rawImg
-            ? rawImg.split(',').map(url => normalizeImageUrl(url.trim())).filter(Boolean)
-            : ['https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop'];
+          const rawImg = String(liveProduct.image_url || liveProduct.image || liveProduct.imageUrl || '').trim();
+          let rawImagesArray = rawImg ? (window.dtfSplitImages ? window.dtfSplitImages(rawImg) : rawImg.split(',')) : [];
+          let imagesArray = rawImagesArray.map(url => normalizeImageUrl(String(url || '').trim())).filter(Boolean);
+          if (imagesArray.length === 0) imagesArray = ['https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop'];
 
-          const snippetsArray = liveProduct.title_description
-            ? liveProduct.title_description.split('.').map(s => s.trim()).filter(s => s.length > 2)
-            : (liveProduct.description ? [liveProduct.description] : ['High-quality materials tailored for longevity and everyday luxury.', 'Comfortable fit matching premium contemporary cuts.']);
+          const rawSnippets = String(liveProduct.title_description || liveProduct.titleDescription || '').trim();
+          let snippetsArray = rawSnippets ? rawSnippets.split('.').map(s => s.trim()).filter(s => s.length > 2) : [];
+          if (snippetsArray.length === 0) snippetsArray = liveProduct.description ? [String(liveProduct.description).substring(0, 80)] : ['High-quality materials tailored for longevity and everyday luxury.', 'Comfortable fit matching premium contemporary cuts.'];
 
           const product = {
-            id: liveProduct.id || liveProduct.pid,
-            title: liveProduct.title || 'DevTech Product',
-            brand: liveProduct.brand || 'DevTech Luxury',
-            price: parseFloat(liveProduct.price) || 0,
-            mrp: parseFloat(liveProduct.mrp) || Math.round(parseFloat(liveProduct.price || 0) * 1.35) || 0,
-            category: liveProduct.category,
+            id: liveProduct.id || liveProduct.pid || 'p1',
+            title: String(liveProduct.title || 'DevTech Product'),
+            brand: String(liveProduct.brand || 'DevTech Luxury'),
+            price: parseFloat(liveProduct.price || 0),
+            mrp: parseFloat(liveProduct.mrp || Math.round(parseFloat(liveProduct.price || 0) * 1.35) || 0),
+            category: String(liveProduct.category || ''),
             images: imagesArray,
             snippets: snippetsArray,
             specifications: {
-              fabric: liveProduct.fabric || 'Cotton',
-              fit: liveProduct.fit || 'Regular Fit',
-              pattern: liveProduct.pattern || 'Solid',
-              suitable: liveProduct.suitable_for || liveProduct.suitable || 'Casual'
+              fabric: String(liveProduct.fabric || 'Cotton'),
+              fit: String(liveProduct.fit || 'Regular Fit'),
+              pattern: String(liveProduct.pattern || 'Solid'),
+              suitable: String(liveProduct.suitable_for || liveProduct.suitable || liveProduct.suitableFor || 'Casual')
             },
-            description: liveProduct.description || 'No description provided.',
-            sizes: liveProduct.sizes ? (typeof liveProduct.sizes === 'string' ? liveProduct.sizes.split(',').map(s => s.trim()).filter(Boolean) : liveProduct.sizes) : ['S', 'M', 'L'],
-            sizeStock: liveProduct.size_stock || 'S:10, M:10, L:10',
+            description: String(liveProduct.description || 'No description provided.'),
+            sizes: liveProduct.sizes ? (typeof liveProduct.sizes === 'string' ? liveProduct.sizes.split(',').map(s => s.trim()).filter(Boolean) : (Array.isArray(liveProduct.sizes) ? liveProduct.sizes : ['S', 'M', 'L'])) : ['S', 'M', 'L'],
+            sizeStock: liveProduct.size_stock || liveProduct.sizeStock || 'S:10, M:10, L:10',
             couponApplicable: liveProduct.coupon_applicable !== false && liveProduct.couponApplicable !== false,
             replacementAllowed: liveProduct.replacement_allowed !== false && liveProduct.replacementAllowed !== false,
             replacementDays: liveProduct.replacement_days || liveProduct.replacementDays || 7,
             codAvailable: liveProduct.cod_available !== false && liveProduct.codAvailable !== false
           };
 
-          // ── Populate all fields ──
-          const backBtn = document.getElementById('back-to-category-btn');
-          if (backBtn && product.category) {
-            const cat = product.category.toLowerCase();
-            let catPage = '../index.html';
-            let catLabel = 'Back to Home';
-            if (cat.includes('men') && !cat.includes('women')) {
-              catPage = 'mens-wear.html';
-              catLabel = "Back to Men's Wear";
-            } else if (cat.includes('women') || cat.includes('womens')) {
-              catPage = 'womens-wear.html';
-              catLabel = "Back to Women's Wear";
-            } else if (cat.includes('kid')) {
-              catPage = 'kids-wear.html';
-              catLabel = 'Back to Kids Wear';
-            } else if (cat.includes('access') || cat.includes('bag') || cat.includes('luggage')) {
-              catPage = 'shop.html#accessories-section';
-              catLabel = 'Back to Accessories';
+          try {
+            const backBtn = document.getElementById('back-to-category-btn');
+            if (backBtn && product.category) {
+              const cat = product.category.toLowerCase();
+              let catPage = '../index.html';
+              let catLabel = 'Back to Home';
+              if (cat.includes('men') && !cat.includes('women')) {
+                catPage = 'mens-wear.html'; catLabel = "Back to Men's Wear";
+              } else if (cat.includes('women') || cat.includes('womens')) {
+                catPage = 'womens-wear.html'; catLabel = "Back to Women's Wear";
+              } else if (cat.includes('kid')) {
+                catPage = 'kids-wear.html'; catLabel = 'Back to Kids Wear';
+              } else if (cat.includes('access') || cat.includes('bag') || cat.includes('luggage')) {
+                catPage = 'shop.html#accessories-section'; catLabel = 'Back to Accessories';
+              }
+              backBtn.href = catPage;
+              backBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>${catLabel}`;
             }
+          } catch (e) {}
 
-            backBtn.href = catPage;
-            backBtn.innerHTML = `
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
-              ${catLabel}
-            `;
-          }
+          setTxt('product-brand', product.brand);
+          setTxt('product-title', product.title);
+          try {
+            const categoryPill = document.getElementById('product-category-pill');
+            if (categoryPill) categoryPill.textContent = product.category ? String(product.category).replace(/-/g, ' ') : 'DevTech Collection';
+          } catch (e) {}
 
-          document.getElementById('product-brand').textContent = product.brand;
-          document.getElementById('product-title').textContent = product.title;
-          // ── Populate and Format Prices & Discounts ──
-          const priceVal = parseFloat(product.price);
-          const mrpVal = parseFloat(product.mrp);
-
-          document.getElementById('product-price').textContent = `₹${priceVal.toLocaleString('en-IN')}`;
-
+          const priceVal = parseFloat(product.price || 0);
+          const mrpVal = parseFloat(product.mrp || 0);
+          setTxt('product-price', `₹${priceVal.toLocaleString('en-IN')}`);
           const discountBadge = document.getElementById('product-discount');
           const mrpSpan = document.getElementById('product-mrp');
           const savingsTracker = document.getElementById('savings-tracker');
 
-          if (mrpVal > priceVal) {
-            mrpSpan.style.display = 'inline';
-            mrpSpan.textContent = `₹${mrpVal.toLocaleString('en-IN')}`;
-
+          if (mrpVal > priceVal && discountBadge && mrpSpan && savingsTracker) {
+            mrpSpan.style.display = 'inline'; mrpSpan.textContent = `₹${mrpVal.toLocaleString('en-IN')}`;
             const discPercent = Math.round(((mrpVal - priceVal) / mrpVal) * 100);
-            discountBadge.style.display = 'inline';
-            discountBadge.textContent = `${discPercent}% OFF`;
-
+            discountBadge.style.display = 'inline'; discountBadge.textContent = `${discPercent}% OFF`;
             savingsTracker.style.display = 'block';
             let savingsMsg = `🎉 You save ₹${(mrpVal - priceVal).toLocaleString('en-IN')}`;
-            if (discPercent > 2) {
-              savingsMsg += ` (✨ Special Price Active — Best Price Applied!)`;
-            }
+            if (discPercent > 2) savingsMsg += ` (✨ Special Price Active — Best Price Applied!)`;
             savingsTracker.textContent = savingsMsg;
           } else {
-            mrpSpan.style.display = 'none';
-            discountBadge.style.display = 'none';
-            savingsTracker.style.display = 'none';
+            if (mrpSpan) mrpSpan.style.display = 'none';
+            if (discountBadge) discountBadge.style.display = 'none';
+            if (savingsTracker) savingsTracker.style.display = 'none';
           }
 
-          // Coupons Section Visibility
           const couponsSection = document.getElementById('coupons-section');
-          couponsSection.style.display = product.couponApplicable ? 'block' : 'none';
+          if (couponsSection) couponsSection.style.display = product.couponApplicable ? 'block' : 'none';
 
-          // Logistics Badge Rendering
-          const replacementEl = document.getElementById('logistics-replacement');
-          if (product.replacementAllowed) {
-            replacementEl.textContent = `${product.replacementDays}-Day Replacement`;
-            replacementEl.previousElementSibling.textContent = '🔄';
-          } else {
-            replacementEl.textContent = 'No Replacement';
-            replacementEl.previousElementSibling.textContent = '🚫';
-          }
-
-          const codEl = document.getElementById('logistics-cod');
-          if (product.codAvailable) {
-            codEl.textContent = 'COD Available';
-            codEl.previousElementSibling.textContent = '💵';
-          } else {
-            codEl.textContent = 'COD Not Available';
-            codEl.previousElementSibling.textContent = '🚫';
-          }
-
-          // Snippets / bullet points
-          const snippetList = document.getElementById('product-snippets');
-          snippetList.innerHTML = '';
-          product.snippets.forEach(s => {
-            const li = document.createElement('li');
-            li.textContent = s;
-            snippetList.appendChild(li);
-          });
-
-          // Specifications
-          document.getElementById('spec-fabric').textContent = product.specifications.fabric;
-          document.getElementById('spec-fit').textContent = product.specifications.fit;
-          document.getElementById('spec-pattern').textContent = product.specifications.pattern;
-          document.getElementById('spec-suitable').textContent = product.specifications.suitable;
-          document.getElementById('product-description-text').textContent = product.description;
-
-          // --- Image Carousel Logic ---
-          const imgContainer = document.getElementById('image-carousel-container');
-          const dotsContainer = document.getElementById('carousel-dots');
-          let currentSlide = 0;
-
-          function buildCarousel() {
-            imgContainer.innerHTML = '';
-            dotsContainer.innerHTML = '';
-            
-            product.images.forEach((imgSrc, idx) => {
-              const slide = document.createElement('div');
-              slide.style.minWidth = '100%';
-              slide.style.position = 'relative';
-              slide.innerHTML = `<img src="${imgSrc}" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" alt="Slide ${idx}" />`;
-              imgContainer.appendChild(slide);
-
-              const dot = document.createElement('span');
-              dot.style.width = '8px';
-              dot.style.height = '8px';
-              dot.style.borderRadius = '50%';
-              dot.style.background = idx === 0 ? '#6366f1' : '#d1d5db';
-              dot.style.cursor = 'pointer';
-              dot.addEventListener('click', () => gotoSlide(idx));
-              dotsContainer.appendChild(dot);
-            });
-          }
-
-          function gotoSlide(idx) {
-            const totalSlides = product.images.length;
-            if (idx < 0) idx = totalSlides - 1;
-            if (idx >= totalSlides) idx = 0;
-            currentSlide = idx;
-
-            imgContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
-            const dots = dotsContainer.querySelectorAll('span');
-            dots.forEach((dot, dIdx) => {
-              dot.style.background = dIdx === currentSlide ? '#6366f1' : '#d1d5db';
-            });
-          }
-
-          document.getElementById('carousel-prev').addEventListener('click', () => gotoSlide(currentSlide - 1));
-          document.getElementById('carousel-next').addEventListener('click', () => gotoSlide(currentSlide + 1));
-          buildCarousel();
-
-          // --- Share Button ---
-          document.getElementById('share-product-btn').addEventListener('click', () => {
-            if (navigator.share) {
-              navigator.share({
-                title: product.title,
-                text: `Check out ${product.title} on DevTech Fashion!`,
-                url: window.location.href
-              }).catch(console.error);
-            } else {
-              navigator.clipboard.writeText(window.location.href);
-              alert('🔗 Product link copied to clipboard!');
+          try {
+            const replacementEl = document.getElementById('logistics-replacement');
+            if (replacementEl) {
+              if (product.replacementAllowed) { replacementEl.textContent = `${product.replacementDays}-Day Replacement`; if (replacementEl.previousElementSibling) replacementEl.previousElementSibling.textContent = '🔄'; }
+              else { replacementEl.textContent = 'No Replacement'; if (replacementEl.previousElementSibling) replacementEl.previousElementSibling.textContent = '🚫'; }
             }
+            const codEl = document.getElementById('logistics-cod');
+            if (codEl) {
+              if (product.codAvailable) { codEl.textContent = 'COD Available'; if (codEl.previousElementSibling) codEl.previousElementSibling.textContent = '💵'; }
+              else { codEl.textContent = 'COD Not Available'; if (codEl.previousElementSibling) codEl.previousElementSibling.textContent = '🚫'; }
+            }
+          } catch (e) {}
+
+          try {
+            const snippetList = document.getElementById('product-snippets');
+            if (snippetList) {
+              snippetList.innerHTML = '';
+              product.snippets.forEach(s => { const li = document.createElement('li'); li.textContent = s; snippetList.appendChild(li); });
+            }
+          } catch (e) {}
+
+          setTxt('spec-fabric', product.specifications.fabric);
+          setTxt('spec-fit', product.specifications.fit);
+          setTxt('spec-pattern', product.specifications.pattern);
+          setTxt('spec-suitable', product.specifications.suitable);
+          setTxt('product-description-text', product.description);
+
+          try {
+            const imgContainer = document.getElementById('image-carousel-container');
+            const dotsContainer = document.getElementById('carousel-dots');
+            const thumbnailStrip = document.getElementById('thumbnail-strip');
+            let currentSlide = 0;
+            const lbModal = document.getElementById('lightbox-modal');
+            const lbImg = document.getElementById('lightbox-img');
+            const lbCloseBtn = document.getElementById('lightbox-close');
+            const deepInspectTriggerBtn = document.getElementById('deep-inspect-trigger-btn');
+            function openLightbox(src) { if (lbModal && lbImg) { lbImg.src = src; lbModal.style.display = 'flex'; } }
+            if (lbCloseBtn && lbModal) { lbCloseBtn.onclick = () => { lbModal.style.display = 'none'; }; lbModal.onclick = (e) => { if (e.target === lbModal) lbModal.style.display = 'none'; }; }
+            if (deepInspectTriggerBtn) deepInspectTriggerBtn.onclick = () => { openLightbox(product.images[currentSlide] || product.images[0]); };
+            function buildCarousel() {
+              if (!imgContainer) return; imgContainer.innerHTML = ''; if (dotsContainer) dotsContainer.innerHTML = ''; if (thumbnailStrip) thumbnailStrip.innerHTML = '';
+              product.images.forEach((imgSrc, idx) => {
+                const slide = document.createElement('div'); slide.className = 'gallery-slide'; slide.innerHTML = `<img src="${imgSrc}" alt="${product.title} image ${idx + 1}" style="cursor: zoom-in;" />`;
+                slide.querySelector('img').onclick = () => openLightbox(imgSrc); imgContainer.appendChild(slide);
+                if (thumbnailStrip) { const thumb = document.createElement('button'); thumb.type = 'button'; thumb.className = `thumb-btn${idx === 0 ? ' active' : ''}`; thumb.innerHTML = `<img src="${imgSrc}" alt="${product.title} thumbnail ${idx + 1}" />`; thumb.onclick = () => gotoSlide(idx); thumbnailStrip.appendChild(thumb); }
+                if (dotsContainer) { const dot = document.createElement('span'); dot.style.width = '8px'; dot.style.height = '8px'; dot.style.borderRadius = '50%'; dot.style.background = idx === 0 ? '#6366f1' : '#d1d5db'; dot.style.cursor = 'pointer'; dot.onclick = () => gotoSlide(idx); dotsContainer.appendChild(dot); }
+              });
+            }
+            function gotoSlide(idx) {
+              const total = product.images.length; if (idx < 0) idx = total - 1; if (idx >= total) idx = 0; currentSlide = idx;
+              if (imgContainer) imgContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
+              if (dotsContainer) dotsContainer.querySelectorAll('span').forEach((d, i) => { d.style.background = i === currentSlide ? '#6366f1' : '#d1d5db'; });
+              if (thumbnailStrip) thumbnailStrip.querySelectorAll('.thumb-btn').forEach((t, i) => { t.classList.toggle('active', i === currentSlide); if (i === currentSlide) t.scrollIntoView({ block: 'nearest', inline: 'nearest' }); });
+            }
+            addEv('carousel-prev', 'click', () => gotoSlide(currentSlide - 1));
+            addEv('carousel-next', 'click', () => gotoSlide(currentSlide + 1));
+            buildCarousel();
+          } catch (e) { console.warn('Carousel build error:', e); }
+
+          addEv('share-product-btn', 'click', () => {
+            if (navigator.share) navigator.share({ title: product.title, text: `Check out ${product.title} on DevTech Fashion!`, url: window.location.href });
+            else { navigator.clipboard.writeText(window.location.href); alert('🔗 Link copied!'); }
           });
 
-          // --- Wishlist Toggle ---
           const wishlistBtn = document.getElementById('wishlist-toggle-btn');
           function checkWishlistState() {
-            try {
-              const wish = JSON.parse(localStorage.getItem('dtf_wishlist')) || [];
-              const exists = wish.some(w => w.title === product.title);
-              wishlistBtn.textContent = exists ? '💖' : '🤍';
-            } catch {
-              wishlistBtn.textContent = '🤍';
-            }
+            if (!wishlistBtn) return;
+            try { const wish = JSON.parse(localStorage.getItem('dtf_wishlist')) || []; const exists = wish.some(w => w && w.title === product.title); wishlistBtn.textContent = exists ? '💖' : '🤍'; }
+            catch { wishlistBtn.textContent = '🤍'; }
           }
-
-          wishlistBtn.addEventListener('click', () => {
-            const wish = JSON.parse(localStorage.getItem('dtf_wishlist')) || [];
-            const idx = wish.findIndex(w => w.title === product.title);
-            
-            if (idx > -1) {
-              wish.splice(idx, 1);
-              alert('💔 Removed from Wishlist!');
-            } else {
-              wish.push({
-                title: product.title,
-                price: product.price,
-                image: product.images[0]
-              });
-              alert('💖 Added to Wishlist!');
-            }
-            localStorage.setItem('dtf_wishlist', JSON.stringify(wish));
-            window.dispatchEvent(new Event('dtf:wishlist:updated'));
+          if (wishlistBtn) {
+            wishlistBtn.onclick = () => {
+              const wish = JSON.parse(localStorage.getItem('dtf_wishlist')) || []; const idx = wish.findIndex(w => w && w.title === product.title);
+              if (idx > -1) { wish.splice(idx, 1); alert('💔 Removed!'); } else { wish.push({ title: product.title, price: product.price, image: product.images[0] }); alert('💖 Added!'); }
+              localStorage.setItem('dtf_wishlist', JSON.stringify(wish)); window.dispatchEvent(new Event('dtf:wishlist:updated')); checkWishlistState();
+            };
             checkWishlistState();
-          });
-          checkWishlistState();
-
-          // --- Stock Urgency Signal & size selection ---
-          const urgencyBadge = document.getElementById('stock-urgency-badge');
-          
-          // Parse stock availability
-          const stockMap = {};
-          const stockPairs = product.sizeStock.split(',');
-          stockPairs.forEach(pair => {
-            const parts = pair.split(':');
-            if (parts.length === 2) {
-              stockMap[parts[0].trim().toUpperCase()] = parseInt(parts[1].trim(), 10) || 0;
-            }
-          });
-
-          // Set initial low stock warning for the first size that is in stock
-          let selectedSize = null;
-          
-          // --- Size Selector active toggle ---
-          const sizeContainer = document.querySelector('.size-btn').parentNode;
-          // Build custom sizes list from product sizes
-          sizeContainer.innerHTML = '';
-          const pSizes = (product.sizes || ['S', 'M', 'L']).map(s => String(s).trim()).filter(Boolean);
-          
-          pSizes.forEach((s, idx) => {
-            const sUpper = s.toUpperCase();
-            const stock = (stockMap[sUpper] !== undefined) ? stockMap[sUpper] : 10;
-            const btn = document.createElement('button');
-            btn.className = 'size-btn';
-            btn.textContent = s;
-            
-            if (stock <= 0) {
-              btn.disabled = true;
-              btn.style.cssText = `width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid var(--glass-border); background-color: rgba(0,0,0,0.02); color: var(--text-muted); font-weight: 500; font-size: 13px; cursor: not-allowed; opacity: 0.4; text-decoration: line-through; position: relative;`;
-              btn.innerHTML = `${s}<span style="position: absolute; top: 50%; left: 0; right: 0; height: 1.5px; background: #ef4444; transform: rotate(-45deg);"></span>`;
-            } else {
-              // Select the first in-stock size as default
-              const isDefaultSize = (selectedSize === null);
-              if (isDefaultSize) {
-                selectedSize = sUpper;
-                // Set initial status badge according to stock
-                if (stock > 0 && stock <= 3) {
-                  urgencyBadge.textContent = `⚠️ Only ${stock} left in stock!`;
-                  urgencyBadge.style.color = '#f97316';
-                  urgencyBadge.style.background = 'rgba(249,115,22,0.1)';
-                } else {
-                  urgencyBadge.textContent = '✨ Special Price Active';
-                  urgencyBadge.style.color = '#10b981';
-                  urgencyBadge.style.background = 'rgba(16,185,129,0.1)';
-                }
-              }
-
-              btn.style.cssText = `width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid ${isDefaultSize ? '#6366f1' : 'var(--glass-border)'}; background-color: ${isDefaultSize ? '#6366f1' : 'var(--bg-elevated)'}; color: ${isDefaultSize ? '#ffffff' : 'var(--text-secondary)'}; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s;`;
-              
-              btn.addEventListener('click', () => {
-                selectedSize = sUpper;
-                sizeContainer.querySelectorAll('button').forEach(b => {
-                  if (!b.disabled) {
-                    b.style.borderColor = 'var(--glass-border)';
-                    b.style.backgroundColor = 'var(--bg-elevated)';
-                    b.style.color = 'var(--text-secondary)';
-                  }
-                });
-                btn.style.borderColor = '#6366f1';
-                btn.style.backgroundColor = '#6366f1';
-                btn.style.color = '#ffffff';
-
-                // Update urgency status badge based on selected size stock
-                if (stock > 0 && stock <= 3) {
-                  urgencyBadge.textContent = `⚠️ Only ${stock} left in stock!`;
-                  urgencyBadge.style.color = '#f97316';
-                  urgencyBadge.style.background = 'rgba(249,115,22,0.1)';
-                } else {
-                  urgencyBadge.textContent = '✨ Special Price Active';
-                  urgencyBadge.style.color = '#10b981';
-                  urgencyBadge.style.background = 'rgba(16,185,129,0.1)';
-                }
-              });
-            }
-            sizeContainer.appendChild(btn);
-          });
-
-          if (selectedSize === null) {
-            urgencyBadge.textContent = '🚫 Out of Stock';
-            urgencyBadge.style.color = '#ef4444';
-            urgencyBadge.style.background = 'rgba(239,68,68,0.1)';
-            
-            const addBtn = document.getElementById('add-to-cart-cta');
-            addBtn.disabled = true;
-            addBtn.style.background = '#6b7280';
-            addBtn.style.boxShadow = 'none';
-            addBtn.textContent = '🚫 Out of Stock';
-            
-            const buyBtn = document.getElementById('buy-now-cta');
-            if (buyBtn) {
-              buyBtn.disabled = true;
-              buyBtn.style.background = '#9ca3af';
-              buyBtn.style.boxShadow = 'none';
-              buyBtn.style.cursor = 'not-allowed';
-              buyBtn.textContent = '🚫 Out of Stock';
-            }
           }
 
-          // --- Coupons Toggle & apply ---
+          const urgencyBadge = document.getElementById('stock-urgency-badge');
+          const stockMap = {};
+          const rawStockStr = product.sizeStock;
+          if (typeof rawStockStr === 'object' && rawStockStr !== null) Object.keys(rawStockStr).forEach(k => { if (k) stockMap[String(k).toUpperCase()] = parseInt(rawStockStr[k], 10) || 0; });
+          else if (typeof rawStockStr === 'string') rawStockStr.split(',').forEach(p => { const pts = p.split(':'); if (pts.length === 2) stockMap[pts[0].trim().toUpperCase()] = parseInt(pts[1].trim(), 10) || 0; });
+
+          let selectedSize = null;
+          const sizeContainer = document.querySelector('.size-selector');
+          if (sizeContainer) {
+            sizeContainer.innerHTML = '';
+            (product.sizes || ['S', 'M', 'L']).map(s => String(s).trim()).filter(Boolean).forEach(s => {
+              const sUpper = s.toUpperCase(); const stock = (stockMap[sUpper] !== undefined) ? stockMap[sUpper] : 10;
+              const btn = document.createElement('button'); btn.className = 'size-btn'; btn.textContent = s;
+              if (stock <= 0) { btn.disabled = true; btn.style.opacity = '0.4'; btn.innerHTML = `${s}<span style="position: absolute; top: 50%; left: 0; right: 0; height: 1.5px; background: #ef4444; transform: rotate(-45deg);"></span>`; }
+              else {
+                if (selectedSize === null) { selectedSize = sUpper; if (urgencyBadge) { urgencyBadge.textContent = stock <= 3 ? `⚠️ Only ${stock} left!` : '✨ Special Price Active'; urgencyBadge.style.color = stock <= 3 ? '#f97316' : '#10b981'; urgencyBadge.style.background = stock <= 3 ? 'rgba(249,115,22,0.1)' : 'rgba(16,185,129,0.1)'; } btn.classList.add('active'); }
+                btn.onclick = () => { selectedSize = sUpper; sizeContainer.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); if (urgencyBadge && stock <= 3) { urgencyBadge.textContent = `⚠️ Only ${stock} left!`; urgencyBadge.style.color = '#f97316'; } };
+              }
+              sizeContainer.appendChild(btn);
+            });
+          }
+
+          if (selectedSize === null && urgencyBadge) { urgencyBadge.textContent = '🚫 Out of Stock'; urgencyBadge.style.color = '#ef4444'; urgencyBadge.style.background = 'rgba(239,68,68,0.1)'; const addBtn = document.getElementById('add-to-cart-cta'); if (addBtn) { addBtn.disabled = true; addBtn.textContent = '🚫 Out of Stock'; } const buyBtn = document.getElementById('buy-now-cta'); if (buyBtn) { buyBtn.disabled = true; buyBtn.textContent = '🚫 Out of Stock'; } }
+
           const couponsBtn = document.getElementById('coupons-dropdown-btn');
           const couponsList = document.getElementById('coupons-list');
-          const couponsChevron = document.getElementById('coupons-chevron');
-          
-          couponsBtn.addEventListener('click', () => {
-            const isCollapsed = couponsList.style.display === 'none';
-            couponsList.style.display = isCollapsed ? 'flex' : 'none';
-            couponsChevron.textContent = isCollapsed ? '▲' : '▼';
-          });
-
+          if (couponsBtn && couponsList) {
+            couponsBtn.onclick = () => { const collapsed = couponsList.style.display === 'none'; couponsList.style.display = collapsed ? 'flex' : 'none'; if (document.getElementById('coupons-chevron')) document.getElementById('coupons-chevron').textContent = collapsed ? '▲' : '▼'; };
+          }
           let couponApplied = false;
           document.querySelectorAll('.apply-coupon-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-              if (couponApplied) {
-                alert('Promo code already applied!');
-                return;
-              }
-              const discountAmt = Math.round(product.price * 0.2); // 20% discount
-              const finalPrice = product.price - discountAmt;
-              document.getElementById('product-price').textContent = `₹${finalPrice.toLocaleString('en-IN')}`;
-              document.getElementById('savings-tracker').textContent = `🎉 Coupon DEVTECH20 applied! Saved additional ₹${discountAmt.toLocaleString('en-IN')}`;
-              couponApplied = true;
-              btn.textContent = 'Applied';
-              btn.style.background = '#10b981';
-            });
-          });
-
-          // --- Add to Cart CTA ---
-          function buildCartItem() {
-            if (!selectedSize) {
-              alert('Please select an available size before continuing.');
-              return null;
-            }
-            return {
-              id: product.id,
-              pid: product.id,
-              title: product.title,
-              price: product.price,
-              image: product.images[0],
-              size: selectedSize,
-              quantity: 1
+            btn.onclick = () => {
+              if (couponApplied) { alert('Promo code already applied!'); return; }
+              const disc = Math.round(product.price * 0.2); setTxt('product-price', `₹${(product.price - disc).toLocaleString('en-IN')}`); setTxt('savings-tracker', `🎉 Coupon applied! Saved ₹${disc.toLocaleString('en-IN')}`); couponApplied = true; btn.textContent = 'Applied'; btn.style.background = '#10b981';
             };
-          }
+          });
 
           function addProductToCart() {
-            const cartItem = buildCartItem();
-            if (!cartItem) return false;
+            if (!selectedSize) { alert('Please select a size.'); return false; }
             const cart = JSON.parse(localStorage.getItem('dtf_cart')) || [];
-            const existing = cart.findIndex(c => String(c.id || c.pid || c.title) === String(cartItem.id || cartItem.title) && String(c.size || '') === String(cartItem.size || ''));
-            
-            if (existing > -1) {
-              cart[existing].quantity = (cart[existing].quantity || 1) + 1;
-            } else {
-              cart.push(cartItem);
-            }
-
-            localStorage.setItem('dtf_cart', JSON.stringify(cart));
-            window.dispatchEvent(new Event('dtf:cart:updated'));
-            return true;
+            const existing = cart.findIndex(c => c && String(c.id || c.title) === String(product.id) && String(c.size) === String(selectedSize));
+            if (existing > -1) cart[existing].quantity = (cart[existing].quantity || 1) + 1;
+            else cart.push({ id: product.id, title: product.title, price: product.price, image: product.images[0], size: selectedSize, quantity: 1 });
+            localStorage.setItem('dtf_cart', JSON.stringify(cart)); window.dispatchEvent(new Event('dtf:cart:updated')); return true;
           }
+          addEv('add-to-cart-cta', 'click', () => { if (addProductToCart()) alert('🛒 Added to bag!'); });
+          addEv('buy-now-cta', 'click', () => { if (addProductToCart()) window.location.href = 'cart.html'; });
 
-          document.getElementById('add-to-cart-cta').addEventListener('click', () => {
-            if (!addProductToCart()) return;
-            alert(`🛒 ${product.title} added to checkout bag!`);
-          });
-
-          // --- Buy Now CTA ---
-          const buyNowBtn = document.getElementById('buy-now-cta');
-          if (buyNowBtn) {
-            buyNowBtn.addEventListener('click', () => {
-              if (!addProductToCart()) return;
-              window.location.href = 'cart.html';
-            });
-          }
-
-          // --- Recommender Similar items ---
-          const recommender = document.getElementById('recommendations-carousel');
-          recommender.innerHTML = '';
-          
-          // Pull live similar items if possible
-          let localAlternates = [];
           try {
-            const allRes = await fetch(apiUrl('/products?_t=' + Date.now()));
-            const allData = await allRes.json();
-            if (allRes.ok && allData.success && allData.products.length > 0) {
-              localAlternates = allData.products.map(lp => ({
-                id: lp.id,
-                title: lp.title,
-                price: parseFloat(lp.price),
-                images: (lp.image_url || lp.image || '').split(',').map(u => normalizeImageUrl(u.trim())).filter(Boolean)
-              }));
+            const recommender = document.getElementById('recommendations-carousel');
+            if (recommender) {
+              recommender.innerHTML = '';
+              const catKey = (cat) => { const c = String(cat).toLowerCase(); return c.includes('women') ? 'womens' : (c.includes('men') ? 'mens' : (c.includes('kid') ? 'kids' : c)); };
+              let localAlternates = [];
+              try {
+                const res = await fetch(apiUrl('/products?_t=' + Date.now()));
+                const data = await res.json();
+                if (res.ok && data.success) localAlternates = data.products.map(lp => ({ id: lp.id, title: lp.title, brand: lp.brand, category: lp.category, price: parseFloat(lp.price), images: [(lp.image || '').split(',')[0]] }));
+              } catch (e) {}
+              const currentCat = catKey(product.category);
+              let alts = localAlternates.filter(p => String(p.id) !== String(product.id)).sort((a,b) => (catKey(a.category) === currentCat ? 0 : 1) - (catKey(b.category) === currentCat ? 0 : 1)).slice(0, 8);
+              alts.forEach(p => {
+                const item = document.createElement('div'); item.className = 'similar-product-card';
+                item.innerHTML = `<div class="similar-product-image"><img src="${p.images[0]}" /></div><div class="similar-product-info"><span>${p.brand}</span><h4>${p.title}</h4><p><strong>₹${p.price.toLocaleString('en-IN')}</strong></p></div>`;
+                item.onclick = () => window.location.href = `product-details.html?id=${encodeURIComponent(p.id)}&title=${encodeURIComponent(p.title)}`;
+                recommender.appendChild(item);
+              });
             }
-          } catch {}
-
-          const alternates = localAlternates.filter(p => p.title !== product.title).slice(0, 5);
-          alternates.forEach(p => {
-            const item = document.createElement('div');
-            item.style.minWidth = '180px';
-            item.style.background = 'rgba(255,255,255,0.45)';
-            item.style.border = '1.5px solid rgba(255,255,255,0.6)';
-            item.style.borderRadius = '16px';
-            item.style.overflow = 'hidden';
-            item.style.cursor = 'pointer';
-            item.style.padding = '12px';
-            item.style.display = 'flex';
-            item.style.flexDirection = 'column';
-            item.style.gap = '8px';
-            item.style.boxShadow = '0 8px 32px rgba(0,0,0,0.02)';
-
-            item.innerHTML = `
-              <div style="position: relative; padding-top: 120%; border-radius: 10px; overflow: hidden; background: #fafafa;">
-                <img src="${p.images[0]}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;" alt="${p.title}" />
-              </div>
-              <h4 style="margin: 0; font-size: 13px; font-weight: 700; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.title}</h4>
-              <p style="margin: 0; font-size: 13px; font-weight: 600; color: #4f46e5;">₹${p.price.toLocaleString('en-IN')}</p>
-            `;
-
-            item.addEventListener('click', () => {
-              window.location.href = `product-details.html?id=${p.id}&title=${encodeURIComponent(p.title)}`;
-            });
-
-            recommender.appendChild(item);
-          });
+          } catch (e) { console.warn('Recommender error:', e); }
         }
 
-        // --- Rating Button Scroll ---
-        document.getElementById('rating-scroll-btn').addEventListener('click', () => {
-          document.getElementById('ratings-reviews-section').scrollIntoView({ behavior: 'smooth' });
-        });
-
-        // --- Pincode / Location Display & expected delivery prediction ---
-        const locationDisplayPanel = document.getElementById('location-display-panel');
-        const deliveryLocationTitle = document.getElementById('delivery-location-title');
-        const deliveryLocationSubtitle = document.getElementById('delivery-location-subtitle');
-        const pincodeResp = document.getElementById('pincode-response');
-
-        function calculateExpectedDelivery(pincode) {
-          if (!/^\d{6}$/.test(pincode)) {
-            pincodeResp.textContent = '❌ Invalid PIN code';
-            pincodeResp.style.color = '#ef4444';
-            pincodeResp.style.display = 'block';
-            return;
-          }
-          const delDate = new Date();
-          delDate.setDate(delDate.getDate() + 3);
-          const formattedDate = delDate.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
-          pincodeResp.textContent = `Expected delivery by ${formattedDate}`;
-          pincodeResp.style.color = '#10b981';
-          pincodeResp.style.display = 'block';
-        }
-
-        // Load active location
+        addEv('rating-scroll-btn', 'click', () => { const s = document.getElementById('ratings-reviews-section'); if (s) s.scrollIntoView({ behavior: 'smooth' }); });
         function loadActiveLocation() {
-          const activeAddrRaw = localStorage.getItem('dtf_active_address');
-          if (activeAddrRaw) {
-            try {
-              const addr = JSON.parse(activeAddrRaw);
-              if (addr && addr.pincode) {
-                // Update display panel
-                const label = addr.addressType && addr.addressType !== 'guest' ? `Delivering to: ${addr.addressType.toUpperCase()}` : 'Delivering to';
-                deliveryLocationTitle.textContent = `${label} - ${addr.pincode}`;
-                
-                const desc = addr.formattedAddress || `${addr.city || ''}, ${addr.state || ''}`;
-                deliveryLocationSubtitle.textContent = desc.length > 40 ? desc.substring(0, 37) + '...' : desc;
-                
-                calculateExpectedDelivery(addr.pincode);
-              }
-            } catch (err) {
-              console.warn('Failed to parse active address:', err);
-            }
-          } else {
-            deliveryLocationTitle.textContent = 'Select Delivery Location';
-            deliveryLocationSubtitle.textContent = 'Choose address to check delivery speed';
-            pincodeResp.style.display = 'none';
-          }
+          const addr = JSON.parse(localStorage.getItem('dtf_active_address') || 'null');
+          const t = document.getElementById('delivery-location-title'), s = document.getElementById('delivery-location-subtitle');
+          if (addr && addr.pincode) { if (t) t.textContent = `Delivering to - ${addr.pincode}`; if (s) s.textContent = addr.formattedAddress || ''; }
+          else { if (t) t.textContent = 'Select Location'; if (s) s.textContent = 'Choose address'; }
         }
-
-        // --- React Address Picker Dev Loader ---
-        fetch('http://localhost:3000/src/main.tsx')
-          .then(() => {
-            const preamble = document.createElement('script');
-            preamble.type = 'module';
-            preamble.innerHTML = `
-              import RefreshRuntime from 'http://localhost:3000/@react-refresh'
-              RefreshRuntime.injectIntoGlobalHook(window)
-              window.$RefreshReg$ = () => {}
-              window.$RefreshSig$ = () => (type) => type
-              window.__vite_plugin_react_preamble_installed__ = true
-            `;
-            document.head.appendChild(preamble);
-
-            const client = document.createElement('script');
-            client.type = 'module';
-            client.src = 'http://localhost:3000/@vite/client';
-            document.body.appendChild(client);
-
-            const main = document.createElement('script');
-            main.type = 'module';
-            main.src = 'http://localhost:3000/src/main.tsx';
-            document.body.appendChild(main);
-          })
-          .catch(() => {
-            console.info('React Address Picker dev server not running.');
-          });
-
-        // Listen for address changes from header
         window.addEventListener('dtf:address:updated', loadActiveLocation);
         loadActiveLocation();
-
-        // Start — await so errors surface
-        try {
-          await initProductDetails();
-        } catch (err) {
-          console.error('[ProductDetails] Fatal error:', err);
-          document.getElementById('product-title').textContent = 'Error Loading Product';
-          document.getElementById('product-brand').textContent = err.message;
-          document.getElementById('product-snippets').innerHTML = '';
-        }
+        window.addEventListener('storage', () => initProductDetails().catch(() => {}));
+        try { await initProductDetails(); } catch (err) { setTxt('product-title', 'Error Loading Product'); setTxt('product-brand', err.message); }
       });
     </script>
+    <!-- Fullscreen Lightbox Image Inspector -->
+    <div id="lightbox-modal">
+      <button id="lightbox-close" aria-label="Close image inspect modal">✕</button>
+      <img id="lightbox-img" src="" alt="HD Deep View Product Image" />
+    </div>
   </body>
 </html>

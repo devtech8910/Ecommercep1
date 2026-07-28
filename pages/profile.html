@@ -413,6 +413,7 @@
             modalError.textContent = err.message;
             modalError.style.display = 'block';
           })
+          .finally(() => {
             confirmBtn.disabled = false;
             confirmBtn.textContent = 'Confirm & Save Changes';
           });

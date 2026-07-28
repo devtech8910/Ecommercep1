@@ -117,17 +117,8 @@
     </header>
 
     <main style="padding-top: 100px;">
-      <!-- Hero -->
-      <section style="text-align: center; padding: 40px 20px 20px;">
-        <div class="container">
-          <span style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: #c084fc; display: block; margin-bottom: 6px;">Haute Couture</span>
-          <h1 style="font-family: var(--font-serif); font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 400; color: #ffffff; margin: 0 0 12px;">Women's Collection</h1>
-          <p style="color: #94a3b8; max-width: 620px; margin: 0 auto; font-size: 1.05rem; line-height: 1.6;">Timeless grace and modern edge. Discover exquisite dresses, elegant tops, and breathtaking accessories.</p>
-        </div>
-      </section>
-
-      <!-- Control Bar with Filter Trigger Button & Sort By Select -->
-      <section class="container">
+      <!-- Control Bar (Placed directly below search bar by default) -->
+      <section class="container" style="padding-top: 12px; padding-bottom: 8px;">
         <div class="cat-controls-bar">
           
           <!-- Left: Filter Trigger Button -->
@@ -156,6 +147,18 @@
           </div>
 
         </div>
+      </section>
+
+      <!-- Hero -->
+      <section class="hero-banner-section" style="text-align: center; padding: 20px 20px 20px;">
+        <div class="container">
+          <span style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: #c084fc; display: block; margin-bottom: 6px;">Haute Couture</span>
+          <h1 style="font-family: var(--font-serif); font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 400; color: #ffffff; margin: 0 0 12px;">Women's Collection</h1>
+          <p style="color: #94a3b8; max-width: 620px; margin: 0 auto; font-size: 1.05rem; line-height: 1.6;">Timeless grace and modern edge. Discover exquisite dresses, elegant tops, and breathtaking accessories.</p>
+        </div>
+      </section>
+
+      <section class="container">
 
         <!-- Products Grid -->
         <div id="category-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; padding-bottom: 60px;">
@@ -369,7 +372,8 @@
         }
 
         function mapWomensProduct(p) {
-          const imageRaw = (p.image_url || p.image || p.imageUrl || '').split(',')[0].trim();
+          const rawImages = window.dtfSplitImages ? window.dtfSplitImages(p.image_url || p.image || p.imageUrl || '') : (p.image_url || p.image || p.imageUrl || '').split(',');
+          const imageRaw = rawImages[0] ? rawImages[0].trim() : '';
           return {
             id: p.id || p.pid || ('w_' + Math.random()),
             title: p.title,
@@ -382,27 +386,39 @@
           };
         }
 
-        try {
-          const res = await fetch(apiUrl('/products'));
-          const data = await res.json();
-          const fetched = data.products || data || [];
-          if (res.ok && Array.isArray(fetched) && fetched.length > 0) {
-            localStorage.setItem('dtf_admin_products', JSON.stringify(fetched));
-            allProducts = fetched.filter(p => categoryKey(p.category) === 'womens').map(mapWomensProduct);
-          }
-        } catch (e) {}
+        function loadWomensCatalog() {
+          const storedRaw = localStorage.getItem('dtf_admin_products');
+          let localAdminList = [];
+          try { localAdminList = JSON.parse(storedRaw) || []; } catch(e) {}
 
-        if (allProducts.length === 0) {
-          const storedAdminProducts = localStorage.getItem('dtf_admin_products');
-          if (storedAdminProducts !== null) {
-            try {
-              const parsed = JSON.parse(storedAdminProducts);
-              if (Array.isArray(parsed)) {
-                allProducts = parsed.filter(p => categoryKey(p.category) === 'womens').map(mapWomensProduct);
+          fetch(apiUrl('/products'))
+            .then(res => res.json())
+            .then(data => {
+              const fetched = data.products || data || [];
+              if (Array.isArray(fetched)) {
+                const combined = [...localAdminList];
+                fetched.forEach(fp => {
+                  const fpId = String(fp.id || fp.pid || fp.title || '').toLowerCase();
+                  if (!combined.some(cp => String(cp.id || cp.pid || cp.title || '').toLowerCase() === fpId)) {
+                    combined.push(fp);
+                  }
+                });
+                localStorage.setItem('dtf_admin_products', JSON.stringify(combined));
+                allProducts = combined.filter(p => categoryKey(p.category) === 'womens').map(mapWomensProduct);
+              } else {
+                allProducts = localAdminList.filter(p => categoryKey(p.category) === 'womens').map(mapWomensProduct);
               }
-            } catch (e) {}
-          }
+              filterAndSortProducts();
+            })
+            .catch(() => {
+              allProducts = localAdminList.filter(p => categoryKey(p.category) === 'womens').map(mapWomensProduct);
+              filterAndSortProducts();
+            });
         }
+
+        window.addEventListener('storage', loadWomensCatalog);
+        window.addEventListener('dtf:admin:products:updated', loadWomensCatalog);
+        loadWomensCatalog();
 
         const brandContainer = document.getElementById('brands-checkbox-container');
         const brandsSet = new Set(allProducts.map(p => p.brand).filter(Boolean));
@@ -518,7 +534,8 @@
             card.className = 'product-card-wow';
             card.style.cssText = 'display: flex; flex-direction: column; background: #141422; border: 1.5px solid rgba(255, 255, 255, 0.08); border-radius: 18px; overflow: hidden; position: relative; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(0,0,0,0.2);';
 
-            const detailsUrl = `product-details.html?id=${p.id}&title=${encodeURIComponent(p.title)}`;
+            const prodId = p.id || p.pid || '';
+            const detailsUrl = `product-details.html?id=${encodeURIComponent(prodId)}&title=${encodeURIComponent(p.title || '')}`;
 
             const priceVal = parseFloat(p.price) || 0;
             const mrpVal = parseFloat(p.mrp) || Math.round(priceVal * 1.35);
@@ -528,7 +545,7 @@
             const wishlist = JSON.parse(localStorage.getItem('dtf_wishlist') || '[]');
             const isWishlisted = wishlist.some(item => item.title === p.title);
 
-            const imgSrc = (window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl((p.image || p.image_url || p.imageUrl || '').split(',')[0].trim()) : (p.image || p.image_url || p.imageUrl || '').split(',')[0].trim()) || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop';
+            const imgSrc = p.image || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop';
             card.innerHTML = `
               <div style="position: relative; width: 100%; padding-top: 110%; overflow: hidden; background: #0a0a14;">
                 <a href="${detailsUrl}" style="position: absolute; inset: 0; display: block;">

@@ -147,28 +147,8 @@
     </header>
 
     <main style="padding-top: 100px;">
-      <!-- Hero Banner & Marketplace Quick Nav -->
-      <section style="text-align: center; padding: 40px 20px 24px;">
-        <div class="container">
-          <span style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: #818cf8; display: block; margin-bottom: 6px;">All-In-One Atelier Marketplace</span>
-          <h1 style="font-family: var(--font-serif); font-size: clamp(2.5rem, 6vw, 4.2rem); font-weight: 400; color: #ffffff; margin: 0 0 12px;">Grand Fashion Marketplace</h1>
-          <p style="color: #94a3b8; max-width: 650px; margin: 0 auto 24px; font-size: 1.08rem; line-height: 1.6;">Explore top-selling collections across Men's Wear, Women's Wear, Kids' Fashion, and Luxury Accessories.</p>
-
-          <!-- Category Quick Pills -->
-          <div style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
-            <a href="#bestsellers-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">🔥 Best Sellers</a>
-            <a href="#mens-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">♂️ Men's Wear</a>
-            <a href="#womens-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">♀️ Women's Wear</a>
-            <a href="#kids-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">★ Kids Wear</a>
-            <a href="#accessories-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">⌚ Accessories</a>
-          </div>
-        </div>
-      </section>
-
-      <!-- Main Marketplace Catalog Section with Sticky Controls Bar -->
-      <section class="container" style="padding-bottom: 60px;">
-        
-        <!-- Sticky Control Bar with Filter Trigger Button & Sort By Select -->
+      <!-- Controls Bar (Placed directly below search bar by default) -->
+      <div class="container" style="padding-top: 12px; padding-bottom: 8px;">
         <div class="cat-controls-bar">
           
           <!-- Left: Filter Trigger Button -->
@@ -197,6 +177,28 @@
           </div>
 
         </div>
+      </div>
+
+      <!-- Hero Banner & Marketplace Quick Nav -->
+      <section class="hero-banner-section" style="text-align: center; padding: 20px 20px 24px;">
+        <div class="container">
+          <span style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: #818cf8; display: block; margin-bottom: 6px;">All-In-One Atelier Marketplace</span>
+          <h1 style="font-family: var(--font-serif); font-size: clamp(2.5rem, 6vw, 4.2rem); font-weight: 400; color: #ffffff; margin: 0 0 12px;">Grand Fashion Marketplace</h1>
+          <p style="color: #94a3b8; max-width: 650px; margin: 0 auto 24px; font-size: 1.08rem; line-height: 1.6;">Explore top-selling collections across Men's Wear, Women's Wear, Kids' Fashion, and Luxury Accessories.</p>
+
+          <!-- Category Quick Pills -->
+          <div style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
+            <a href="#bestsellers-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">🔥 Best Sellers</a>
+            <a href="#mens-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">♂️ Men's Wear</a>
+            <a href="#womens-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: gap: 6px;">♀️ Women's Wear</a>
+            <a href="#kids-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">★ Kids Wear</a>
+            <a href="#accessories-section" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">⌚ Accessories</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main Marketplace Catalog Section -->
+      <section class="container" style="padding-bottom: 60px;">
 
         <!-- 1. 🔥 SECTION: BEST SELLING PRODUCTS (Horizontal Scroll) -->
         <div id="bestsellers-section" class="shop-carousel-wrap">
@@ -440,7 +442,8 @@
         let catalogProducts = [];
 
         function mapCatalogProduct(p) {
-          const imageRaw = (p.image_url || p.image || p.imageUrl || '').split(',')[0].trim();
+          const rawImages = window.dtfSplitImages ? window.dtfSplitImages(p.image_url || p.image || p.imageUrl || '') : (p.image_url || p.image || p.imageUrl || '').split(',');
+          const imageRaw = rawImages[0] || '';
           return {
             id: p.id || p.pid || ('prod_' + Math.random()),
             title: p.title,
@@ -453,25 +456,39 @@
           };
         }
 
-        try {
-          const res = await fetch(apiUrl('/products'));
-          const data = await res.json();
-          const fetched = data.products || data || [];
-          if (res.ok && Array.isArray(fetched) && fetched.length > 0) {
-            catalogProducts = fetched.map(mapCatalogProduct);
-            localStorage.setItem('dtf_admin_products', JSON.stringify(fetched));
-          }
-        } catch (e) {}
+        function loadShopCatalog() {
+          const storedRaw = localStorage.getItem('dtf_admin_products');
+          let localAdminList = [];
+          try { localAdminList = JSON.parse(storedRaw) || []; } catch(e) {}
 
-        if (catalogProducts.length === 0) {
-          const storedAdminProducts = localStorage.getItem('dtf_admin_products');
-          if (storedAdminProducts !== null) {
-            try {
-              const parsed = JSON.parse(storedAdminProducts);
-              if (Array.isArray(parsed)) catalogProducts = parsed.map(mapCatalogProduct);
-            } catch (e) {}
-          }
+          fetch(apiUrl('/products'))
+            .then(res => res.json())
+            .then(data => {
+              const fetched = data.products || data || [];
+              if (Array.isArray(fetched)) {
+                const combined = [...localAdminList];
+                fetched.forEach(fp => {
+                  const fpId = String(fp.id || fp.pid || fp.title || '').toLowerCase();
+                  if (!combined.some(cp => String(cp.id || cp.pid || cp.title || '').toLowerCase() === fpId)) {
+                    combined.push(fp);
+                  }
+                });
+                localStorage.setItem('dtf_admin_products', JSON.stringify(combined));
+                catalogProducts = combined.map(mapCatalogProduct);
+              } else {
+                catalogProducts = localAdminList.map(mapCatalogProduct);
+              }
+              refreshAllRows();
+            })
+            .catch(() => {
+              catalogProducts = localAdminList.map(mapCatalogProduct);
+              refreshAllRows();
+            });
         }
+
+        window.addEventListener('storage', loadShopCatalog);
+        window.addEventListener('dtf:admin:products:updated', loadShopCatalog);
+        loadShopCatalog();
 
         // Populate Brand Checkboxes
         const brandContainer = document.getElementById('brands-checkbox-container');
@@ -533,7 +550,8 @@
           card.className = 'shop-carousel-card';
           card.style.cssText = 'display: flex; flex-direction: column; background: #141422; border: 1.5px solid rgba(255, 255, 255, 0.08); border-radius: 18px; overflow: hidden; position: relative; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(0,0,0,0.2);';
 
-          const detailsUrl = `product-details.html?id=${p.id}&title=${encodeURIComponent(p.title)}`;
+          const prodId = p.id || p.pid || '';
+          const detailsUrl = `product-details.html?id=${encodeURIComponent(prodId)}&title=${encodeURIComponent(p.title || '')}`;
 
           const priceVal = parseFloat(p.price) || 0;
           const mrpVal = parseFloat(p.mrp) || Math.round(priceVal * 1.35);
@@ -543,7 +561,7 @@
           const wishlist = JSON.parse(localStorage.getItem('dtf_wishlist') || '[]');
           const isWishlisted = wishlist.some(item => item.title === p.title);
 
-          const imgSrc = (window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl((p.image || p.image_url || p.imageUrl || '').split(',')[0].trim()) : (p.image || p.image_url || p.imageUrl || '').split(',')[0].trim()) || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop';
+          const imgSrc = p.image || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop';
           card.innerHTML = `
             <div style="position: relative; width: 100%; padding-top: 110%; overflow: hidden; background: #0a0a14;">
               <a href="${detailsUrl}" style="position: absolute; inset: 0; display: block;">
@@ -663,11 +681,23 @@
 
         function refreshAllRows() {
           updateFilterBadge();
-          populateRow('bestsellers-row', p => p.bestSeller);
-          populateRow('mens-row', p => p.category && p.category.toLowerCase().includes('men'));
-          populateRow('womens-row', p => p.category && p.category.toLowerCase().includes('women'));
-          populateRow('kids-row', p => p.category && p.category.toLowerCase().includes('kid'));
-          populateRow('accessories-row', p => !p.category || p.category.toLowerCase().includes('access') || p.category.toLowerCase().includes('bag') || p.category.toLowerCase().includes('luggage'));
+          populateRow('bestsellers-row', p => p.bestSeller || p.id.toString().startsWith('prod_'));
+          populateRow('mens-row', p => {
+            const cat = (p.category || '').toLowerCase();
+            return cat.includes('men') && !cat.includes('women');
+          });
+          populateRow('womens-row', p => {
+            const cat = (p.category || '').toLowerCase();
+            return cat.includes('women');
+          });
+          populateRow('kids-row', p => {
+            const cat = (p.category || '').toLowerCase();
+            return cat.includes('kid');
+          });
+          populateRow('accessories-row', p => {
+            const cat = (p.category || '').toLowerCase();
+            return !cat || cat.includes('access') || cat.includes('bag') || cat.includes('luggage') || (!cat.includes('men') && !cat.includes('women') && !cat.includes('kid'));
+          });
         }
 
         // Apply Filters Handler
