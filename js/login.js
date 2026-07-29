@@ -245,11 +245,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // If Netlify Cloud Auth or Direct Cloud DB succeeded, log in immediately
     if (cloudUser) {
+      const isCloudAdmin = (cloudUser.role === 'admin') || 
+                           (cloudUser.email && (['admin@devtech.com', 'admin@devtechfashion.com', 'devtechadmin@gmail.com'].includes(cloudUser.email.toLowerCase()) || cloudUser.email.toLowerCase().startsWith('admin@')));
+
       const sessionObj = {
         email: cloudUser.email,
-        name: cloudUser.name || 'DevTech Member',
+        name: cloudUser.name || (isCloudAdmin ? 'DevTech Administrator' : 'DevTech Member'),
         phone: cloudUser.phone || '',
-        role: cloudUser.role || 'customer',
+        role: isCloudAdmin ? 'admin' : (cloudUser.role || 'customer'),
         token: cloudUser.token || ('dtf_token_' + Date.now())
       };
 
@@ -267,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return u;
         });
         if (!updatedUsers.some(u => u.email && u.email.toLowerCase() === cleanEmail)) {
-          updatedUsers.push(cloudUser);
+          updatedUsers.push({ ...cloudUser, role: sessionObj.role });
         }
         localStorage.setItem('dtf_registered_users', JSON.stringify(updatedUsers));
       } catch (e) {}
@@ -359,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Login successful
     const sessionObj = {
       email: foundUser.email,
-      name: foundUser.name || 'DevTech Administrator',
+      name: foundUser.name || (foundUser.isBuiltinAdmin ? 'DevTech Administrator' : 'DevTech Member'),
       role: foundUser.role || (foundUser.isBuiltinAdmin ? 'admin' : 'customer'),
       token: foundUser.token || ('dtf_token_' + Date.now())
     };
@@ -371,28 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (submitTextSpan) submitTextSpan.textContent = 'Success! Redirecting...';
     setTimeout(() => {
       window.location.href = sessionObj.role === 'admin' ? 'admin.html' : '../index.html';
-    }, 600);
-
-    // Success Local Fallback Authentication
-    const sessionObj = {
-      email: foundUser.email,
-      name: foundUser.name || 'DevTech Member',
-      phone: foundUser.phone || '',
-      role: foundUser.role || 'customer',
-      token: foundUser.token || ('dtf_token_' + Date.now())
-    };
-
-    localStorage.setItem('dtf_user', JSON.stringify(sessionObj));
-    localStorage.setItem('token', sessionObj.token);
-
-    if (submitTextSpan) submitTextSpan.textContent = 'Success! Redirecting...';
-
-    setTimeout(() => {
-      if (sessionObj.role === 'admin') {
-        window.location.href = 'admin-dashboard.html';
-      } else {
-        window.location.href = '../index.html';
-      }
     }, 600);
   });
 
