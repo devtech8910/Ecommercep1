@@ -3,7 +3,7 @@
 // Single source of truth for cross-device product synchronisation
 // ============================================================
 
-const CLOUD_PRODUCTS_URL = process.env.CLOUD_PRODUCTS_URL || 'https://jsonblob.com/api/jsonBlob/019fc117-cf81-7c70-8559-16210c2b49ae';
+const CLOUD_PRODUCTS_URL = process.env.CLOUD_PRODUCTS_URL || 'https://jsonblob.com/api/jsonBlob/019fc1b8-92e2-719e-8043-a7c73438d337';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -12,32 +12,69 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json'
 };
 
-// Fetch the current product list from JSONBlob.
-// Returns [] on empty blob; throws on HTTP error so callers can return HTTP 500.
+// Fetch the current product list from JSONBlob with automatic retry on transient rate limits (429/5xx)
 async function getCloudProducts() {
-  const res = await fetch(CLOUD_PRODUCTS_URL, {
-    headers: { 'Accept': 'application/json' }
-  });
-  if (!res.ok) {
-    throw new Error(`JSONBlob GET failed: ${res.status} ${res.statusText}`);
+  const maxAttempts = 3;
+  let delay = 500;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch(CLOUD_PRODUCTS_URL, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+      }
+      if (res.status === 429 || res.status >= 500) {
+        if (attempt < maxAttempts) {
+          console.warn(`[Products GET] JSONBlob returned status ${res.status}. Retrying in ${delay}ms...`);
+          await new Promise(r => setTimeout(r, delay));
+          delay *= 2;
+          continue;
+        }
+      }
+      throw new Error(`JSONBlob GET failed: ${res.status} ${res.statusText}`);
+    } catch (err) {
+      if (attempt === maxAttempts) throw err;
+      console.warn(`[Products GET] Transient error (attempt ${attempt}):`, err.message);
+      await new Promise(r => setTimeout(r, delay));
+      delay *= 2;
+    }
   }
-  const data = await res.json();
-  return Array.isArray(data) ? data : [];
+  return [];
 }
 
-// Persist the full product list back to JSONBlob.
-// THROWS on any failure — callers must handle and return HTTP 500.
-// This is intentional: we must never return 200/201 if the write failed.
+// Persist the full product list back to JSONBlob with automatic retry on transient rate limits (429/5xx)
 async function saveCloudProducts(products) {
-  const res = await fetch(CLOUD_PRODUCTS_URL, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-    body: JSON.stringify(products)
-  });
-  if (!res.ok) {
-    throw new Error(`JSONBlob PUT failed: ${res.status} ${res.statusText}`);
+  const maxAttempts = 4;
+  let delay = 500;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch(CLOUD_PRODUCTS_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(products)
+      });
+      if (res.ok) {
+        console.log(`[Products] Saved ${products.length} products to cloud.`);
+        return;
+      }
+      if (res.status === 429 || res.status >= 500) {
+        if (attempt < maxAttempts) {
+          console.warn(`[Products PUT] JSONBlob returned status ${res.status}. Retrying in ${delay}ms...`);
+          await new Promise(r => setTimeout(r, delay));
+          delay *= 2;
+          continue;
+        }
+      }
+      throw new Error(`JSONBlob PUT failed: ${res.status} ${res.statusText}`);
+    } catch (err) {
+      if (attempt === maxAttempts) throw err;
+      console.warn(`[Products PUT] Transient error (attempt ${attempt}):`, err.message);
+      await new Promise(r => setTimeout(r, delay));
+      delay *= 2;
+    }
   }
-  console.log(`[Products] Saved ${products.length} products to cloud.`);
 }
 
 // Normalise a raw product payload into a consistent storage shape.
