@@ -1322,6 +1322,7 @@
             { id: 'k4', title: 'Junior Explorer Sneakers', price: 3999, mrp: 4999, category: "Kids", brand: "DevTech Footwear", sizes: "11, 12, 13", image: 'https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=600&q=80&fit=crop', description: "Lightweight and non-slip sneakers for active young explorers.", fabric: "Mesh / Rubber", fit: "Standard", pattern: "Sporty", suitable_for: "Casual / Sports" }
           ];
 
+          // 1. Read from localStorage as an instant cache
           try {
             const storedAdminProducts = localStorage.getItem('dtf_admin_products');
             if (storedAdminProducts) {
@@ -1334,70 +1335,102 @@
             }
           } catch (e) {}
 
-          if (!liveProduct && cleanId) {
-            try {
-              const res = await fetch(apiUrl(`/products/${encodeURIComponent(cleanId)}`));
-              const data = await res.json();
-              if (res.ok && data && data.success && data.product) liveProduct = data.product;
-            } catch (e) {}
-          }
+          // 2. Fetch authoritative fresh product details from Netlify cloud / local DB
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const cloudUrl = isLocalhost
+            ? 'https://devtech8910.netlify.app/.netlify/functions/products'
+            : '/.netlify/functions/products';
 
-          if (!liveProduct) {
-            try {
-              const res = await fetch(apiUrl('/products'));
-              const data = await res.json();
-              if (res.ok && data && data.success && Array.isArray(data.products)) {
-                allApiProducts = data.products.filter(p => p && typeof p === 'object');
-                if (cleanId) liveProduct = allApiProducts.find(p => String(p.id || p.pid || '') === cleanId) || null;
-                if (!liveProduct && cleanTitle) liveProduct = allApiProducts.find(p => p.title && String(p.title).trim().toLowerCase() === cleanTitle) || null;
-              }
-            } catch (e) {}
-          }
+          let cloudProduct = null;
+          let localProduct = null;
 
-          // Cloud fallback — fetch from Netlify serverless function (JSONBlob-backed)
-          if (!liveProduct) {
-            try {
-              const cloudUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                ? 'https://devtech8910.netlify.app/.netlify/functions/products'
-                : '/.netlify/functions/products';
-
-              // Try fetching specific product by ID first
-              if (cleanId) {
-                const cloudRes = await fetch(`${cloudUrl}?id=${encodeURIComponent(cleanId)}`, { signal: AbortSignal.timeout(6000) });
-                if (cloudRes.ok) {
-                  const cloudData = await cloudRes.json();
-                  if (cloudData && cloudData.success && cloudData.product) {
-                    liveProduct = cloudData.product;
+          try {
+            const fetchPromises = [];
+            if (cleanId) {
+              // Get fresh product from cloud by ID
+              const cloudFetch = fetch(`${cloudUrl}?id=${encodeURIComponent(cleanId)}`, { signal: AbortSignal.timeout(6000) })
+                .then(res => res.ok ? res.json() : null)
+                .then(data => {
+                  if (data && data.success && data.product) {
+                    cloudProduct = data.product;
                   }
-                }
-              }
+                })
+                .catch(() => null);
+              fetchPromises.push(cloudFetch);
 
-              // If not found by ID, fetch all cloud products and search
-              if (!liveProduct) {
-                const cloudAllRes = await fetch(cloudUrl, { signal: AbortSignal.timeout(6000) });
-                if (cloudAllRes.ok) {
-                  const cloudAllData = await cloudAllRes.json();
-                  if (cloudAllData && cloudAllData.success && Array.isArray(cloudAllData.products)) {
-                    const cloudProducts = cloudAllData.products.filter(p => p && typeof p === 'object');
-                    if (cleanId) liveProduct = cloudProducts.find(p => String(p.id || p.pid || '') === cleanId) || null;
-                    if (!liveProduct && cleanTitle) liveProduct = cloudProducts.find(p => p.title && String(p.title).trim().toLowerCase() === cleanTitle) || null;
-                    if (!liveProduct && cleanTitle) liveProduct = cloudProducts.find(p => p.title && String(p.title).toLowerCase().includes(cleanTitle)) || null;
-                    // Merge cloud products into allApiProducts for "similar products" section
-                    if (cloudProducts.length > 0) {
-                      const existingIds = new Set(allApiProducts.map(p => String(p.id || p.pid || '').toLowerCase()));
-                      cloudProducts.forEach(cp => {
-                        const cpId = String(cp.id || cp.pid || '').toLowerCase();
-                        if (cpId && !existingIds.has(cpId)) {
-                          allApiProducts.push(cp);
-                          existingIds.add(cpId);
-                        }
-                      });
+              // Get fresh product from local DB (only if running locally)
+              if (isLocalhost) {
+                const localFetch = fetch(apiUrl(`/products/${encodeURIComponent(cleanId)}`), { signal: AbortSignal.timeout(3000) })
+                  .then(res => res.ok ? res.json() : null)
+                  .then(data => {
+                    if (data && data.success && data.product) {
+                      localProduct = data.product;
                     }
-                  }
-                }
+                  })
+                  .catch(() => null);
+                fetchPromises.push(localFetch);
               }
+            }
+
+            if (fetchPromises.length > 0) {
+              await Promise.all(fetchPromises);
+            }
+          } catch (e) {
+            console.log('[DevTech Details] Direct product fetch error:', e.message);
+          }
+
+          // Authoritative fetch overrides local cache
+          if (cloudProduct) {
+            liveProduct = cloudProduct;
+          } else if (localProduct) {
+            liveProduct = localProduct;
+          }
+
+          // 3. Fallback: Fetch all products and find the best match (handles search matching)
+          if (!liveProduct) {
+            try {
+              const allFetchPromises = [];
+              let cloudAll = [];
+              let localAll = [];
+
+              const cloudAllFetch = fetch(cloudUrl, { signal: AbortSignal.timeout(6000) })
+                .then(res => res.ok ? res.json() : null)
+                .then(data => {
+                  if (data && data.success && Array.isArray(data.products)) {
+                    cloudAll = data.products;
+                  }
+                })
+                .catch(() => null);
+              allFetchPromises.push(cloudAllFetch);
+
+              if (isLocalhost) {
+                const localAllFetch = fetch(apiUrl('/products'), { signal: AbortSignal.timeout(3000) })
+                  .then(res => res.ok ? res.json() : null)
+                  .then(data => {
+                    if (data && data.success && Array.isArray(data.products)) {
+                      localAll = data.products;
+                    }
+                  })
+                  .catch(() => null);
+                allFetchPromises.push(localAllFetch);
+              }
+
+              await Promise.all(allFetchPromises);
+
+              // Merge lists
+              allApiProducts = [...cloudAll];
+              localAll.forEach(lp => {
+                const lpId = String(lp.id || lp.pid || lp.title || '').toLowerCase();
+                if (!allApiProducts.some(cp => String(cp.id || cp.pid || cp.title || '').toLowerCase() === lpId)) {
+                  allApiProducts.push(lp);
+                }
+              });
+
+              if (cleanId) liveProduct = allApiProducts.find(p => String(p.id || p.pid || '') === cleanId) || null;
+              if (!liveProduct && cleanTitle) liveProduct = allApiProducts.find(p => p.title && String(p.title).trim().toLowerCase() === cleanTitle) || null;
+              if (!liveProduct && cleanTitle) liveProduct = allApiProducts.find(p => p.title && String(p.title).toLowerCase().includes(cleanTitle)) || null;
             } catch (e) {
-              console.log('[DevTech] Cloud product fetch fallback error:', e.message);
+              console.log('[DevTech Details] All products fallback fetch error:', e.message);
             }
           }
 

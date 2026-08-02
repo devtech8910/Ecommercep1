@@ -1,6 +1,6 @@
 // ============================================================
 // DEVTECH FASHION — NETLIFY SERVERLESS CLOUD PRODUCTS CATALOG
-// Enables cross-device product sync for admin-added products
+// Single source of truth for cross-device product synchronisation
 // ============================================================
 
 const CLOUD_PRODUCTS_URL = process.env.CLOUD_PRODUCTS_URL || 'https://jsonblob.com/api/jsonBlob/019fc117-cf81-7c70-8559-16210c2b49ae';
@@ -12,31 +12,71 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json'
 };
 
+// Fetch the current product list from JSONBlob.
+// Returns [] on empty blob; throws on HTTP error so callers can return HTTP 500.
 async function getCloudProducts() {
-  try {
-    const res = await fetch(CLOUD_PRODUCTS_URL, {
-      headers: { 'Accept': 'application/json' }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      return Array.isArray(data) ? data : [];
-    }
-  } catch (err) {
-    console.warn('[Cloud Products] Fetch error:', err.message);
+  const res = await fetch(CLOUD_PRODUCTS_URL, {
+    headers: { 'Accept': 'application/json' }
+  });
+  if (!res.ok) {
+    throw new Error(`JSONBlob GET failed: ${res.status} ${res.statusText}`);
   }
-  return [];
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
 }
 
+// Persist the full product list back to JSONBlob.
+// THROWS on any failure — callers must handle and return HTTP 500.
+// This is intentional: we must never return 200/201 if the write failed.
 async function saveCloudProducts(products) {
-  try {
-    await fetch(CLOUD_PRODUCTS_URL, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(products)
-    });
-  } catch (err) {
-    console.warn('[Cloud Products] Save error:', err.message);
+  const res = await fetch(CLOUD_PRODUCTS_URL, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(products)
+  });
+  if (!res.ok) {
+    throw new Error(`JSONBlob PUT failed: ${res.status} ${res.statusText}`);
   }
+  console.log(`[Products] Saved ${products.length} products to cloud.`);
+}
+
+// Normalise a raw product payload into a consistent storage shape.
+function normaliseProduct(payload, existing) {
+  const base = existing || {};
+  const imgUrl = payload.imageUrl || payload.image_url || payload.image || base.imageUrl || base.image_url || '';
+  const sizeStock = payload.sizeStock || payload.size_stock || base.sizeStock || base.size_stock || 'S:10, M:10, L:10';
+  return {
+    id: base.id || payload.id || payload.pid,
+    pid: base.pid || payload.pid || payload.id,
+    title: payload.title || base.title || '',
+    brand: payload.brand || base.brand || 'DevTech Collection',
+    category: payload.category || base.category || '',
+    title_description: payload.titleDescription || payload.title_description || base.title_description || '',
+    titleDescription: payload.titleDescription || payload.title_description || base.titleDescription || '',
+    mrp: parseFloat(payload.mrp != null ? payload.mrp : (base.mrp != null ? base.mrp : 0)),
+    price: parseFloat(payload.price != null ? payload.price : (base.price != null ? base.price : 0)),
+    image_url: imgUrl,
+    imageUrl: imgUrl,
+    sizes: payload.sizes || base.sizes || 'S, M, L',
+    replacement_allowed: payload.replacementAllowed != null ? payload.replacementAllowed : (base.replacement_allowed != null ? base.replacement_allowed : true),
+    replacementAllowed: payload.replacementAllowed != null ? payload.replacementAllowed : (base.replacementAllowed != null ? base.replacementAllowed : true),
+    replacement_days: payload.replacementDays || payload.replacement_days || base.replacement_days || 7,
+    replacementDays: payload.replacementDays || payload.replacement_days || base.replacementDays || 7,
+    cod_available: payload.codAvailable != null ? payload.codAvailable : (base.cod_available != null ? base.cod_available : true),
+    codAvailable: payload.codAvailable != null ? payload.codAvailable : (base.codAvailable != null ? base.codAvailable : true),
+    coupon_applicable: payload.couponApplicable != null ? payload.couponApplicable : (base.coupon_applicable != null ? base.coupon_applicable : true),
+    couponApplicable: payload.couponApplicable != null ? payload.couponApplicable : (base.couponApplicable != null ? base.couponApplicable : true),
+    fabric: payload.fabric || base.fabric || '',
+    pattern: payload.pattern || base.pattern || '',
+    fit: payload.fit || base.fit || '',
+    suitable_for: payload.suitableFor || payload.suitable_for || base.suitable_for || '',
+    suitableFor: payload.suitableFor || payload.suitable_for || base.suitableFor || '',
+    description: payload.description || base.description || '',
+    size_stock: sizeStock,
+    sizeStock: sizeStock,
+    created_at: base.created_at || new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
 }
 
 exports.handler = async (event) => {
@@ -45,57 +85,35 @@ exports.handler = async (event) => {
     return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   }
 
-  // GET — Return all products
+  // ── GET — Return all products (or filter by id/category) ─────────────────
   if (event.httpMethod === 'GET') {
     try {
-      // Check if a specific product ID is requested via query string
-      const productId = event.queryStringParameters && event.queryStringParameters.id;
-      const category = event.queryStringParameters && event.queryStringParameters.category;
-      
+      const params = event.queryStringParameters || {};
+      const productId = params.id;
+      const category = params.category;
+
       const products = await getCloudProducts();
-      
+
       if (productId) {
-        const product = products.find(p => 
-          String(p.id || p.pid) === String(productId) || 
-          String(p.pid) === String(productId)
-        );
+        const product = products.find(p => String(p.id || p.pid) === String(productId));
         if (product) {
-          return {
-            statusCode: 200,
-            headers: CORS_HEADERS,
-            body: JSON.stringify({ success: true, product })
-          };
+          return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, product }) };
         }
-        return {
-          statusCode: 404,
-          headers: CORS_HEADERS,
-          body: JSON.stringify({ success: false, error: 'Product not found.' })
-        };
+        return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: 'Product not found.' }) };
       }
-      
-      let filtered = products;
-      if (category) {
-        filtered = products.filter(p => {
-          const cat = (p.category || '').toLowerCase();
-          return cat === category.toLowerCase();
-        });
-      }
-      
-      return {
-        statusCode: 200,
-        headers: CORS_HEADERS,
-        body: JSON.stringify({ success: true, products: filtered })
-      };
+
+      const filtered = category
+        ? products.filter(p => (p.category || '').toLowerCase() === category.toLowerCase())
+        : products;
+
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, products: filtered }) };
     } catch (err) {
-      return {
-        statusCode: 500,
-        headers: CORS_HEADERS,
-        body: JSON.stringify({ success: false, error: err.message })
-      };
+      console.error('[Products GET] Error:', err.message);
+      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: err.message }) };
     }
   }
 
-  // POST — Add a new product
+  // ── POST — Add a new product ──────────────────────────────────────────────
   if (event.httpMethod === 'POST') {
     try {
       const payload = JSON.parse(event.body || '{}');
@@ -106,161 +124,93 @@ exports.handler = async (event) => {
         return {
           statusCode: 400,
           headers: CORS_HEADERS,
-          body: JSON.stringify({ success: false, error: 'Please provide title, price, imageUrl, and category.' })
+          body: JSON.stringify({ success: false, error: 'Required fields missing: title, price, imageUrl, category.' })
         };
       }
 
       const products = await getCloudProducts();
-      
-      const newId = payload.id || payload.pid || ('cloud_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6));
-      const newPid = payload.pid || payload.id || newId;
 
-      const newProduct = {
-        id: newId,
-        pid: newPid,
-        title: payload.title,
-        brand: payload.brand || 'DevTech Collection',
-        category: payload.category,
-        title_description: payload.titleDescription || payload.title_description || '',
-        titleDescription: payload.titleDescription || payload.title_description || '',
-        mrp: parseFloat(payload.mrp) || 0,
-        price: parseFloat(payload.price) || 0,
-        image_url: imgUrl,
-        imageUrl: imgUrl,
-        sizes: payload.sizes || 'S, M, L',
-        replacement_allowed: payload.replacementAllowed !== false && payload.replacement_allowed !== false,
-        replacementAllowed: payload.replacementAllowed !== false && payload.replacement_allowed !== false,
-        replacement_days: payload.replacementDays || payload.replacement_days || 7,
-        replacementDays: payload.replacementDays || payload.replacement_days || 7,
-        cod_available: payload.codAvailable !== false && payload.cod_available !== false,
-        codAvailable: payload.codAvailable !== false && payload.cod_available !== false,
-        coupon_applicable: payload.couponApplicable !== false && payload.coupon_applicable !== false,
-        couponApplicable: payload.couponApplicable !== false && payload.coupon_applicable !== false,
-        fabric: payload.fabric || '',
-        pattern: payload.pattern || '',
-        fit: payload.fit || '',
-        suitable_for: payload.suitableFor || payload.suitable_for || '',
-        suitableFor: payload.suitableFor || payload.suitable_for || '',
-        description: payload.description || '',
-        size_stock: payload.sizeStock || payload.size_stock || 'S:10, M:10, L:10',
-        sizeStock: payload.sizeStock || payload.size_stock || 'S:10, M:10, L:10',
-        created_at: new Date().toISOString()
-      };
+      // Generate an authoritative cloud ID — never trust client-supplied IDs for new products.
+      // This prevents duplicate IDs when multiple devices add products simultaneously.
+      const newId = 'cloud_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+      const newProduct = normaliseProduct(payload, { id: newId, pid: newId });
+      newProduct.id = newId;
+      newProduct.pid = newId;
+      newProduct.created_at = new Date().toISOString();
+      delete newProduct.updated_at; // fresh product, no updated_at yet
 
       products.unshift(newProduct);
-      await saveCloudProducts(products);
+      await saveCloudProducts(products); // throws on failure — will return 500 below
 
-      return {
-        statusCode: 201,
-        headers: CORS_HEADERS,
-        body: JSON.stringify({ success: true, product: newProduct })
-      };
+      console.log(`[Products POST] Added "${newProduct.title}" (ID: ${newId})`);
+      return { statusCode: 201, headers: CORS_HEADERS, body: JSON.stringify({ success: true, product: newProduct }) };
     } catch (err) {
-      return {
-        statusCode: 500,
-        headers: CORS_HEADERS,
-        body: JSON.stringify({ success: false, error: err.message })
-      };
+      console.error('[Products POST] Error:', err.message);
+      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: err.message }) };
     }
   }
 
-  // PUT — Update an existing product
+  // ── PUT — Update an existing product ─────────────────────────────────────
   if (event.httpMethod === 'PUT') {
     try {
       const payload = JSON.parse(event.body || '{}');
       const productId = payload.id || payload.pid;
 
       if (!productId) {
-        return {
-          statusCode: 400,
-          headers: CORS_HEADERS,
-          body: JSON.stringify({ success: false, error: 'Product ID is required.' })
-        };
+        return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: 'Product ID is required for update.' }) };
       }
 
       const products = await getCloudProducts();
       const idx = products.findIndex(p => String(p.id || p.pid) === String(productId));
 
+      let updatedProduct;
       if (idx === -1) {
-        // If not found, add it as new (for syncing from local DB)
-        const imgUrl = payload.imageUrl || payload.image_url || payload.image || '';
-        const newProduct = { 
-          ...payload, 
-          id: productId, 
-          pid: productId, 
-          image_url: imgUrl,
-          imageUrl: imgUrl,
-          size_stock: payload.sizeStock || payload.size_stock || 'S:10, M:10, L:10',
-          sizeStock: payload.sizeStock || payload.size_stock || 'S:10, M:10, L:10',
-          updated_at: new Date().toISOString() 
-        };
-        products.unshift(newProduct);
-        await saveCloudProducts(products);
-        return {
-          statusCode: 200,
-          headers: CORS_HEADERS,
-          body: JSON.stringify({ success: true, product: newProduct })
-        };
+        // Not in cloud yet — insert it (syncing from local DB or another device)
+        updatedProduct = normaliseProduct(payload, { id: productId, pid: productId });
+        updatedProduct.id = productId;
+        updatedProduct.pid = productId;
+        products.unshift(updatedProduct);
+        console.log(`[Products PUT] Inserted (was not in cloud) "${updatedProduct.title}" (ID: ${productId})`);
+      } else {
+        updatedProduct = normaliseProduct(payload, products[idx]);
+        updatedProduct.id = productId;
+        updatedProduct.pid = productId;
+        products[idx] = updatedProduct;
+        console.log(`[Products PUT] Updated "${updatedProduct.title}" (ID: ${productId})`);
       }
 
-      // Update existing product
-      const imgUrl = payload.imageUrl || payload.image_url || payload.image || products[idx].imageUrl || products[idx].image_url;
-      const sizeStockVal = payload.sizeStock || payload.size_stock || products[idx].sizeStock || products[idx].size_stock;
-      const updated = { 
-        ...products[idx], 
-        ...payload, 
-        image_url: imgUrl,
-        imageUrl: imgUrl,
-        size_stock: sizeStockVal,
-        sizeStock: sizeStockVal,
-        updated_at: new Date().toISOString() 
-      };
-      products[idx] = updated;
-      await saveCloudProducts(products);
-
-      return {
-        statusCode: 200,
-        headers: CORS_HEADERS,
-        body: JSON.stringify({ success: true, product: updated })
-      };
+      await saveCloudProducts(products); // throws on failure
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, product: updatedProduct }) };
     } catch (err) {
-      return {
-        statusCode: 500,
-        headers: CORS_HEADERS,
-        body: JSON.stringify({ success: false, error: err.message })
-      };
+      console.error('[Products PUT] Error:', err.message);
+      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: err.message }) };
     }
   }
 
-  // DELETE — Remove a product
+  // ── DELETE — Remove a product ─────────────────────────────────────────────
   if (event.httpMethod === 'DELETE') {
     try {
       const payload = JSON.parse(event.body || '{}');
       const productId = payload.id || payload.pid;
 
       if (!productId) {
-        return {
-          statusCode: 400,
-          headers: CORS_HEADERS,
-          body: JSON.stringify({ success: false, error: 'Product ID is required.' })
-        };
+        return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: 'Product ID is required.' }) };
       }
 
-      let products = await getCloudProducts();
-      products = products.filter(p => String(p.id || p.pid) !== String(productId));
-      await saveCloudProducts(products);
+      const products = await getCloudProducts();
+      const before = products.length;
+      const remaining = products.filter(p => String(p.id || p.pid) !== String(productId));
 
-      return {
-        statusCode: 200,
-        headers: CORS_HEADERS,
-        body: JSON.stringify({ success: true, message: 'Product deleted.' })
-      };
+      if (remaining.length === before) {
+        return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: 'Product not found.' }) };
+      }
+
+      await saveCloudProducts(remaining); // throws on failure
+      console.log(`[Products DELETE] Deleted ID ${productId}. Remaining: ${remaining.length}`);
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, message: 'Product deleted.' }) };
     } catch (err) {
-      return {
-        statusCode: 500,
-        headers: CORS_HEADERS,
-        body: JSON.stringify({ success: false, error: err.message })
-      };
+      console.error('[Products DELETE] Error:', err.message);
+      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: err.message }) };
     }
   }
 

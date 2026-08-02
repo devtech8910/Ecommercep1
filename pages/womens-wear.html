@@ -397,47 +397,10 @@
           return merged;
         }
 
-        function loadWomensCatalog() {
-          const storedRaw = localStorage.getItem('dtf_admin_products');
-          let localAdminList = [];
-          try { localAdminList = JSON.parse(storedRaw) || []; } catch(e) {}
-
-          const cloudBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'https://devtech8910.netlify.app/.netlify/functions/products'
-            : '/.netlify/functions/products';
-
-          const localFetch = fetch(apiUrl('/products'), { signal: AbortSignal.timeout(3000) })
-            .then(res => res.json())
-            .then(data => data.products || data || [])
-            .catch(() => []);
-
-          const cloudFetch = fetch(cloudBaseUrl, { signal: AbortSignal.timeout(6000) })
-            .then(res => res.json())
-            .then(data => data.products || data || [])
-            .catch(() => []);
-
-          Promise.all([localFetch, cloudFetch])
-            .then(([localData, cloudData]) => {
-              let combined = [...localAdminList];
-              if (Array.isArray(localData)) combined = mergeProducts(combined, localData);
-              if (Array.isArray(cloudData)) combined = mergeProducts(combined, cloudData);
-              localStorage.setItem('dtf_admin_products', JSON.stringify(combined));
-              allProducts = combined.filter(p => categoryKey(p.category) === 'womens').map(mapWomensProduct);
-              filterAndSortProducts();
-            })
-            .catch(() => {
-              allProducts = localAdminList.filter(p => categoryKey(p.category) === 'womens').map(mapWomensProduct);
-              filterAndSortProducts();
-            });
-        }
-
-        window.addEventListener('storage', loadWomensCatalog);
-        window.addEventListener('dtf:admin:products:updated', loadWomensCatalog);
-        loadWomensCatalog();
-
-        const brandContainer = document.getElementById('brands-checkbox-container');
-        const brandsSet = new Set(allProducts.map(p => p.brand).filter(Boolean));
-        if (brandContainer) {
+        function populateBrandsFilter() {
+          const brandContainer = document.getElementById('brands-checkbox-container');
+          if (!brandContainer) return;
+          const brandsSet = new Set(allProducts.map(p => p.brand).filter(Boolean));
           brandContainer.innerHTML = '';
           if (brandsSet.size === 0) brandsSet.add('DevTech Collection');
           brandsSet.forEach(brand => {
@@ -447,6 +410,79 @@
             brandContainer.appendChild(label);
           });
         }
+
+        function loadWomensCatalog() {
+          const storedRaw = localStorage.getItem('dtf_admin_products');
+          let localCacheList = [];
+          try { localCacheList = JSON.parse(storedRaw) || []; } catch(e) {}
+
+          // 1. Render from cache instantly for best UX
+          if (localCacheList.length > 0) {
+            allProducts = localCacheList.filter(p => categoryKey(p.category) === 'womens').map(mapWomensProduct);
+            filterAndSortProducts();
+            populateBrandsFilter();
+          }
+
+          // 2. Fetch fresh data from authoritative sources
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          
+          const cloudUrl = isLocalhost
+            ? 'https://devtech8910.netlify.app/.netlify/functions/products'
+            : '/.netlify/functions/products';
+
+          const cloudFetch = fetch(cloudUrl, { signal: AbortSignal.timeout(6000) })
+            .then(res => {
+              if (!res.ok) throw new Error(`HTTP ${res.status}`);
+              return res.json();
+            })
+            .then(data => {
+              if (data && data.success && Array.isArray(data.products)) {
+                return data.products;
+              }
+              return [];
+            })
+            .catch(err => {
+              console.warn('[DevTech Store] Cloud catalog fetch warning:', err.message);
+              return null; // Return null to indicate network/API failure
+            });
+
+          // Only query local DB when running locally
+          const localFetch = isLocalhost
+            ? fetch(apiUrl('/products'), { signal: AbortSignal.timeout(3000) })
+                .then(res => res.json())
+                .then(data => data.products || data || [])
+                .catch(() => [])
+            : Promise.resolve([]);
+
+          Promise.all([cloudFetch, localFetch]).then(([cloudProducts, localProducts]) => {
+            // If cloud fetch failed (network down) but we have cache, keep using the cache
+            if (cloudProducts === null) {
+              console.log('[DevTech Store] Using cached catalog (cloud offline).');
+              return;
+            }
+
+            // Cloud is authoritative. We overwrite localStorage.
+            let combined = [...cloudProducts];
+            if (isLocalhost && Array.isArray(localProducts)) {
+              localProducts.forEach(lp => {
+                const lpId = String(lp.id || lp.pid || lp.title || '').toLowerCase();
+                if (!combined.some(cp => String(cp.id || cp.pid || cp.title || '').toLowerCase() === lpId)) {
+                  combined.push(lp);
+                }
+              });
+            }
+
+            // Fresh data overwrites stale cache (no additive merging of deleted items)
+            localStorage.setItem('dtf_admin_products', JSON.stringify(combined));
+            allProducts = combined.filter(p => categoryKey(p.category) === 'womens').map(mapWomensProduct);
+            filterAndSortProducts();
+            populateBrandsFilter();
+          });
+        }
+
+        window.addEventListener('storage', loadWomensCatalog);
+        window.addEventListener('dtf:admin:products:updated', loadWomensCatalog);
+        loadWomensCatalog();
 
         let filterMinPrice = null;
         let filterMaxPrice = null;

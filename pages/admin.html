@@ -2552,30 +2552,11 @@ void main() {
             renderCategoryTrends(trends);
           }
 
-          const CLOUD_JSONBLOB_URL = 'https://jsonblob.com/api/jsonBlob/019fc117-cf81-7c70-8559-16210c2b49ae';
-
+          // Cloud API URL — always goes through the Netlify serverless function (single source of truth)
           function getCloudApiUrl() {
             return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
               ? 'https://devtech8910.netlify.app/.netlify/functions/products'
               : '/.netlify/functions/products';
-          }
-
-          async function syncProductsToCloud(productsList) {
-            if (!Array.isArray(productsList)) return;
-            try {
-              await fetch(CLOUD_JSONBLOB_URL, {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json'
-                },
-                body: JSON.stringify(productsList),
-                signal: AbortSignal.timeout(6000)
-              });
-              console.log('[DevTech Admin] Synced products to central Cloud DB');
-            } catch (err) {
-              console.warn('[DevTech Admin] Central Cloud DB sync warning:', err.message);
-            }
           }
 
           function mergeProductLists(baseList, newList) {
@@ -2594,69 +2575,48 @@ void main() {
             return Array.from(map.values());
           }
 
-          // Fetch products catalog list
+          // Fetch products catalog — cloud is the authoritative source.
+          // localStorage is updated as a cache AFTER cloud data is received,
+          // never used as an additive merge source (prevents deleted products from reappearing).
           async function fetchProducts() {
-            let localList = [];
             let cloudList = [];
-            let jsonblobList = [];
-            
-            try {
-              const res = await fetch('http://localhost:5000/admin/products', {
-                headers: { 'Authorization': `Bearer ${user.token}` },
-                signal: AbortSignal.timeout(3000)
-              });
-              if (res.ok) {
-                const result = await res.json();
-                if (result.success && Array.isArray(result.products)) {
-                  localList = result.products;
-                }
-              }
-            } catch (err) {
-              console.log('[DevTech Admin] Local DB fetch offline/timed out');
-            }
+            let cloudError = null;
 
+            // 1. Fetch from Netlify serverless function (cloud — authoritative)
             try {
               const res = await fetch(getCloudApiUrl(), {
                 headers: { 'Accept': 'application/json' },
-                signal: AbortSignal.timeout(6000)
+                signal: AbortSignal.timeout(8000)
               });
               if (res.ok) {
                 const result = await res.json();
                 if (result.success && Array.isArray(result.products)) {
                   cloudList = result.products;
+                  console.log(`[DevTech Admin] Fetched ${cloudList.length} products from cloud.`);
                 }
+              } else {
+                cloudError = `Cloud API returned ${res.status}`;
+                console.warn('[DevTech Admin] Cloud products fetch failed:', cloudError);
               }
             } catch (err) {
-              console.log('[DevTech Admin] Cloud products fetch error:', err.message);
+              cloudError = err.message;
+              console.warn('[DevTech Admin] Cloud products fetch error:', err.message);
             }
 
-            try {
-              const jres = await fetch(CLOUD_JSONBLOB_URL, {
-                headers: { 'Accept': 'application/json' },
-                signal: AbortSignal.timeout(6000)
-              });
-              if (jres.ok) {
-                const jdata = await jres.json();
-                if (Array.isArray(jdata)) {
-                  jsonblobList = jdata;
-                }
-              }
-            } catch (err) {
-              console.log('[DevTech Admin] JSONBlob products fetch warning:', err.message);
+            if (cloudList.length > 0) {
+              // Cloud data is authoritative — replace localStorage entirely.
+              // Do NOT additive-merge with localStorage; that would resurface deleted products.
+              cachedProducts = cloudList;
+              localStorage.setItem('dtf_admin_products', JSON.stringify(cachedProducts));
+            } else if (cloudError) {
+              // Cloud unavailable — fall back to localStorage cache as a read-only display.
+              // Do NOT trust it for writes.
+              const stored = localStorage.getItem('dtf_admin_products');
+              try { cachedProducts = JSON.parse(stored) || []; } catch (e) { cachedProducts = []; }
+              console.warn('[DevTech Admin] Using localStorage cache (cloud unavailable). Writes may not persist.');
             }
+            // If cloud returned empty array (no products added yet), cachedProducts stays []
 
-            const stored = localStorage.getItem('dtf_admin_products');
-            let storedList = [];
-            if (stored !== null) {
-              try { storedList = JSON.parse(stored) || []; } catch (e) { storedList = []; }
-            }
-
-            let combined = mergeProductLists(storedList, localList);
-            combined = mergeProductLists(combined, cloudList);
-            combined = mergeProductLists(combined, jsonblobList);
-
-            cachedProducts = combined;
-            localStorage.setItem('dtf_admin_products', JSON.stringify(cachedProducts));
             updateCategoryCounts();
             filterAndRenderProducts();
           }
@@ -2707,20 +2667,44 @@ void main() {
               tr.querySelector('.delete-btn').addEventListener('click', async () => {
                 if (confirm(`⚠️ Are you sure you want to permanently delete "${p.title}"?\n\nThis action cannot be undone.`)) {
                   const pid = p.id || p.pid;
+                  
+                  let deleteOk = false;
+                  let deleteErrorMsg = '';
+                  
+                  // CLOUD FIRST: Delete from Netlify serverless function
+                  try {
+                    const cloudRes = await fetch(getCloudApiUrl(), {
+                      method: 'DELETE',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ id: pid, pid: pid }),
+                      signal: AbortSignal.timeout(6000)
+                    });
+                    if (cloudRes.ok) {
+                      const resJson = await cloudRes.json();
+                      if (resJson && resJson.success) {
+                        deleteOk = true;
+                        console.log(`[DevTech Admin] Deleted product from cloud: ${pid}`);
+                      } else {
+                        deleteErrorMsg = (resJson && resJson.error) || 'Unknown error';
+                      }
+                    } else {
+                      deleteErrorMsg = `HTTP status ${cloudRes.status}`;
+                    }
+                  } catch (e) {
+                    deleteErrorMsg = e.message;
+                  }
+
+                  if (!deleteOk) {
+                    alert(`❌ Failed to delete product from cloud: ${deleteErrorMsg}. Please check your internet connection and try again.`);
+                    return;
+                  }
+
+                  // ALSO try to delete from local DB (optional, best-effort only)
                   try {
                     await fetch(`http://localhost:5000/admin/products/${pid}`, {
                       method: 'DELETE',
                       headers: { 'Authorization': `Bearer ${user.token}` },
-                      signal: AbortSignal.timeout(2500)
-                    });
-                  } catch (e) {}
-
-                  try {
-                    await fetch(getCloudApiUrl(), {
-                      method: 'DELETE',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ id: pid, pid: pid }),
-                      signal: AbortSignal.timeout(5000)
+                      signal: AbortSignal.timeout(2000)
                     });
                   } catch (e) {}
 
@@ -3168,6 +3152,11 @@ void main() {
 
           function closeModal() {
             document.getElementById('product-category-input').disabled = false;
+            const submitBtn = document.getElementById('save-product-btn');
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Save Product';
+            }
             productModal.style.display = 'none';
           }
 
@@ -3351,6 +3340,7 @@ void main() {
           productForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const submitBtn = document.getElementById('save-product-btn');
             const id = document.getElementById('product-id').value;
             const title = document.getElementById('product-title-input').value.trim();
             const brand = document.getElementById('product-brand-input').value.trim();
@@ -3407,6 +3397,8 @@ void main() {
               return;
             }
 
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Saving Product...';
             modalError.textContent = 'Processing and uploading product images...';
             modalError.style.display = 'block';
 
@@ -3414,12 +3406,15 @@ void main() {
               const uploadPromises = activeImagesList.map(async (item, index) => {
                 if (!item.src) return "";
                 if (!item.src.startsWith('data:')) {
+                  // Already a URL — use as-is (cross-device compatible)
                   return item.src;
                 }
-                // Attempt backend upload with timeout fallback
+                // Base64 image — attempt local backend upload with short timeout.
+                // If local server is offline (Netlify / other devices), base64 is stored
+                // directly in the cloud and displays on all devices without a server.
                 try {
                   const controller = new AbortController();
-                  const timeoutId = setTimeout(() => controller.abort(), 15000);
+                  const timeoutId = setTimeout(() => controller.abort(), 2500);
                   const uploadRes = await fetch('http://localhost:5000/admin/upload', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -3433,13 +3428,14 @@ void main() {
                   if (uploadRes.ok) {
                     const uploadResult = await uploadRes.json();
                     if (uploadResult.success && uploadResult.url) {
+                      console.log('[DevTech Admin] Image uploaded to local server:', uploadResult.url);
                       return uploadResult.url;
                     }
                   }
                 } catch (e) {
-                  console.log('[DevTech Admin] Backend upload server offline, keeping image source directly.');
+                  console.log('[DevTech Admin] Local upload server offline — storing base64 directly (cross-device compatible).');
                 }
-                return item.src;
+                return item.src; // Use base64 directly — works on all devices
               });
 
               const uploadedUrls = await Promise.all(uploadPromises);
@@ -3451,17 +3447,18 @@ void main() {
             if (price > mrp) {
               modalError.textContent = 'Validation Error: The discounted price should not be greater than the MRP.';
               modalError.style.display = 'block';
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Save Product';
               return;
             }
 
             if (!title || isNaN(price) || !finalImageUrl || !brand || selectedSizes.length === 0) {
               modalError.textContent = 'Please fill out all required fields and verify product image.';
               modalError.style.display = 'block';
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Save Product';
               return;
             }
-
-            const method = id ? 'PUT' : 'POST';
-            const url = id ? `http://localhost:5000/admin/products/${id}` : 'http://localhost:5000/admin/products';
 
             const payload = {
               title, brand, category, titleDescription, mrp, price, imageUrl: finalImageUrl, sizes,
@@ -3470,49 +3467,54 @@ void main() {
               sizeStock, couponApplicable
             };
 
+            // CLOUD FIRST: Save to Netlify serverless function (the single source of truth).
+            // The cloud assigns the authoritative product ID for new products.
             let savedProduct = null;
+            let cloudSaveError = null;
             try {
-              const controller = new AbortController();
-              const timeoutId = setTimeout(() => controller.abort(), 2500);
-              const res = await fetch(url, {
-                method,
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${user ? user.token : ''}`
-                },
-                body: JSON.stringify(payload),
-                signal: controller.signal
-              });
-              clearTimeout(timeoutId);
-              const result = await res.json();
-              if (res.ok && result.success && result.product) {
-                savedProduct = result.product;
-              }
-            } catch (err) {
-              console.log('[DevTech Admin] Backend server offline, saving product to local catalog.');
-            }
+              const cloudPayload = id
+                ? { id, pid: id, ...payload }  // PUT: include existing ID
+                : { ...payload };               // POST: let cloud generate new ID
 
-            // Sync to Netlify Serverless Cloud DB so all devices see this product
-            try {
               const cloudRes = await fetch(getCloudApiUrl(), {
                 method: id ? 'PUT' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  id: id || (savedProduct && (savedProduct.id || savedProduct.pid)) || undefined,
-                  pid: id || (savedProduct && (savedProduct.id || savedProduct.pid)) || undefined,
-                  ...payload
-                }),
-                signal: AbortSignal.timeout(6000)
+                body: JSON.stringify(cloudPayload),
+                signal: AbortSignal.timeout(10000)
               });
-              if (cloudRes.ok) {
-                const cloudResult = await cloudRes.json();
-                if (cloudResult.success && cloudResult.product) {
-                  savedProduct = savedProduct || cloudResult.product;
-                }
+              const cloudResult = await cloudRes.json();
+              if (cloudRes.ok && cloudResult.success && cloudResult.product) {
+                savedProduct = cloudResult.product;
+                console.log(`[DevTech Admin] Product ${id ? 'updated' : 'created'} in cloud:`, savedProduct.id);
+              } else {
+                cloudSaveError = cloudResult.error || `Cloud returned ${cloudRes.status}`;
+                console.error('[DevTech Admin] Cloud save failed:', cloudSaveError);
               }
             } catch (cloudErr) {
-              console.log('[DevTech Admin] Cloud products sync error:', cloudErr.message);
+              cloudSaveError = cloudErr.message;
+              console.error('[DevTech Admin] Cloud save error:', cloudErr.message);
             }
+
+            // If cloud save failed, show error and stop — do not silently save to localStorage only
+            if (!savedProduct) {
+              modalError.textContent = `❌ Failed to save product to cloud: ${cloudSaveError || 'Unknown error'}. Please check your internet connection and try again.`;
+              modalError.style.display = 'block';
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Save Product';
+              return;
+            }
+
+            // ALSO try to sync to local DB (optional, best-effort only)
+            try {
+              const localMethod = id ? 'PUT' : 'POST';
+              const localUrl = id ? `http://localhost:5000/admin/products/${id}` : 'http://localhost:5000/admin/products';
+              await fetch(localUrl, {
+                method: localMethod,
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user ? user.token : ''}` },
+                body: JSON.stringify({ id: savedProduct.id, pid: savedProduct.pid, ...payload }),
+                signal: AbortSignal.timeout(2000)
+              });
+            } catch (e) { /* Local DB offline — that's fine, cloud is the source of truth */ }
 
             const prodIdVal = (savedProduct && (savedProduct.id || savedProduct.pid)) || id || ('prod_' + Date.now());
             const newProductObj = {
