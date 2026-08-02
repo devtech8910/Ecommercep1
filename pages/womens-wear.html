@@ -427,7 +427,7 @@
           const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
           
           const cloudUrl = isLocalhost
-            ? 'https://devtech8910.netlify.app/.netlify/functions/products'
+            ? 'https://fashion-company.netlify.app/.netlify/functions/products'
             : '/.netlify/functions/products';
 
           const cloudFetch = fetch(cloudUrl, { signal: AbortSignal.timeout(6000) })

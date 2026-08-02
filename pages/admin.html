@@ -2555,7 +2555,7 @@ void main() {
           // Cloud API URL — always goes through the Netlify serverless function (single source of truth)
           function getCloudApiUrl() {
             return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-              ? 'https://devtech8910.netlify.app/.netlify/functions/products'
+              ? 'https://fashion-company.netlify.app/.netlify/functions/products'
               : '/.netlify/functions/products';
           }
 
