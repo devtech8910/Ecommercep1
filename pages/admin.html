@@ -3409,39 +3409,68 @@ void main() {
                   // Already a URL — use as-is (cross-device compatible)
                   return item.src;
                 }
-                // Base64 image — attempt local backend upload with short timeout.
-                // If local server is offline (Netlify / other devices), base64 is stored
-                // directly in the cloud and displays on all devices without a server.
+                
+                // Base64 image — upload to Catbox.moe for permanent, keyless, free hosting
                 try {
-                  const controller = new AbortController();
-                  const timeoutId = setTimeout(() => controller.abort(), 2500);
-                  const uploadRes = await fetch('http://localhost:5000/admin/upload', {
+                  const blobRes = await fetch(item.src);
+                  const blob = await blobRes.blob();
+                  
+                  const formData = new FormData();
+                  formData.append('reqtype', 'fileupload');
+                  formData.append('fileToUpload', blob, item.filename || `product_img_${index}.jpg`);
+
+                  const uploadRes = await fetch('https://catbox.moe/user/api.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      base64Data: item.src,
-                      filename: item.filename || `product_img_${index}.jpg`
-                    }),
-                    signal: controller.signal
+                    body: formData,
+                    signal: AbortSignal.timeout(12000)
                   });
-                  clearTimeout(timeoutId);
+
                   if (uploadRes.ok) {
-                    const uploadResult = await uploadRes.json();
-                    if (uploadResult.success && uploadResult.url) {
-                      console.log('[DevTech Admin] Image uploaded to local server:', uploadResult.url);
-                      return uploadResult.url;
+                    const imageUrl = await uploadRes.text();
+                    if (imageUrl && imageUrl.startsWith('https://')) {
+                      console.log('[DevTech Admin] Image uploaded to Catbox:', imageUrl.trim());
+                      return imageUrl.trim();
                     }
                   }
+                  throw new Error(`Catbox status ${uploadRes.status}`);
                 } catch (e) {
-                  console.log('[DevTech Admin] Local upload server offline — storing base64 directly (cross-device compatible).');
+                  console.error('[DevTech Admin] Catbox upload failed:', e.message);
+                  
+                  // Secondary fallback: Try uploading to local server (only when running locally)
+                  try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 2000);
+                    const localUploadRes = await fetch('http://localhost:5000/admin/upload', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        base64Data: item.src,
+                        filename: item.filename || `product_img_${index}.jpg`
+                      }),
+                      signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    if (localUploadRes.ok) {
+                      const localResult = await localUploadRes.json();
+                      if (localResult.success && localResult.url) {
+                        return localResult.url;
+                      }
+                    }
+                  } catch (localErr) {}
+                  
+                  throw new Error('Failed to upload product image to permanent cloud hosting.');
                 }
-                return item.src; // Use base64 directly — works on all devices
               });
 
               const uploadedUrls = await Promise.all(uploadPromises);
               finalImageUrl = uploadedUrls.filter(Boolean).join(', ');
             } catch (uploadErr) {
-              finalImageUrl = activeImagesList.map(item => item.src).filter(Boolean).join(', ');
+              console.error('[DevTech Admin] Image processing error:', uploadErr.message);
+              modalError.textContent = '❌ Image upload failed: ' + uploadErr.message;
+              modalError.style.display = 'block';
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Save Product';
+              return;
             }
 
             if (price > mrp) {
