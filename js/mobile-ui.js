@@ -245,11 +245,19 @@
     const SCROLL_THRESHOLD = 4;
     const MIN_SCROLL_TOP = 60;
 
+    function isHomeScreen() {
+      const path = window.location.pathname.replace(/\\/g, '/');
+      return /\/(?:index\.html)?$/.test(path) || path.endsWith('/Ecom/') || path === '/' || path.endsWith('/');
+    }
+
     function showHeaderAndControls() {
       const navbar = document.querySelector('.navbar');
       if (navbar) {
         navbar.classList.remove('mobile-nav-hidden');
       }
+      document.querySelectorAll('.location-subbar').forEach((bar) => {
+        bar.classList.remove('mobile-controls-hidden');
+      });
       document.querySelectorAll('.cat-controls-bar').forEach((bar) => {
         bar.classList.remove('mobile-controls-hidden');
       });
@@ -264,6 +272,9 @@
       if (navbar) {
         navbar.classList.add('mobile-nav-hidden');
       }
+      document.querySelectorAll('.location-subbar').forEach((bar) => {
+        bar.classList.add('mobile-controls-hidden');
+      });
       document.querySelectorAll('.cat-controls-bar').forEach((bar) => {
         bar.classList.add('mobile-controls-hidden');
       });
@@ -273,6 +284,14 @@
       const currentScrollY = window.scrollY;
 
       if (window.innerWidth > 768) {
+        showHeaderAndControls();
+        lastScrollY = currentScrollY;
+        ticking = false;
+        return;
+      }
+
+      // On Home Screen: ALWAYS keep header section & location bar fixed and visible at the top of the viewport!
+      if (isHomeScreen()) {
         showHeaderAndControls();
         lastScrollY = currentScrollY;
         ticking = false;
@@ -289,11 +308,11 @@
 
       const delta = currentScrollY - lastScrollY;
 
-      // Scroll DOWN -> Immediately HIDE both search bar & filters bar
+      // Scroll DOWN -> Immediately HIDE search bar, location bar & controls
       if (delta > SCROLL_THRESHOLD) {
         hideHeaderAndControls();
       }
-      // Scroll UP -> Immediately SHOW both search bar & filters bar docked together
+      // Scroll UP -> Immediately SHOW controls on non-home screens
       else if (delta < -SCROLL_THRESHOLD) {
         showHeaderAndControls();
       }

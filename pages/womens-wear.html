@@ -386,28 +386,43 @@
           };
         }
 
+        function mergeProducts(existing, incoming) {
+          const merged = [...existing];
+          incoming.forEach(fp => {
+            const fpId = String(fp.id || fp.pid || fp.title || '').toLowerCase();
+            if (!merged.some(cp => String(cp.id || cp.pid || cp.title || '').toLowerCase() === fpId)) {
+              merged.push(fp);
+            }
+          });
+          return merged;
+        }
+
         function loadWomensCatalog() {
           const storedRaw = localStorage.getItem('dtf_admin_products');
           let localAdminList = [];
           try { localAdminList = JSON.parse(storedRaw) || []; } catch(e) {}
 
-          fetch(apiUrl('/products'))
+          const cloudBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'https://devtech8910.netlify.app/.netlify/functions/products'
+            : '/.netlify/functions/products';
+
+          const localFetch = fetch(apiUrl('/products'), { signal: AbortSignal.timeout(3000) })
             .then(res => res.json())
-            .then(data => {
-              const fetched = data.products || data || [];
-              if (Array.isArray(fetched)) {
-                const combined = [...localAdminList];
-                fetched.forEach(fp => {
-                  const fpId = String(fp.id || fp.pid || fp.title || '').toLowerCase();
-                  if (!combined.some(cp => String(cp.id || cp.pid || cp.title || '').toLowerCase() === fpId)) {
-                    combined.push(fp);
-                  }
-                });
-                localStorage.setItem('dtf_admin_products', JSON.stringify(combined));
-                allProducts = combined.filter(p => categoryKey(p.category) === 'womens').map(mapWomensProduct);
-              } else {
-                allProducts = localAdminList.filter(p => categoryKey(p.category) === 'womens').map(mapWomensProduct);
-              }
+            .then(data => data.products || data || [])
+            .catch(() => []);
+
+          const cloudFetch = fetch(cloudBaseUrl, { signal: AbortSignal.timeout(6000) })
+            .then(res => res.json())
+            .then(data => data.products || data || [])
+            .catch(() => []);
+
+          Promise.all([localFetch, cloudFetch])
+            .then(([localData, cloudData]) => {
+              let combined = [...localAdminList];
+              if (Array.isArray(localData)) combined = mergeProducts(combined, localData);
+              if (Array.isArray(cloudData)) combined = mergeProducts(combined, cloudData);
+              localStorage.setItem('dtf_admin_products', JSON.stringify(combined));
+              allProducts = combined.filter(p => categoryKey(p.category) === 'womens').map(mapWomensProduct);
               filterAndSortProducts();
             })
             .catch(() => {

@@ -201,6 +201,15 @@
     left: 8px !important;
     right: 8px !important;
     max-width: calc(100vw - 16px) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.3s ease !important;
+    will-change: transform, opacity;
+  }
+
+  .location-subbar.mobile-controls-hidden {
+    transform: translateY(-220%) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
   }
 
   .location-subbar-container {

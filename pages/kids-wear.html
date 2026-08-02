@@ -369,28 +369,42 @@
           };
         }
 
+        function mergeProducts(existing, incoming) {
+          const combined = [...existing];
+          (incoming || []).forEach(fp => {
+            const fpId = String(fp.id || fp.pid || fp.title || '').toLowerCase();
+            if (!combined.some(cp => String(cp.id || cp.pid || cp.title || '').toLowerCase() === fpId)) {
+              combined.push(fp);
+            }
+          });
+          return combined;
+        }
+
         function loadKidsCatalog() {
           const storedRaw = localStorage.getItem('dtf_admin_products');
           let localAdminList = [];
           try { localAdminList = JSON.parse(storedRaw) || []; } catch(e) {}
 
-          fetch(apiUrl('/products'))
+          const cloudBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'https://devtech8910.netlify.app/.netlify/functions/products'
+            : '/.netlify/functions/products';
+
+          const localFetch = fetch(apiUrl('/products'), { signal: AbortSignal.timeout(3000) })
             .then(res => res.json())
-            .then(data => {
-              const fetched = data.products || data || [];
-              if (Array.isArray(fetched)) {
-                const combined = [...localAdminList];
-                fetched.forEach(fp => {
-                  const fpId = String(fp.id || fp.pid || fp.title || '').toLowerCase();
-                  if (!combined.some(cp => String(cp.id || cp.pid || cp.title || '').toLowerCase() === fpId)) {
-                    combined.push(fp);
-                  }
-                });
-                localStorage.setItem('dtf_admin_products', JSON.stringify(combined));
-                allProducts = combined.filter(p => categoryKey(p.category) === 'kids').map(mapKidsProduct);
-              } else {
-                allProducts = localAdminList.filter(p => categoryKey(p.category) === 'kids').map(mapKidsProduct);
-              }
+            .then(data => data.products || data || [])
+            .catch(() => []);
+
+          const cloudFetch = fetch(cloudBase, { signal: AbortSignal.timeout(6000) })
+            .then(res => res.json())
+            .then(data => data.products || data || [])
+            .catch(() => []);
+
+          Promise.all([localFetch, cloudFetch])
+            .then(([localData, cloudData]) => {
+              let combined = mergeProducts(localAdminList, localData);
+              combined = mergeProducts(combined, cloudData);
+              localStorage.setItem('dtf_admin_products', JSON.stringify(combined));
+              allProducts = combined.filter(p => categoryKey(p.category) === 'kids').map(mapKidsProduct);
               filterAndSortProducts();
             })
             .catch(() => {

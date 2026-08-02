@@ -2552,31 +2552,113 @@ void main() {
             renderCategoryTrends(trends);
           }
 
+          const CLOUD_JSONBLOB_URL = 'https://jsonblob.com/api/jsonBlob/019fc117-cf81-7c70-8559-16210c2b49ae';
+
+          function getCloudApiUrl() {
+            return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+              ? 'https://devtech8910.netlify.app/.netlify/functions/products'
+              : '/.netlify/functions/products';
+          }
+
+          async function syncProductsToCloud(productsList) {
+            if (!Array.isArray(productsList)) return;
+            try {
+              await fetch(CLOUD_JSONBLOB_URL, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                },
+                body: JSON.stringify(productsList),
+                signal: AbortSignal.timeout(6000)
+              });
+              console.log('[DevTech Admin] Synced products to central Cloud DB');
+            } catch (err) {
+              console.warn('[DevTech Admin] Central Cloud DB sync warning:', err.message);
+            }
+          }
+
+          function mergeProductLists(baseList, newList) {
+            const map = new Map();
+            (baseList || []).forEach(p => {
+              const idKey = String(p.id || p.pid || '').toLowerCase();
+              if (idKey) map.set(idKey, p);
+            });
+            (newList || []).forEach(p => {
+              const idKey = String(p.id || p.pid || '').toLowerCase();
+              if (idKey) {
+                const existing = map.get(idKey);
+                map.set(idKey, existing ? { ...existing, ...p } : p);
+              }
+            });
+            return Array.from(map.values());
+          }
+
           // Fetch products catalog list
           async function fetchProducts() {
+            let localList = [];
+            let cloudList = [];
+            let jsonblobList = [];
+            
             try {
               const res = await fetch('http://localhost:5000/admin/products', {
-                headers: { 'Authorization': `Bearer ${user.token}` }
+                headers: { 'Authorization': `Bearer ${user.token}` },
+                signal: AbortSignal.timeout(3000)
               });
-              const result = await res.json();
-              if (!res.ok || !result.success) throw new Error(result.error);
-
-              cachedProducts = result.products || [];
-              localStorage.setItem('dtf_admin_products', JSON.stringify(cachedProducts));
-              updateCategoryCounts();
-              filterAndRenderProducts();
-            } catch (err) {
-              console.error('Products load error:', err.message);
-              const stored = localStorage.getItem('dtf_admin_products');
-              if (stored !== null) {
-                try { cachedProducts = JSON.parse(stored); } catch (e) { cachedProducts = []; }
-              } else {
-                cachedProducts = [];
-                localStorage.setItem('dtf_admin_products', JSON.stringify([]));
+              if (res.ok) {
+                const result = await res.json();
+                if (result.success && Array.isArray(result.products)) {
+                  localList = result.products;
+                }
               }
-              updateCategoryCounts();
-              filterAndRenderProducts();
+            } catch (err) {
+              console.log('[DevTech Admin] Local DB fetch offline/timed out');
             }
+
+            try {
+              const res = await fetch(getCloudApiUrl(), {
+                headers: { 'Accept': 'application/json' },
+                signal: AbortSignal.timeout(6000)
+              });
+              if (res.ok) {
+                const result = await res.json();
+                if (result.success && Array.isArray(result.products)) {
+                  cloudList = result.products;
+                }
+              }
+            } catch (err) {
+              console.log('[DevTech Admin] Cloud products fetch error:', err.message);
+            }
+
+            try {
+              const jres = await fetch(CLOUD_JSONBLOB_URL, {
+                headers: { 'Accept': 'application/json' },
+                signal: AbortSignal.timeout(6000)
+              });
+              if (jres.ok) {
+                const jdata = await jres.json();
+                if (Array.isArray(jdata)) {
+                  jsonblobList = jdata;
+                }
+              }
+            } catch (err) {
+              console.log('[DevTech Admin] JSONBlob products fetch warning:', err.message);
+            }
+
+            const stored = localStorage.getItem('dtf_admin_products');
+            let storedList = [];
+            if (stored !== null) {
+              try { storedList = JSON.parse(stored) || []; } catch (e) { storedList = []; }
+            }
+
+            let combined = mergeProductLists(storedList, localList);
+            combined = mergeProductLists(combined, cloudList);
+            combined = mergeProductLists(combined, jsonblobList);
+
+            cachedProducts = combined;
+            localStorage.setItem('dtf_admin_products', JSON.stringify(cachedProducts));
+            updateCategoryCounts();
+            filterAndRenderProducts();
           }
 
           function renderProductTable(products) {
@@ -2590,21 +2672,29 @@ void main() {
             }
 
             products.forEach(p => {
+              const rawImages = window.dtfSplitImages ? window.dtfSplitImages(p.image_url || p.image || p.imageUrl || '') : (p.image_url || p.image || p.imageUrl || '').split(',');
+              const rawFirstImg = rawImages[0] || '';
+              const firstImg = window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl(rawFirstImg) : rawFirstImg;
+
               const tr = document.createElement('tr');
-              const rawImagesArray = window.dtfSplitImages ? window.dtfSplitImages(p.image_url || p.image || p.imageUrl || '') : (p.image_url || p.image || p.imageUrl || '').split(',');
-              const imgSrc = (window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl(rawImagesArray[0] ? rawImagesArray[0].trim() : '') : (rawImagesArray[0] ? rawImagesArray[0].trim() : '')) || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop';
+              tr.className = 'hover:bg-surface-variant/20 transition-colors border-b border-outline-variant/10';
               tr.innerHTML = `
-                <td class="py-4 px-3 flex items-center gap-3">
-                  <div class="w-10 h-12 rounded-lg overflow-hidden border border-outline-variant/10 bg-surface-container-low shrink-0">
-                    <img src="${imgSrc}" class="w-full h-full object-cover" alt="${p.title}" />
+                <td class="py-4 px-4 font-semibold text-on-surface">
+                  <div class="flex items-center gap-3">
+                    <img src="${firstImg}" alt="${p.title}" class="w-10 h-12 object-cover rounded-lg bg-surface-variant/40 flex-shrink-0" onerror="this.src='https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=150&q=80'" />
+                    <div>
+                      <div class="font-bold text-on-surface line-clamp-1">${p.title}</div>
+                      <div class="text-xs text-on-surface-variant/60 font-mono">PID: #${p.id || p.pid} • ${p.brand || 'DevTech'}</div>
+                    </div>
                   </div>
-                  <span class="font-semibold text-on-surface text-xs md:text-sm line-clamp-1">${p.title}</span>
                 </td>
-                <td class="py-4 px-3 text-on-surface-variant/80 text-xs uppercase tracking-wider font-label-caps">${p.category} Wear</td>
-                <td class="py-4 px-3 font-semibold text-on-surface text-xs md:text-sm font-data-mono">₹${parseFloat(p.price).toLocaleString('en-IN')}</td>
-                <td class="py-4 px-3 text-right space-x-2 whitespace-nowrap">
-                  <button class="edit-btn px-2.5 py-1.5 rounded-lg border border-outline-variant/20 hover:border-primary/50 text-xs font-semibold text-primary transition-all">Edit</button>
-                  <button class="delete-btn px-2.5 py-1.5 rounded-lg border border-error/20 hover:border-error text-xs font-semibold text-error transition-all">Delete</button>
+                <td class="py-4 px-4 font-medium text-on-surface-variant text-xs">${p.category}</td>
+                <td class="py-4 px-4 font-mono font-bold text-on-surface text-xs">₹${parseFloat(p.price || 0).toLocaleString('en-IN')}</td>
+                <td class="py-4 px-4 text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <button class="edit-btn px-2.5 py-1.5 rounded-lg border border-outline-variant/40 hover:border-primary text-xs font-semibold text-primary transition-all">Edit</button>
+                    <button class="delete-btn px-2.5 py-1.5 rounded-lg border border-error/20 hover:border-error text-xs font-semibold text-error transition-all">Delete</button>
+                  </div>
                 </td>
               `;
 
@@ -2616,18 +2706,30 @@ void main() {
               // Delete click
               tr.querySelector('.delete-btn').addEventListener('click', async () => {
                 if (confirm(`⚠️ Are you sure you want to permanently delete "${p.title}"?\n\nThis action cannot be undone.`)) {
+                  const pid = p.id || p.pid;
                   try {
-                    const res = await fetch(`http://localhost:5000/admin/products/${p.id}`, {
+                    await fetch(`http://localhost:5000/admin/products/${pid}`, {
                       method: 'DELETE',
-                      headers: { 'Authorization': `Bearer ${user.token}` }
+                      headers: { 'Authorization': `Bearer ${user.token}` },
+                      signal: AbortSignal.timeout(2500)
                     });
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.error || 'Delete request failed.');
-                    alert(`✅ ${data.message || 'Product deleted successfully.'}`);
-                    fetchProducts();
-                  } catch (err) {
-                    alert(`❌ Delete failed: ${err.message}`);
-                  }
+                  } catch (e) {}
+
+                  try {
+                    await fetch(getCloudApiUrl(), {
+                      method: 'DELETE',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ id: pid, pid: pid }),
+                      signal: AbortSignal.timeout(5000)
+                    });
+                  } catch (e) {}
+
+                  cachedProducts = cachedProducts.filter(item => String(item.id || item.pid) !== String(pid));
+                  localStorage.setItem('dtf_admin_products', JSON.stringify(cachedProducts));
+                  window.dispatchEvent(new Event('dtf:admin:products:updated'));
+                  alert(`✅ Product deleted successfully.`);
+                  updateCategoryCounts();
+                  filterAndRenderProducts();
                 }
               });
 
@@ -3390,6 +3492,28 @@ void main() {
               console.log('[DevTech Admin] Backend server offline, saving product to local catalog.');
             }
 
+            // Sync to Netlify Serverless Cloud DB so all devices see this product
+            try {
+              const cloudRes = await fetch(getCloudApiUrl(), {
+                method: id ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  id: id || (savedProduct && (savedProduct.id || savedProduct.pid)) || undefined,
+                  pid: id || (savedProduct && (savedProduct.id || savedProduct.pid)) || undefined,
+                  ...payload
+                }),
+                signal: AbortSignal.timeout(6000)
+              });
+              if (cloudRes.ok) {
+                const cloudResult = await cloudRes.json();
+                if (cloudResult.success && cloudResult.product) {
+                  savedProduct = savedProduct || cloudResult.product;
+                }
+              }
+            } catch (cloudErr) {
+              console.log('[DevTech Admin] Cloud products sync error:', cloudErr.message);
+            }
+
             const prodIdVal = (savedProduct && (savedProduct.id || savedProduct.pid)) || id || ('prod_' + Date.now());
             const newProductObj = {
               ...(savedProduct || {}),
@@ -3856,18 +3980,46 @@ void main() {
               const reason = document.getElementById('restock-reason').value || 'Manual restock';
 
               try {
-                const res = await fetch(`http://localhost:5000/admin/products/${pid}/restock`, {
-                  method: 'PUT',
-                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
-                  body: JSON.stringify({ size, quantity, reason })
-                });
-                const result = await res.json();
-                if (!res.ok || !result.success) throw new Error(result.error);
+                try {
+                  const res = await fetch(`http://localhost:5000/admin/products/${pid}/restock`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
+                    body: JSON.stringify({ size, quantity, reason }),
+                    signal: AbortSignal.timeout(2500)
+                  });
+                } catch (e) {}
+
+                const prodIndex = cachedProducts.findIndex(p => String(p.id || p.pid) === String(pid));
+                if (prodIndex > -1) {
+                  const prod = cachedProducts[prodIndex];
+                  const stockObj = {};
+                  (prod.size_stock || prod.sizeStock || 'S:10, M:10, L:10').split(',').forEach(pair => {
+                    const [s, q] = pair.trim().split(':');
+                    if (s && q !== undefined) stockObj[s.trim().toUpperCase()] = parseInt(q.trim(), 10) || 0;
+                  });
+                  const szKey = size.trim().toUpperCase();
+                  stockObj[szKey] = (stockObj[szKey] || 0) + quantity;
+                  const newStockStr = Object.entries(stockObj).map(([s, q]) => `${s}:${q}`).join(', ');
+                  
+                  prod.size_stock = newStockStr;
+                  prod.sizeStock = newStockStr;
+
+                  await fetch(getCloudApiUrl(), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...prod, id: pid, pid: pid, sizeStock: newStockStr, size_stock: newStockStr }),
+                    signal: AbortSignal.timeout(5000)
+                  }).catch(() => {});
+
+                  localStorage.setItem('dtf_admin_products', JSON.stringify(cachedProducts));
+                  window.dispatchEvent(new Event('dtf:admin:products:updated'));
+                }
 
                 document.getElementById('restock-modal').classList.add('hidden');
                 fetchInventoryStats();
                 fetchStockMovements();
                 fetchProductPerformance();
+                filterAndRenderProducts();
               } catch (err) {
                 alert('Restock failed: ' + err.message);
               }
@@ -4209,20 +4361,50 @@ void main() {
               }
 
               try {
-                const res = await fetch('http://localhost:5000/admin/products/bulk-restock', {
-                  method: 'PUT',
-                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
-                  body: JSON.stringify({ updates })
-                });
-                const result = await res.json();
-                if (!res.ok || !result.success) throw new Error(result.error);
+                try {
+                  await fetch('http://localhost:5000/admin/products/bulk-restock', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
+                    body: JSON.stringify({ updates }),
+                    signal: AbortSignal.timeout(2500)
+                  });
+                } catch (e) {}
+
+                for (const update of updates) {
+                  const prodIndex = cachedProducts.findIndex(p => String(p.id || p.pid) === String(update.pid));
+                  if (prodIndex > -1) {
+                    const prod = cachedProducts[prodIndex];
+                    const stockObj = {};
+                    (prod.size_stock || prod.sizeStock || 'S:10, M:10, L:10').split(',').forEach(pair => {
+                      const [s, q] = pair.trim().split(':');
+                      if (s && q !== undefined) stockObj[s.trim().toUpperCase()] = parseInt(q.trim(), 10) || 0;
+                    });
+                    const szKey = (update.size || 'M').trim().toUpperCase();
+                    stockObj[szKey] = (stockObj[szKey] || 0) + (parseInt(update.quantity, 10) || 0);
+                    const newStockStr = Object.entries(stockObj).map(([s, q]) => `${s}:${q}`).join(', ');
+                    
+                    prod.size_stock = newStockStr;
+                    prod.sizeStock = newStockStr;
+
+                    await fetch(getCloudApiUrl(), {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ ...prod, id: update.pid, pid: update.pid, sizeStock: newStockStr, size_stock: newStockStr }),
+                      signal: AbortSignal.timeout(5000)
+                    }).catch(() => {});
+                  }
+                }
+
+                localStorage.setItem('dtf_admin_products', JSON.stringify(cachedProducts));
+                window.dispatchEvent(new Event('dtf:admin:products:updated'));
 
                 const modal = document.getElementById('bulk-restock-modal');
                 if (modal) modal.classList.add('hidden');
-                alert('✅ Restocked ' + result.updated + ' product(s) successfully!');
+                alert('✅ Restocked ' + updates.length + ' product(s) successfully!');
                 fetchInventoryStats();
                 fetchStockMovements();
                 fetchProductPerformance();
+                filterAndRenderProducts();
               } catch (err) {
                 alert('Bulk restock failed: ' + err.message);
               }
