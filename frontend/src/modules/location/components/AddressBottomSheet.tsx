@@ -197,6 +197,29 @@ export const AddressBottomSheet: React.FC<AddressBottomSheetProps> = ({
             let finalPincode = isPincodeMissing ? '' : pincode;
             let resolvedArea = area;
 
+            // Validate pincode if present (Req 4)
+            if (!isPincodeMissing && pincode && state) {
+              try {
+                const valRes = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+                if (valRes.ok) {
+                  const valData = await valRes.json();
+                  if (Array.isArray(valData) && valData[0] && valData[0].Status === 'Success' && Array.isArray(valData[0].PostOffice)) {
+                    const isMatch = valData[0].PostOffice.some((po: any) => 
+                      po.State.toLowerCase() === state.toLowerCase() &&
+                      matchDistrictNames(po.District, district)
+                    );
+                    if (!isMatch) {
+                      console.warn(`[DevTech Geo] Pincode ${pincode} does not match state "${state}" & district "${district}". Invalidating.`);
+                      isPincodeMissing = true;
+                      finalPincode = '';
+                    }
+                  }
+                }
+              } catch (e) {
+                console.warn('Pincode validation request failed:', e);
+              }
+            }
+
             // Fallback PIN code resolution using India Post Office search API (Req 4)
             if (isPincodeMissing && state) {
               const searchTerms = [addr.county, addr.village, addr.city, addr.town].filter(Boolean);

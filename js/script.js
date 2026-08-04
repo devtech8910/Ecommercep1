@@ -1508,8 +1508,41 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
       console.warn('Nominatim reverse geocode attempt error:', err);
     }
 
-    // AP & Regional District Name Mapping
-    const apDistrictMap = {
+    // Helper to check district match, supporting new AP district mappings to historical records
+    function isDistrictMatch(poDistrict, resolvedDistrict) {
+      if (!poDistrict || !resolvedDistrict) return false;
+      const poDist = poDistrict.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const resDist = resolvedDistrict.toLowerCase().replace(/[^a-z0-9]/g, '');
+      
+      if (poDist.includes(resDist) || resDist.includes(poDist)) return true;
+      
+      const apDistrictMap = {
+        'ntr': ['krishna'],
+        'anakapalli': ['visakhapatnam'],
+        'kakinada': ['eastgodavari', 'godavari'],
+        'konaseema': ['eastgodavari', 'godavari'],
+        'eluru': ['westgodavari', 'godavari'],
+        'palnadu': ['guntur'],
+        'bapatla': ['guntur', 'prakasam'],
+        'nandyal': ['kurnool'],
+        'sri sathya sai': ['anantapur'],
+        'tirupati': ['chittoor'],
+        'annamayya': ['cuddapah', 'kadapa', 'ysr']
+      };
+
+      for (const [newDist, origDists] of Object.entries(apDistrictMap)) {
+        const cleanNew = newDist.replace(/[^a-z0-9]/g, '');
+        if (resDist.includes(cleanNew)) {
+          if (origDists.some(orig => poDist.includes(orig) || orig.includes(poDist))) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    // Apply district formatting with historical mapping
+    const apDistrictFormatMap = {
       'ntr': 'Krishna',
       'anakapalli': 'Visakhapatnam',
       'kakinada': 'East Godavari',
@@ -1524,19 +1557,41 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
     };
 
     const normDist = district.toLowerCase();
-    for (const [newDist, origDist] of Object.entries(apDistrictMap)) {
+    for (const [newDist, origDist] of Object.entries(apDistrictFormatMap)) {
       if (normDist.includes(newDist)) {
         district = `${district} (${origDist})`;
         break;
       }
     }
 
-    // India Post Office API Fallback (If Pincode missing or invalid)
-    if (!pin || pin.length !== 6) {
+    // India Post Office API Validation (Verify if Nominatim postcode matches the resolved place)
+    if (pin && pin.length === 6 && country.toLowerCase().includes('india')) {
+      try {
+        const valRes = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+        if (valRes.ok) {
+          const valData = await valRes.json();
+          if (Array.isArray(valData) && valData[0] && valData[0].Status === 'Success' && Array.isArray(valData[0].PostOffice)) {
+            const isMatch = valData[0].PostOffice.some(po => 
+              (state && po.State && po.State.toLowerCase() === state.toLowerCase()) &&
+              isDistrictMatch(po.District, district)
+            );
+            if (!isMatch) {
+              console.warn(`[DevTech Geo] Pincode ${pin} does not match state "${state}" & district "${district}". Invalidating pin.`);
+              pin = ''; // Mismatched pincode — mark invalid to trigger fallback search
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Pincode verification failed:', e);
+      }
+    }
+
+    // India Post Office API Fallback (If Pincode missing or invalidated by check)
+    if ((!pin || pin.length !== 6) && country.toLowerCase().includes('india')) {
       const searchPlaces = [area, district].filter(Boolean);
       for (const place of searchPlaces) {
         try {
-          const cleanToken = place.split(',')[0].split(' ')[0].trim();
+          const cleanToken = place.split(',')[0].split(' ')[0].replace(/[^a-zA-Z0-9]/g, '').trim();
           if (cleanToken.length < 3) continue;
 
           const ipRes = await fetch(`https://api.postalpincode.in/postoffice/${encodeURIComponent(cleanToken)}`);
@@ -1544,12 +1599,15 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
             const ipData = await ipRes.json();
             if (Array.isArray(ipData) && ipData[0] && ipData[0].Status === 'Success' && Array.isArray(ipData[0].PostOffice)) {
               const matchedPO = ipData[0].PostOffice.find(po => 
-                (state && po.State && po.State.toLowerCase() === state.toLowerCase()) ||
-                (district && po.District && po.District.toLowerCase().includes(district.toLowerCase()))
+                (state && po.State && po.State.toLowerCase() === state.toLowerCase()) &&
+                isDistrictMatch(po.District, district)
+              ) || ipData[0].PostOffice.find(po => 
+                state && po.State && po.State.toLowerCase() === state.toLowerCase()
               ) || ipData[0].PostOffice[0];
 
               if (matchedPO && matchedPO.Pincode) {
                 pin = matchedPO.Pincode;
+                console.log(`[DevTech Geo] Resolved verified pincode ${pin} for place "${cleanToken}"`);
                 if (area === 'Detected Location') area = matchedPO.Name;
                 break;
               }
