@@ -1348,7 +1348,7 @@
             const fetchPromises = [];
             if (cleanId) {
               // Get fresh product from cloud by ID
-              const cloudFetch = fetch(`${cloudUrl}?id=${encodeURIComponent(cleanId)}`, { signal: AbortSignal.timeout(6000) })
+              const cloudFetch = fetch(`${cloudUrl}?id=${encodeURIComponent(cleanId)}`, { signal: AbortSignal.timeout(15000) })
                 .then(res => res.ok ? res.json() : null)
                 .then(data => {
                   if (data && data.success && data.product) {
@@ -1360,7 +1360,7 @@
 
               // Get fresh product from local DB (only if running locally)
               if (isLocalhost) {
-                const localFetch = fetch(apiUrl(`/products/${encodeURIComponent(cleanId)}`), { signal: AbortSignal.timeout(3000) })
+                const localFetch = fetch(apiUrl(`/products/${encodeURIComponent(cleanId)}`), { signal: AbortSignal.timeout(5000) })
                   .then(res => res.ok ? res.json() : null)
                   .then(data => {
                     if (data && data.success && data.product) {
@@ -1393,7 +1393,7 @@
               let cloudAll = [];
               let localAll = [];
 
-              const cloudAllFetch = fetch(cloudUrl, { signal: AbortSignal.timeout(6000) })
+              const cloudAllFetch = fetch(cloudUrl, { signal: AbortSignal.timeout(15000) })
                 .then(res => res.ok ? res.json() : null)
                 .then(data => {
                   if (data && data.success && Array.isArray(data.products)) {
@@ -1404,7 +1404,7 @@
               allFetchPromises.push(cloudAllFetch);
 
               if (isLocalhost) {
-                const localAllFetch = fetch(apiUrl('/products'), { signal: AbortSignal.timeout(3000) })
+                const localAllFetch = fetch(apiUrl('/products'), { signal: AbortSignal.timeout(5000) })
                   .then(res => res.ok ? res.json() : null)
                   .then(data => {
                     if (data && data.success && Array.isArray(data.products)) {

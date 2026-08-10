@@ -470,60 +470,55 @@
             populateBrandsFilter();
           }
 
-          // 2. Fetch fresh data from authoritative sources
+          // 2. Fetch fresh data from cloud (authoritative source) with retry
           const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
           
           const cloudUrl = isLocalhost
             ? 'https://fashion-company.netlify.app/.netlify/functions/products'
             : '/.netlify/functions/products';
 
-          const cloudFetch = fetch(cloudUrl, { signal: AbortSignal.timeout(6000) })
-            .then(res => {
-              if (!res.ok) throw new Error(`HTTP ${res.status}`);
-              return res.json();
-            })
-            .then(data => {
-              if (data && data.success && Array.isArray(data.products)) {
-                return data.products;
+          async function fetchCloudWithRetry(maxAttempts) {
+            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+              try {
+                const res = await fetch(cloudUrl + '?category=mens&t=' + Date.now(), {
+                  headers: { 'Accept': 'application/json' },
+                  signal: AbortSignal.timeout(attempt === 1 ? 15000 : 20000)
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                if (data && data.success && Array.isArray(data.products)) {
+                  return data.products;
+                }
+                return [];
+              } catch (err) {
+                console.warn('[DevTech Store] Cloud fetch attempt ' + attempt + ' failed:', err.message);
+                if (attempt < maxAttempts) {
+                  await new Promise(r => setTimeout(r, 1500 * attempt));
+                }
               }
-              return [];
-            })
-            .catch(err => {
-              console.warn('[DevTech Store] Cloud catalog fetch warning:', err.message);
-              return null; // Return null to indicate network/API failure
-            });
+            }
+            return null;
+          }
 
-          // Only query local DB when running locally
-          const localFetch = isLocalhost
-            ? fetch(apiUrl('/products'), { signal: AbortSignal.timeout(3000) })
-                .then(res => res.json())
-                .then(data => data.products || data || [])
-                .catch(() => [])
-            : Promise.resolve([]);
-
-          Promise.all([cloudFetch, localFetch]).then(([cloudProducts, localProducts]) => {
-            // If cloud fetch failed (network down) but we have cache, keep using the cache
+          fetchCloudWithRetry(3).then(cloudProducts => {
             if (cloudProducts === null) {
-              console.log('[DevTech Store] Using cached catalog (cloud offline).');
+              console.log('[DevTech Store] All cloud fetch attempts failed. Using cache.');
+              if (localCacheList.length === 0) {
+                const noMsg = document.getElementById('no-products-msg');
+                if (noMsg) {
+                  noMsg.style.display = 'block';
+                  noMsg.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:40px 20px;">Unable to load products. Please refresh the page.</p>';
+                }
+              }
               return;
             }
 
-            // Cloud is authoritative. We overwrite localStorage.
-            let combined = [...cloudProducts];
-            if (isLocalhost && Array.isArray(localProducts)) {
-              localProducts.forEach(lp => {
-                const lpId = String(lp.id || lp.pid || lp.title || '').toLowerCase();
-                if (!combined.some(cp => String(cp.id || cp.pid || cp.title || '').toLowerCase() === lpId)) {
-                  combined.push(lp);
-                }
-              });
-            }
-
-            // Fresh data overwrites stale cache (no additive merging of deleted items)
-            localStorage.setItem('dtf_admin_products', JSON.stringify(combined));
-            allProducts = combined.filter(p => categoryKey(p.category) === 'mens').map(mapMensProduct);
+            // Cloud is authoritative — overwrite localStorage
+            localStorage.setItem('dtf_admin_products', JSON.stringify(cloudProducts));
+            allProducts = cloudProducts.filter(p => categoryKey(p.category) === 'mens').map(mapMensProduct);
             filterAndSortProducts();
             populateBrandsFilter();
+            console.log('[DevTech Store] Loaded ' + allProducts.length + ' mens products from cloud.');
           });
         }
 
