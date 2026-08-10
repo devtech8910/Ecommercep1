@@ -1,14 +1,15 @@
 // ============================================================
 // DEVTECH FASHION — NETLIFY SERVERLESS CLOUD PRODUCTS CATALOG
 // Single source of truth for cross-device product synchronisation
-// Uses Netlify Blobs — permanent, built-in Netlify storage
-// Netlify Functions v2 format (ESM with Request/Response API)
 // ============================================================
 
-import { getStore } from "@netlify/blobs";
+// IMPORTANT: Set CLOUD_PRODUCTS_URL as an environment variable in Netlify Dashboard
+// (Site settings → Environment variables) to keep the database URL private and secure.
+const CLOUD_PRODUCTS_URL = process.env.CLOUD_PRODUCTS_URL;
 
-const STORE_NAME = 'devtech-products';
-const CATALOG_KEY = 'catalog';
+if (!CLOUD_PRODUCTS_URL) {
+  console.error('[Products] CRITICAL: CLOUD_PRODUCTS_URL environment variable is not set!');
+}
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -17,23 +18,73 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json'
 };
 
-// Read all products from Netlify Blobs
+// Fetch the current product list from cloud storage with retry on transient errors
 async function getCloudProducts() {
-  try {
-    const store = getStore(STORE_NAME);
-    const data = await store.get(CATALOG_KEY, { type: 'json' });
-    return Array.isArray(data) ? data : [];
-  } catch (err) {
-    console.error('[Products] Blob read error:', err.message);
-    return [];
+  if (!CLOUD_PRODUCTS_URL) throw new Error('CLOUD_PRODUCTS_URL environment variable is not configured. Set it in Netlify Dashboard.');
+
+  const maxAttempts = 3;
+  let delay = 500;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch(CLOUD_PRODUCTS_URL, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+      }
+      if (res.status === 429 || res.status >= 500) {
+        if (attempt < maxAttempts) {
+          console.warn(`[Products GET] Cloud returned status ${res.status}. Retrying in ${delay}ms...`);
+          await new Promise(r => setTimeout(r, delay));
+          delay *= 2;
+          continue;
+        }
+      }
+      throw new Error(`Cloud GET failed: ${res.status} ${res.statusText}`);
+    } catch (err) {
+      if (attempt === maxAttempts) throw err;
+      console.warn(`[Products GET] Transient error (attempt ${attempt}):`, err.message);
+      await new Promise(r => setTimeout(r, delay));
+      delay *= 2;
+    }
   }
+  return [];
 }
 
-// Write the full product array to Netlify Blobs
+// Persist the full product list back to cloud storage with retry
 async function saveCloudProducts(products) {
-  const store = getStore(STORE_NAME);
-  await store.setJSON(CATALOG_KEY, products);
-  console.log(`[Products] Saved ${products.length} products to Netlify Blobs.`);
+  if (!CLOUD_PRODUCTS_URL) throw new Error('CLOUD_PRODUCTS_URL environment variable is not configured. Set it in Netlify Dashboard.');
+
+  const maxAttempts = 4;
+  let delay = 500;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch(CLOUD_PRODUCTS_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(products)
+      });
+      if (res.ok) {
+        console.log(`[Products] Saved ${products.length} products to cloud.`);
+        return;
+      }
+      if (res.status === 429 || res.status >= 500) {
+        if (attempt < maxAttempts) {
+          console.warn(`[Products PUT] Cloud returned status ${res.status}. Retrying in ${delay}ms...`);
+          await new Promise(r => setTimeout(r, delay));
+          delay *= 2;
+          continue;
+        }
+      }
+      throw new Error(`Cloud PUT failed: ${res.status} ${res.statusText}`);
+    } catch (err) {
+      if (attempt === maxAttempts) throw err;
+      console.warn(`[Products PUT] Transient error (attempt ${attempt}):`, err.message);
+      await new Promise(r => setTimeout(r, delay));
+      delay *= 2;
+    }
+  }
 }
 
 // Normalise a raw product payload into a consistent storage shape
@@ -75,61 +126,57 @@ function normaliseProduct(payload, existing) {
   };
 }
 
-// Helper to create JSON responses
-function jsonResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), { status, headers: CORS_HEADERS });
-}
-
-export default async (req, context) => {
-  const method = req.method;
-
+exports.handler = async (event) => {
   // Handle CORS preflight
-  if (method === 'OPTIONS') {
-    return new Response('', { status: 204, headers: CORS_HEADERS });
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   }
 
   // ── GET — Return all products (or filter by id/category) ─────────────────
-  if (method === 'GET') {
+  if (event.httpMethod === 'GET') {
     try {
-      const url = new URL(req.url);
-      const productId = url.searchParams.get('id');
-      const category = url.searchParams.get('category');
+      const params = event.queryStringParameters || {};
+      const productId = params.id;
+      const category = params.category;
 
       const products = await getCloudProducts();
 
       if (productId) {
         const product = products.find(p => String(p.id || p.pid) === String(productId));
         if (product) {
-          return jsonResponse({ success: true, product });
+          return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, product }) };
         }
-        return jsonResponse({ success: false, error: 'Product not found.' }, 404);
+        return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: 'Product not found.' }) };
       }
 
       const filtered = category
         ? products.filter(p => (p.category || '').toLowerCase() === category.toLowerCase())
         : products;
 
-      return jsonResponse({ success: true, products: filtered });
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, products: filtered }) };
     } catch (err) {
       console.error('[Products GET] Error:', err.message);
-      return jsonResponse({ success: false, error: err.message }, 500);
+      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: err.message }) };
     }
   }
 
   // ── POST — Add a new product ──────────────────────────────────────────────
-  if (method === 'POST') {
+  if (event.httpMethod === 'POST') {
     try {
-      const payload = await req.json();
+      const payload = JSON.parse(event.body || '{}');
       const { title, price, category } = payload;
       const imgUrl = payload.imageUrl || payload.image_url || payload.image;
 
       if (!title || price === undefined || !imgUrl || !category) {
-        return jsonResponse({ success: false, error: 'Required fields missing: title, price, imageUrl, category.' }, 400);
+        return {
+          statusCode: 400,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({ success: false, error: 'Required fields missing: title, price, imageUrl, category.' })
+        };
       }
 
       const products = await getCloudProducts();
 
-      // Generate an authoritative cloud ID
       const newId = 'cloud_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
       const newProduct = normaliseProduct(payload, { id: newId, pid: newId });
       newProduct.id = newId;
@@ -141,21 +188,21 @@ export default async (req, context) => {
       await saveCloudProducts(products);
 
       console.log(`[Products POST] Added "${newProduct.title}" (ID: ${newId})`);
-      return jsonResponse({ success: true, product: newProduct }, 201);
+      return { statusCode: 201, headers: CORS_HEADERS, body: JSON.stringify({ success: true, product: newProduct }) };
     } catch (err) {
       console.error('[Products POST] Error:', err.message);
-      return jsonResponse({ success: false, error: err.message }, 500);
+      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: err.message }) };
     }
   }
 
   // ── PUT — Update an existing product ─────────────────────────────────────
-  if (method === 'PUT') {
+  if (event.httpMethod === 'PUT') {
     try {
-      const payload = await req.json();
+      const payload = JSON.parse(event.body || '{}');
       const productId = payload.id || payload.pid;
 
       if (!productId) {
-        return jsonResponse({ success: false, error: 'Product ID is required for update.' }, 400);
+        return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: 'Product ID is required for update.' }) };
       }
 
       const products = await getCloudProducts();
@@ -177,21 +224,21 @@ export default async (req, context) => {
       }
 
       await saveCloudProducts(products);
-      return jsonResponse({ success: true, product: updatedProduct });
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, product: updatedProduct }) };
     } catch (err) {
       console.error('[Products PUT] Error:', err.message);
-      return jsonResponse({ success: false, error: err.message }, 500);
+      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: err.message }) };
     }
   }
 
   // ── DELETE — Remove a product ─────────────────────────────────────────────
-  if (method === 'DELETE') {
+  if (event.httpMethod === 'DELETE') {
     try {
-      const payload = await req.json();
+      const payload = JSON.parse(event.body || '{}');
       const productId = payload.id || payload.pid;
 
       if (!productId) {
-        return jsonResponse({ success: false, error: 'Product ID is required.' }, 400);
+        return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: 'Product ID is required.' }) };
       }
 
       const products = await getCloudProducts();
@@ -199,21 +246,21 @@ export default async (req, context) => {
       const remaining = products.filter(p => String(p.id || p.pid) !== String(productId));
 
       if (remaining.length === before) {
-        return jsonResponse({ success: false, error: 'Product not found.' }, 404);
+        return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: 'Product not found.' }) };
       }
 
       await saveCloudProducts(remaining);
       console.log(`[Products DELETE] Deleted ID ${productId}. Remaining: ${remaining.length}`);
-      return jsonResponse({ success: true, message: 'Product deleted.' });
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, message: 'Product deleted.' }) };
     } catch (err) {
       console.error('[Products DELETE] Error:', err.message);
-      return jsonResponse({ success: false, error: err.message }, 500);
+      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: err.message }) };
     }
   }
 
-  return jsonResponse({ success: false, error: 'Method not allowed.' }, 405);
-};
-
-export const config = {
-  path: "/.netlify/functions/products"
+  return {
+    statusCode: 405,
+    headers: CORS_HEADERS,
+    body: JSON.stringify({ success: false, error: 'Method not allowed.' })
+  };
 };
