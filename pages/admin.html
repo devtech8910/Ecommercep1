@@ -3410,55 +3410,31 @@ void main() {
                   return item.src;
                 }
                 
-                // Base64 image — upload to Catbox.moe for permanent, keyless, free hosting
-                try {
-                  const blobRes = await fetch(item.src);
-                  const blob = await blobRes.blob();
-                  
-                  const formData = new FormData();
-                  formData.append('reqtype', 'fileupload');
-                  formData.append('fileToUpload', blob, item.filename || `product_img_${index}.jpg`);
+                // Base64 image — upload via our serverless proxy (avoids CORS issues)
+                const uploadApiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                  ? 'https://fashion-company.netlify.app/.netlify/functions/upload-image'
+                  : '/.netlify/functions/upload-image';
 
-                  const uploadRes = await fetch('https://catbox.moe/user/api.php', {
+                try {
+                  const uploadRes = await fetch(uploadApiUrl, {
                     method: 'POST',
-                    body: formData,
-                    signal: AbortSignal.timeout(12000)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      base64Data: item.src,
+                      filename: item.filename || `product_img_${index}.jpg`
+                    }),
+                    signal: AbortSignal.timeout(20000)
                   });
 
-                  if (uploadRes.ok) {
-                    const imageUrl = await uploadRes.text();
-                    if (imageUrl && imageUrl.startsWith('https://')) {
-                      console.log('[DevTech Admin] Image uploaded to Catbox:', imageUrl.trim());
-                      return imageUrl.trim();
-                    }
+                  const result = await uploadRes.json();
+                  if (uploadRes.ok && result.success && result.url) {
+                    console.log('[DevTech Admin] Image uploaded via proxy:', result.url);
+                    return result.url;
                   }
-                  throw new Error(`Catbox status ${uploadRes.status}`);
+                  throw new Error(result.error || `Upload proxy returned ${uploadRes.status}`);
                 } catch (e) {
-                  console.error('[DevTech Admin] Catbox upload failed:', e.message);
-                  
-                  // Secondary fallback: Try uploading to local server (only when running locally)
-                  try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 2000);
-                    const localUploadRes = await fetch('http://localhost:5000/admin/upload', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        base64Data: item.src,
-                        filename: item.filename || `product_img_${index}.jpg`
-                      }),
-                      signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-                    if (localUploadRes.ok) {
-                      const localResult = await localUploadRes.json();
-                      if (localResult.success && localResult.url) {
-                        return localResult.url;
-                      }
-                    }
-                  } catch (localErr) {}
-                  
-                  throw new Error('Failed to upload product image to permanent cloud hosting.');
+                  console.error('[DevTech Admin] Proxy upload failed:', e.message);
+                  throw new Error('Failed to upload product image. Please try again.');
                 }
               });
 
