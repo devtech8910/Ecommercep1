@@ -1,5 +1,0 @@
-# Netlify Redirect Rules
-# IMPORTANT: Passthrough for serverless functions MUST come before the wildcard
-/.netlify/functions/*  /.netlify/functions/:splat  200
-/pages/*               /pages/:splat               200
-/*                     /index.html                 200
