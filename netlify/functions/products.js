@@ -1,9 +1,11 @@
 // ============================================================
 // DEVTECH FASHION — NETLIFY SERVERLESS CLOUD PRODUCTS CATALOG
 // Single source of truth for cross-device product synchronisation
+// Uses Netlify Blobs — permanent, built-in Netlify storage
 // ============================================================
 
-const CLOUD_PRODUCTS_URL = process.env.CLOUD_PRODUCTS_URL || 'https://jsonblob.com/api/jsonBlob/019fc1b8-92e2-719e-8043-a7c73438d337';
+const STORE_NAME = 'devtech-products';
+const CATALOG_KEY = 'catalog';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -12,72 +14,35 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json'
 };
 
-// Fetch the current product list from JSONBlob with automatic retry on transient rate limits (429/5xx)
+// Lazy-load the Netlify Blobs module (ESM package loaded via dynamic import from CJS)
+let _blobMod = null;
+async function getProductStore() {
+  if (!_blobMod) {
+    _blobMod = await import("@netlify/blobs");
+  }
+  return _blobMod.getStore(STORE_NAME);
+}
+
+// Read all products from Netlify Blobs
 async function getCloudProducts() {
-  const maxAttempts = 3;
-  let delay = 500;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const res = await fetch(CLOUD_PRODUCTS_URL, {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        return Array.isArray(data) ? data : [];
-      }
-      if (res.status === 429 || res.status >= 500) {
-        if (attempt < maxAttempts) {
-          console.warn(`[Products GET] JSONBlob returned status ${res.status}. Retrying in ${delay}ms...`);
-          await new Promise(r => setTimeout(r, delay));
-          delay *= 2;
-          continue;
-        }
-      }
-      throw new Error(`JSONBlob GET failed: ${res.status} ${res.statusText}`);
-    } catch (err) {
-      if (attempt === maxAttempts) throw err;
-      console.warn(`[Products GET] Transient error (attempt ${attempt}):`, err.message);
-      await new Promise(r => setTimeout(r, delay));
-      delay *= 2;
-    }
+  try {
+    const store = await getProductStore();
+    const data = await store.get(CATALOG_KEY, { type: 'json' });
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error('[Products GET] Blob read error:', err.message);
+    return [];
   }
-  return [];
 }
 
-// Persist the full product list back to JSONBlob with automatic retry on transient rate limits (429/5xx)
+// Write the full product array to Netlify Blobs
 async function saveCloudProducts(products) {
-  const maxAttempts = 4;
-  let delay = 500;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const res = await fetch(CLOUD_PRODUCTS_URL, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(products)
-      });
-      if (res.ok) {
-        console.log(`[Products] Saved ${products.length} products to cloud.`);
-        return;
-      }
-      if (res.status === 429 || res.status >= 500) {
-        if (attempt < maxAttempts) {
-          console.warn(`[Products PUT] JSONBlob returned status ${res.status}. Retrying in ${delay}ms...`);
-          await new Promise(r => setTimeout(r, delay));
-          delay *= 2;
-          continue;
-        }
-      }
-      throw new Error(`JSONBlob PUT failed: ${res.status} ${res.statusText}`);
-    } catch (err) {
-      if (attempt === maxAttempts) throw err;
-      console.warn(`[Products PUT] Transient error (attempt ${attempt}):`, err.message);
-      await new Promise(r => setTimeout(r, delay));
-      delay *= 2;
-    }
-  }
+  const store = await getProductStore();
+  await store.setJSON(CATALOG_KEY, products);
+  console.log(`[Products] Saved ${products.length} products to Netlify Blobs.`);
 }
 
-// Normalise a raw product payload into a consistent storage shape.
+// Normalise a raw product payload into a consistent storage shape
 function normaliseProduct(payload, existing) {
   const base = existing || {};
   const imgUrl = payload.imageUrl || payload.image_url || payload.image || base.imageUrl || base.image_url || '';
@@ -167,17 +132,16 @@ exports.handler = async (event) => {
 
       const products = await getCloudProducts();
 
-      // Generate an authoritative cloud ID — never trust client-supplied IDs for new products.
-      // This prevents duplicate IDs when multiple devices add products simultaneously.
+      // Generate an authoritative cloud ID
       const newId = 'cloud_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
       const newProduct = normaliseProduct(payload, { id: newId, pid: newId });
       newProduct.id = newId;
       newProduct.pid = newId;
       newProduct.created_at = new Date().toISOString();
-      delete newProduct.updated_at; // fresh product, no updated_at yet
+      delete newProduct.updated_at;
 
       products.unshift(newProduct);
-      await saveCloudProducts(products); // throws on failure — will return 500 below
+      await saveCloudProducts(products);
 
       console.log(`[Products POST] Added "${newProduct.title}" (ID: ${newId})`);
       return { statusCode: 201, headers: CORS_HEADERS, body: JSON.stringify({ success: true, product: newProduct }) };
@@ -202,7 +166,6 @@ exports.handler = async (event) => {
 
       let updatedProduct;
       if (idx === -1) {
-        // Not in cloud yet — insert it (syncing from local DB or another device)
         updatedProduct = normaliseProduct(payload, { id: productId, pid: productId });
         updatedProduct.id = productId;
         updatedProduct.pid = productId;
@@ -216,7 +179,7 @@ exports.handler = async (event) => {
         console.log(`[Products PUT] Updated "${updatedProduct.title}" (ID: ${productId})`);
       }
 
-      await saveCloudProducts(products); // throws on failure
+      await saveCloudProducts(products);
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, product: updatedProduct }) };
     } catch (err) {
       console.error('[Products PUT] Error:', err.message);
@@ -242,7 +205,7 @@ exports.handler = async (event) => {
         return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: 'Product not found.' }) };
       }
 
-      await saveCloudProducts(remaining); // throws on failure
+      await saveCloudProducts(remaining);
       console.log(`[Products DELETE] Deleted ID ${productId}. Remaining: ${remaining.length}`);
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, message: 'Product deleted.' }) };
     } catch (err) {

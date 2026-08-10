@@ -4,6 +4,10 @@
   command = ""
   functions = "netlify/functions"
 
+[functions]
+  external_node_modules = ["@netlify/blobs"]
+  node_bundler = "esbuild"
+
 # Netlify Serverless API Functions Redirect
 [[redirects]]
   from = "/api/*"
