@@ -53,7 +53,7 @@ exports.handler = async (event) => {
       console.warn('[Upload] Catbox failed:', e.message);
     }
 
-    // Fallback: If cloud upload times out, accept clean compressed data URL as fallback
+    // Fallback: Return clean data URL if small enough
     if (base64Data.length < 500000) {
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, url: base64Data }) };
     }
@@ -65,18 +65,14 @@ exports.handler = async (event) => {
   }
 };
 
-// --- FreeImage.host API Upload (URLSearchParams - 100% reliable) ---
+// --- FreeImage.host API Upload (with encodeURIComponent base64 preservation) ---
 async function uploadToFreeImageHost(base64String) {
-  const form = new URLSearchParams();
-  form.append('key', '6d207e02198a847aa98d0a2a901485a5');
-  form.append('action', 'upload');
-  form.append('source', base64String);
-  form.append('format', 'json');
+  const body = `key=6d207e02198a847aa98d0a2a901485a5&action=upload&format=json&source=${encodeURIComponent(base64String)}`;
 
   const res = await fetch('https://freeimage.host/api/1/upload', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: form.toString()
+    body: body
   });
 
   if (res.ok) {
