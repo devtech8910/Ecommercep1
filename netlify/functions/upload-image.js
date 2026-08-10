@@ -2,6 +2,7 @@
 // DEVTECH FASHION — IMAGE UPLOAD PROXY
 // Proxies image uploads from client to Catbox.moe (server-side)
 // Eliminates CORS issues that block direct browser uploads
+// Uses native Node 18+ FormData & Blob for clean uploads
 // ============================================================
 
 const CORS_HEADERS = {
@@ -59,16 +60,6 @@ exports.handler = async (event) => {
       console.warn('[Upload] 0x0.st failed:', e.message);
     }
 
-    // --- Fallback: Try file.coffee ---
-    try {
-      const url = await uploadToFileCoffee(buffer, fname, mimeType);
-      if (url && url.startsWith('http')) {
-        return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, url }) };
-      }
-    } catch (e) {
-      console.warn('[Upload] file.coffee failed:', e.message);
-    }
-
     throw new Error('All image hosting services failed. Please try again later.');
   } catch (err) {
     console.error('[Upload] Error:', err.message);
@@ -76,20 +67,15 @@ exports.handler = async (event) => {
   }
 };
 
-// --- Catbox.moe upload (permanent, free, no API key) ---
+// --- Catbox.moe upload via native FormData & Blob ---
 async function uploadToCatbox(buffer, filename, mimeType) {
-  const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
-
-  const reqtypePart = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="reqtype"\r\n\r\nfileupload\r\n`, 'utf-8');
-  const fileHeaderPart = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="fileToUpload"; filename="${filename}"\r\nContent-Type: ${mimeType}\r\n\r\n`, 'utf-8');
-  const footerPart = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8');
-
-  const body = Buffer.concat([reqtypePart, fileHeaderPart, buffer, footerPart]);
+  const form = new FormData();
+  form.append('reqtype', 'fileupload');
+  form.append('fileToUpload', new Blob([buffer], { type: mimeType }), filename);
 
   const res = await fetch('https://catbox.moe/user/api.php', {
     method: 'POST',
-    headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
-    body: body
+    body: form
   });
 
   const text = await res.text();
@@ -100,19 +86,14 @@ async function uploadToCatbox(buffer, filename, mimeType) {
   throw new Error(`Catbox returned status ${res.status}: ${text.substring(0, 100)}`);
 }
 
-// --- 0x0.st upload (free, no API key fallback) ---
+// --- 0x0.st upload via native FormData & Blob ---
 async function uploadTo0x0(buffer, filename, mimeType) {
-  const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
-
-  const fileHeaderPart = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\nContent-Type: ${mimeType}\r\n\r\n`, 'utf-8');
-  const footerPart = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8');
-
-  const body = Buffer.concat([fileHeaderPart, buffer, footerPart]);
+  const form = new FormData();
+  form.append('file', new Blob([buffer], { type: mimeType }), filename);
 
   const res = await fetch('https://0x0.st', {
     method: 'POST',
-    headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
-    body: body
+    body: form
   });
 
   const text = await res.text();
@@ -121,30 +102,4 @@ async function uploadTo0x0(buffer, filename, mimeType) {
     return text.trim();
   }
   throw new Error(`0x0.st returned status ${res.status}: ${text.substring(0, 100)}`);
-}
-
-// --- file.coffee upload (free, no API key fallback) ---
-async function uploadToFileCoffee(buffer, filename, mimeType) {
-  const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
-
-  const fileHeaderPart = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\nContent-Type: ${mimeType}\r\n\r\n`, 'utf-8');
-  const footerPart = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8');
-
-  const body = Buffer.concat([fileHeaderPart, buffer, footerPart]);
-
-  const res = await fetch('https://file.coffee/api/file/upload', {
-    method: 'POST',
-    headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
-    body: body
-  });
-
-  if (res.ok) {
-    const json = await res.json();
-    if (json.url) {
-      console.log('[Upload] file.coffee success:', json.url);
-      return json.url;
-    }
-  }
-  const text = await res.text();
-  throw new Error(`file.coffee returned status ${res.status}: ${text.substring(0, 100)}`);
 }
