@@ -39,10 +39,10 @@ exports.handler = async (event) => {
     if (base64Data.startsWith('data:image/png')) mimeType = 'image/png';
     else if (base64Data.startsWith('data:image/webp')) mimeType = 'image/webp';
 
-    // --- Try Catbox.moe ---
+    // --- Try Catbox.moe (Primary) ---
     try {
       const url = await uploadToCatbox(buffer, fname, mimeType);
-      if (url) {
+      if (url && url.startsWith('https://')) {
         return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, url }) };
       }
     } catch (e) {
@@ -52,7 +52,7 @@ exports.handler = async (event) => {
     // --- Fallback: Try 0x0.st ---
     try {
       const url = await uploadTo0x0(buffer, fname, mimeType);
-      if (url) {
+      if (url && url.startsWith('http')) {
         return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, url }) };
       }
     } catch (e) {
@@ -62,7 +62,7 @@ exports.handler = async (event) => {
     // --- Fallback: Try file.coffee ---
     try {
       const url = await uploadToFileCoffee(buffer, fname, mimeType);
-      if (url) {
+      if (url && url.startsWith('http')) {
         return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, url }) };
       }
     } catch (e) {
@@ -79,21 +79,12 @@ exports.handler = async (event) => {
 // --- Catbox.moe upload (permanent, free, no API key) ---
 async function uploadToCatbox(buffer, filename, mimeType) {
   const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
-  
-  const parts = [];
-  
-  // reqtype field
-  parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="reqtype"\r\n\r\nfileupload`);
-  
-  // file field - we need to build this carefully with binary data
-  const fileHeader = `--${boundary}\r\nContent-Disposition: form-data; name="fileToUpload"; filename="${filename}"\r\nContent-Type: ${mimeType}\r\n\r\n`;
-  const fileFooter = `\r\n--${boundary}--\r\n`;
 
-  const headerBuf = Buffer.from(fileHeader, 'utf-8');
-  const footerBuf = Buffer.from(fileFooter, 'utf-8');
   const reqtypePart = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="reqtype"\r\n\r\nfileupload\r\n`, 'utf-8');
-  
-  const body = Buffer.concat([reqtypePart, headerBuf, buffer, footerBuf]);
+  const fileHeaderPart = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="fileToUpload"; filename="${filename}"\r\nContent-Type: ${mimeType}\r\n\r\n`, 'utf-8');
+  const footerPart = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8');
+
+  const body = Buffer.concat([reqtypePart, fileHeaderPart, buffer, footerPart]);
 
   const res = await fetch('https://catbox.moe/user/api.php', {
     method: 'POST',
@@ -102,22 +93,21 @@ async function uploadToCatbox(buffer, filename, mimeType) {
   });
 
   const text = await res.text();
-  if (res.ok && text.startsWith('https://')) {
+  if (res.ok && text.trim().startsWith('https://')) {
     console.log('[Upload] Catbox success:', text.trim());
     return text.trim();
   }
-  throw new Error(`Catbox returned: ${res.status} - ${text.substring(0, 200)}`);
+  throw new Error(`Catbox returned status ${res.status}: ${text.substring(0, 100)}`);
 }
 
-// --- 0x0.st upload (free, no API key) ---
+// --- 0x0.st upload (free, no API key fallback) ---
 async function uploadTo0x0(buffer, filename, mimeType) {
   const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
-  
-  const headerBuf = Buffer.from(
-    `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\nContent-Type: ${mimeType}\r\n\r\n`, 'utf-8'
-  );
-  const footerBuf = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8');
-  const body = Buffer.concat([headerBuf, buffer, footerBuf]);
+
+  const fileHeaderPart = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\nContent-Type: ${mimeType}\r\n\r\n`, 'utf-8');
+  const footerPart = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8');
+
+  const body = Buffer.concat([fileHeaderPart, buffer, footerPart]);
 
   const res = await fetch('https://0x0.st', {
     method: 'POST',
@@ -126,22 +116,21 @@ async function uploadTo0x0(buffer, filename, mimeType) {
   });
 
   const text = await res.text();
-  if (res.ok && text.startsWith('http')) {
+  if (res.ok && text.trim().startsWith('http')) {
     console.log('[Upload] 0x0.st success:', text.trim());
     return text.trim();
   }
-  throw new Error(`0x0.st returned: ${res.status} - ${text.substring(0, 200)}`);
+  throw new Error(`0x0.st returned status ${res.status}: ${text.substring(0, 100)}`);
 }
 
-// --- file.coffee upload (free, no API key) ---
+// --- file.coffee upload (free, no API key fallback) ---
 async function uploadToFileCoffee(buffer, filename, mimeType) {
   const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
-  
-  const headerBuf = Buffer.from(
-    `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\nContent-Type: ${mimeType}\r\n\r\n`, 'utf-8'
-  );
-  const footerBuf = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8');
-  const body = Buffer.concat([headerBuf, buffer, footerBuf]);
+
+  const fileHeaderPart = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\nContent-Type: ${mimeType}\r\n\r\n`, 'utf-8');
+  const footerPart = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8');
+
+  const body = Buffer.concat([fileHeaderPart, buffer, footerPart]);
 
   const res = await fetch('https://file.coffee/api/file/upload', {
     method: 'POST',
@@ -157,5 +146,5 @@ async function uploadToFileCoffee(buffer, filename, mimeType) {
     }
   }
   const text = await res.text();
-  throw new Error(`file.coffee returned: ${res.status} - ${text.substring(0, 200)}`);
+  throw new Error(`file.coffee returned status ${res.status}: ${text.substring(0, 100)}`);
 }
