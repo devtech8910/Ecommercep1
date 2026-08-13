@@ -1,9 +1,9 @@
 // ============================================================
-// DEVTECH FASHION — NETLIFY SERVERLESS CLOUD PRODUCTS CATALOG
+// DEVTECH FASHION - NETLIFY SERVERLESS CLOUD PRODUCTS CATALOG
 // Single source of truth for cross-device product synchronisation
 // ============================================================
 
-const { getStore } = require('@netlify/blobs');
+import { getStore } from '@netlify/blobs';
 
 const PRODUCTS_STORE_NAME = 'devtech-products';
 const PRODUCTS_BLOB_KEY = 'catalog.json';
@@ -19,11 +19,44 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json'
 };
 
+function jsonResponse(status, body) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: CORS_HEADERS
+  });
+}
+
+function getManualBlobsOptions() {
+  const siteID = process.env.NETLIFY_BLOBS_SITE_ID || process.env.NETLIFY_SITE_ID || process.env.SITE_ID;
+  const token = process.env.NETLIFY_BLOBS_TOKEN || process.env.NETLIFY_AUTH_TOKEN;
+
+  if (!siteID || !token) return null;
+
+  return {
+    name: PRODUCTS_STORE_NAME,
+    siteID,
+    token,
+    consistency: 'strong'
+  };
+}
+
 function getProductsStore() {
   try {
-    return getStore(PRODUCTS_STORE_NAME);
+    return getStore({ name: PRODUCTS_STORE_NAME, consistency: 'strong' });
   } catch (err) {
-    throw new Error(`Netlify Blobs product store is unavailable: ${err.message}`);
+    const manualOptions = getManualBlobsOptions();
+    if (manualOptions) {
+      try {
+        return getStore(manualOptions);
+      } catch (manualErr) {
+        throw new Error(`Netlify Blobs product store is unavailable with manual configuration: ${manualErr.message}`);
+      }
+    }
+
+    throw new Error(
+      'Netlify Blobs product store is unavailable. The function runtime did not provide Blobs configuration, ' +
+      'and NETLIFY_BLOBS_SITE_ID/NETLIFY_BLOBS_TOKEN are not set in Netlify environment variables.'
+    );
   }
 }
 
@@ -43,17 +76,27 @@ function normaliseCategory(category) {
   return cat;
 }
 
+async function parseJsonBody(request) {
+  try {
+    return await request.json();
+  } catch {
+    return {};
+  }
+}
+
 async function fetchLegacyProducts() {
   if (!CLOUD_PRODUCTS_URL) return [];
 
   try {
     const res = await fetch(CLOUD_PRODUCTS_URL, {
-      headers: { 'Accept': 'application/json' }
+      headers: { Accept: 'application/json' }
     });
+
     if (!res.ok) {
       console.warn(`[Products Legacy Import] Ignored legacy CLOUD_PRODUCTS_URL: ${res.status} ${res.statusText}`);
       return [];
     }
+
     const data = await res.json();
     return parseProductList(data);
   } catch (err) {
@@ -80,11 +123,21 @@ async function saveCloudProducts(products) {
   console.log(`[Products] Saved ${Array.isArray(products) ? products.length : 0} products to Netlify Blobs.`);
 }
 
-// Normalise a raw product payload into a consistent storage shape
+// Normalise a raw product payload into a consistent storage shape.
 function normaliseProduct(payload, existing) {
   const base = existing || {};
   const imgUrl = payload.imageUrl || payload.image_url || payload.image || base.imageUrl || base.image_url || '';
   const sizeStock = payload.sizeStock || payload.size_stock || base.sizeStock || base.size_stock || 'S:10, M:10, L:10';
+  const replacementAllowed = payload.replacementAllowed != null
+    ? payload.replacementAllowed
+    : (base.replacement_allowed != null ? base.replacement_allowed : (base.replacementAllowed != null ? base.replacementAllowed : true));
+  const codAvailable = payload.codAvailable != null
+    ? payload.codAvailable
+    : (base.cod_available != null ? base.cod_available : (base.codAvailable != null ? base.codAvailable : true));
+  const couponApplicable = payload.couponApplicable != null
+    ? payload.couponApplicable
+    : (base.coupon_applicable != null ? base.coupon_applicable : (base.couponApplicable != null ? base.couponApplicable : true));
+
   return {
     id: base.id || payload.id || payload.pid,
     pid: base.pid || payload.pid || payload.id,
@@ -98,14 +151,14 @@ function normaliseProduct(payload, existing) {
     image_url: imgUrl,
     imageUrl: imgUrl,
     sizes: payload.sizes || base.sizes || 'S, M, L',
-    replacement_allowed: payload.replacementAllowed != null ? payload.replacementAllowed : (base.replacement_allowed != null ? base.replacement_allowed : true),
-    replacementAllowed: payload.replacementAllowed != null ? payload.replacementAllowed : (base.replacementAllowed != null ? base.replacementAllowed : true),
+    replacement_allowed: replacementAllowed,
+    replacementAllowed,
     replacement_days: payload.replacementDays || payload.replacement_days || base.replacement_days || 7,
     replacementDays: payload.replacementDays || payload.replacement_days || base.replacementDays || 7,
-    cod_available: payload.codAvailable != null ? payload.codAvailable : (base.cod_available != null ? base.cod_available : true),
-    codAvailable: payload.codAvailable != null ? payload.codAvailable : (base.codAvailable != null ? base.codAvailable : true),
-    coupon_applicable: payload.couponApplicable != null ? payload.couponApplicable : (base.coupon_applicable != null ? base.coupon_applicable : true),
-    couponApplicable: payload.couponApplicable != null ? payload.couponApplicable : (base.couponApplicable != null ? base.couponApplicable : true),
+    cod_available: codAvailable,
+    codAvailable,
+    coupon_applicable: couponApplicable,
+    couponApplicable,
     fabric: payload.fabric || base.fabric || '',
     pattern: payload.pattern || base.pattern || '',
     fit: payload.fit || base.fit || '',
@@ -119,27 +172,25 @@ function normaliseProduct(payload, existing) {
   };
 }
 
-exports.handler = async (event) => {
-  // Handle CORS preflight
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: CORS_HEADERS, body: '' };
+export default async function handler(request) {
+  if (request.method === 'OPTIONS') {
+    return new Response('', { status: 204, headers: CORS_HEADERS });
   }
 
-  // ── GET — Return all products (or filter by id/category) ─────────────────
-  if (event.httpMethod === 'GET') {
+  if (request.method === 'GET') {
     try {
-      const params = event.queryStringParameters || {};
-      const productId = params.id;
-      const category = params.category;
+      const url = new URL(request.url);
+      const productId = url.searchParams.get('id');
+      const category = url.searchParams.get('category');
 
       const products = await getCloudProducts();
 
       if (productId) {
         const product = products.find(p => String(p.id || p.pid) === String(productId));
         if (product) {
-          return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, product }) };
+          return jsonResponse(200, { success: true, product });
         }
-        return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: 'Product not found.' }) };
+        return jsonResponse(404, { success: false, error: 'Product not found.' });
       }
 
       const requestedCategory = normaliseCategory(category);
@@ -147,30 +198,27 @@ exports.handler = async (event) => {
         ? products.filter(p => normaliseCategory(p.category) === requestedCategory)
         : products;
 
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, products: filtered }) };
+      return jsonResponse(200, { success: true, products: filtered });
     } catch (err) {
       console.error('[Products GET] Error:', err.message);
-      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: err.message }) };
+      return jsonResponse(500, { success: false, error: err.message });
     }
   }
 
-  // ── POST — Add a new product ──────────────────────────────────────────────
-  if (event.httpMethod === 'POST') {
+  if (request.method === 'POST') {
     try {
-      const payload = JSON.parse(event.body || '{}');
+      const payload = await parseJsonBody(request);
       const { title, price, category } = payload;
       const imgUrl = payload.imageUrl || payload.image_url || payload.image;
 
       if (!title || price === undefined || !imgUrl || !category) {
-        return {
-          statusCode: 400,
-          headers: CORS_HEADERS,
-          body: JSON.stringify({ success: false, error: 'Required fields missing: title, price, imageUrl, category.' })
-        };
+        return jsonResponse(400, {
+          success: false,
+          error: 'Required fields missing: title, price, imageUrl, category.'
+        });
       }
 
       const products = await getCloudProducts();
-
       const newId = 'cloud_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
       const newProduct = normaliseProduct(payload, { id: newId, pid: newId });
       newProduct.id = newId;
@@ -182,21 +230,20 @@ exports.handler = async (event) => {
       await saveCloudProducts(products);
 
       console.log(`[Products POST] Added "${newProduct.title}" (ID: ${newId})`);
-      return { statusCode: 201, headers: CORS_HEADERS, body: JSON.stringify({ success: true, product: newProduct }) };
+      return jsonResponse(201, { success: true, product: newProduct });
     } catch (err) {
       console.error('[Products POST] Error:', err.message);
-      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: err.message }) };
+      return jsonResponse(500, { success: false, error: err.message });
     }
   }
 
-  // ── PUT — Update an existing product ─────────────────────────────────────
-  if (event.httpMethod === 'PUT') {
+  if (request.method === 'PUT') {
     try {
-      const payload = JSON.parse(event.body || '{}');
+      const payload = await parseJsonBody(request);
       const productId = payload.id || payload.pid;
 
       if (!productId) {
-        return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: 'Product ID is required for update.' }) };
+        return jsonResponse(400, { success: false, error: 'Product ID is required for update.' });
       }
 
       const products = await getCloudProducts();
@@ -218,21 +265,20 @@ exports.handler = async (event) => {
       }
 
       await saveCloudProducts(products);
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, product: updatedProduct }) };
+      return jsonResponse(200, { success: true, product: updatedProduct });
     } catch (err) {
       console.error('[Products PUT] Error:', err.message);
-      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: err.message }) };
+      return jsonResponse(500, { success: false, error: err.message });
     }
   }
 
-  // ── DELETE — Remove a product ─────────────────────────────────────────────
-  if (event.httpMethod === 'DELETE') {
+  if (request.method === 'DELETE') {
     try {
-      const payload = JSON.parse(event.body || '{}');
+      const payload = await parseJsonBody(request);
       const productId = payload.id || payload.pid;
 
       if (!productId) {
-        return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: 'Product ID is required.' }) };
+        return jsonResponse(400, { success: false, error: 'Product ID is required.' });
       }
 
       const products = await getCloudProducts();
@@ -240,21 +286,17 @@ exports.handler = async (event) => {
       const remaining = products.filter(p => String(p.id || p.pid) !== String(productId));
 
       if (remaining.length === before) {
-        return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: 'Product not found.' }) };
+        return jsonResponse(404, { success: false, error: 'Product not found.' });
       }
 
       await saveCloudProducts(remaining);
       console.log(`[Products DELETE] Deleted ID ${productId}. Remaining: ${remaining.length}`);
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, message: 'Product deleted.' }) };
+      return jsonResponse(200, { success: true, message: 'Product deleted.' });
     } catch (err) {
       console.error('[Products DELETE] Error:', err.message);
-      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: err.message }) };
+      return jsonResponse(500, { success: false, error: err.message });
     }
   }
 
-  return {
-    statusCode: 405,
-    headers: CORS_HEADERS,
-    body: JSON.stringify({ success: false, error: 'Method not allowed.' })
-  };
-};
+  return jsonResponse(405, { success: false, error: 'Method not allowed.' });
+}
