@@ -395,32 +395,21 @@
         }
 
         function loadKidsCatalog() {
-          const storedRaw = localStorage.getItem('dtf_admin_products');
-          let localCacheList = [];
-          try { localCacheList = JSON.parse(storedRaw) || []; } catch(e) {}
-
           const grid = document.getElementById('category-products-grid');
           const noMsg = document.getElementById('no-products-msg');
 
-          // 1. Render from cache instantly for best UX
-          if (localCacheList.length > 0) {
-            allProducts = localCacheList.filter(p => categoryKey(p.category) === 'kids').map(mapKidsProduct);
-            filterAndSortProducts();
-            populateBrandsFilter();
-          } else {
-            if (grid) {
-              grid.style.display = 'grid';
-              grid.innerHTML = `
-                <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: #a1a1aa;">
-                  <div style="display: inline-block; width: 40px; height: 40px; border: 3px solid rgba(245,158,11,0.2); border-top-color: #f59e0b; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px;"></div>
-                  <h3 style="font-size: 16px; font-weight: 700; color: #f0f0f5; margin-bottom: 4px;">Loading Kids' Collection</h3>
-                  <p style="font-size: 13px; color: #71717a;">Syncing fresh catalog from cloud database...</p>
-                </div>
-                <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
-              `;
-            }
-            if (noMsg) noMsg.style.display = 'none';
+          if (grid) {
+            grid.style.display = 'grid';
+            grid.innerHTML = `
+              <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: #a1a1aa;">
+                <div style="display: inline-block; width: 40px; height: 40px; border: 3px solid rgba(245,158,11,0.2); border-top-color: #f59e0b; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px;"></div>
+                <h3 style="font-size: 16px; font-weight: 700; color: #f0f0f5; margin-bottom: 4px;">Loading Kids' Collection</h3>
+                <p style="font-size: 13px; color: #71717a;">Syncing fresh catalog from cloud database...</p>
+              </div>
+              <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+            `;
           }
+          if (noMsg) noMsg.style.display = 'none';
 
           // 2. Fetch fresh data from authoritative sources
           const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -454,13 +443,13 @@
 
           fetchCloudWithRetry(3).then(cloudProducts => {
             if (cloudProducts === null) {
-              console.log('[DevTech Store] All cloud fetch attempts failed.');
-              if (localCacheList.length === 0) {
-                if (grid) grid.style.display = 'none';
-                if (noMsg) {
-                  noMsg.style.display = 'block';
-                  noMsg.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:40px 20px;">Unable to load products. Please check your internet and refresh the page.</p>';
-                }
+              console.log('[DevTech Store] All cloud fetch attempts failed. Not using local product cache.');
+              allProducts = [];
+              localStorage.removeItem('dtf_admin_products');
+              if (grid) grid.style.display = 'none';
+              if (noMsg) {
+                noMsg.style.display = 'block';
+                noMsg.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:40px 20px;">Unable to load products from the production catalog. Please refresh the page.</p>';
               }
               return;
             }

@@ -3,13 +3,14 @@
 // Single source of truth for cross-device product synchronisation
 // ============================================================
 
-// IMPORTANT: Set CLOUD_PRODUCTS_URL as an environment variable in Netlify Dashboard
-// (Site settings → Environment variables) to keep the database URL private and secure.
-const CLOUD_PRODUCTS_URL = process.env.CLOUD_PRODUCTS_URL;
+const { getStore } = require('@netlify/blobs');
 
-if (!CLOUD_PRODUCTS_URL) {
-  console.error('[Products] CRITICAL: CLOUD_PRODUCTS_URL environment variable is not set!');
-}
+const PRODUCTS_STORE_NAME = 'devtech-products';
+const PRODUCTS_BLOB_KEY = 'catalog.json';
+
+// Optional legacy import URL. If this points to a removed JSONBlob/resource and
+// returns 404, writes must still work through Netlify Blobs.
+const CLOUD_PRODUCTS_URL = process.env.CLOUD_PRODUCTS_URL;
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -18,73 +19,65 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json'
 };
 
-// Fetch the current product list from cloud storage with retry on transient errors
-async function getCloudProducts() {
-  if (!CLOUD_PRODUCTS_URL) throw new Error('CLOUD_PRODUCTS_URL environment variable is not configured. Set it in Netlify Dashboard.');
-
-  const maxAttempts = 3;
-  let delay = 500;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const res = await fetch(CLOUD_PRODUCTS_URL, {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        return Array.isArray(data) ? data : [];
-      }
-      if (res.status === 429 || res.status >= 500) {
-        if (attempt < maxAttempts) {
-          console.warn(`[Products GET] Cloud returned status ${res.status}. Retrying in ${delay}ms...`);
-          await new Promise(r => setTimeout(r, delay));
-          delay *= 2;
-          continue;
-        }
-      }
-      throw new Error(`Cloud GET failed: ${res.status} ${res.statusText}`);
-    } catch (err) {
-      if (attempt === maxAttempts) throw err;
-      console.warn(`[Products GET] Transient error (attempt ${attempt}):`, err.message);
-      await new Promise(r => setTimeout(r, delay));
-      delay *= 2;
-    }
+function getProductsStore() {
+  try {
+    return getStore(PRODUCTS_STORE_NAME);
+  } catch (err) {
+    throw new Error(`Netlify Blobs product store is unavailable: ${err.message}`);
   }
+}
+
+function parseProductList(data) {
+  if (!data) return [];
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data.products)) return data.products;
   return [];
 }
 
-// Persist the full product list back to cloud storage with retry
-async function saveCloudProducts(products) {
-  if (!CLOUD_PRODUCTS_URL) throw new Error('CLOUD_PRODUCTS_URL environment variable is not configured. Set it in Netlify Dashboard.');
+function normaliseCategory(category) {
+  const cat = String(category || '').trim().toLowerCase();
+  if (cat.includes('women')) return 'womens';
+  if (cat.includes('men')) return 'mens';
+  if (cat.includes('kid')) return 'kids';
+  if (cat.includes('access')) return 'accessories';
+  return cat;
+}
 
-  const maxAttempts = 4;
-  let delay = 500;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const res = await fetch(CLOUD_PRODUCTS_URL, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(products)
-      });
-      if (res.ok) {
-        console.log(`[Products] Saved ${products.length} products to cloud.`);
-        return;
-      }
-      if (res.status === 429 || res.status >= 500) {
-        if (attempt < maxAttempts) {
-          console.warn(`[Products PUT] Cloud returned status ${res.status}. Retrying in ${delay}ms...`);
-          await new Promise(r => setTimeout(r, delay));
-          delay *= 2;
-          continue;
-        }
-      }
-      throw new Error(`Cloud PUT failed: ${res.status} ${res.statusText}`);
-    } catch (err) {
-      if (attempt === maxAttempts) throw err;
-      console.warn(`[Products PUT] Transient error (attempt ${attempt}):`, err.message);
-      await new Promise(r => setTimeout(r, delay));
-      delay *= 2;
+async function fetchLegacyProducts() {
+  if (!CLOUD_PRODUCTS_URL) return [];
+
+  try {
+    const res = await fetch(CLOUD_PRODUCTS_URL, {
+      headers: { 'Accept': 'application/json' }
+    });
+    if (!res.ok) {
+      console.warn(`[Products Legacy Import] Ignored legacy CLOUD_PRODUCTS_URL: ${res.status} ${res.statusText}`);
+      return [];
     }
+    const data = await res.json();
+    return parseProductList(data);
+  } catch (err) {
+    console.warn('[Products Legacy Import] Ignored legacy CLOUD_PRODUCTS_URL error:', err.message);
+    return [];
   }
+}
+
+// Fetch the current product list from Netlify Blob storage.
+async function getCloudProducts() {
+  const store = getProductsStore();
+  const data = await store.get(PRODUCTS_BLOB_KEY, { type: 'json', consistency: 'strong' });
+  if (data) return parseProductList(data);
+
+  const legacyProducts = await fetchLegacyProducts();
+  await saveCloudProducts(legacyProducts);
+  return legacyProducts;
+}
+
+// Persist the full product list to Netlify Blob storage.
+async function saveCloudProducts(products) {
+  const store = getProductsStore();
+  await store.setJSON(PRODUCTS_BLOB_KEY, Array.isArray(products) ? products : []);
+  console.log(`[Products] Saved ${Array.isArray(products) ? products.length : 0} products to Netlify Blobs.`);
 }
 
 // Normalise a raw product payload into a consistent storage shape
@@ -97,7 +90,7 @@ function normaliseProduct(payload, existing) {
     pid: base.pid || payload.pid || payload.id,
     title: payload.title || base.title || '',
     brand: payload.brand || base.brand || 'DevTech Collection',
-    category: payload.category || base.category || '',
+    category: normaliseCategory(payload.category || base.category || ''),
     title_description: payload.titleDescription || payload.title_description || base.title_description || '',
     titleDescription: payload.titleDescription || payload.title_description || base.titleDescription || '',
     mrp: parseFloat(payload.mrp != null ? payload.mrp : (base.mrp != null ? base.mrp : 0)),
@@ -149,8 +142,9 @@ exports.handler = async (event) => {
         return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: 'Product not found.' }) };
       }
 
-      const filtered = category
-        ? products.filter(p => (p.category || '').toLowerCase() === category.toLowerCase())
+      const requestedCategory = normaliseCategory(category);
+      const filtered = requestedCategory
+        ? products.filter(p => normaliseCategory(p.category) === requestedCategory)
         : products;
 
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, products: filtered }) };

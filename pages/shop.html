@@ -483,18 +483,6 @@
         }
 
         function loadShopCatalog() {
-          const storedRaw = localStorage.getItem('dtf_admin_products');
-          let localCacheList = [];
-          try { localCacheList = JSON.parse(storedRaw) || []; } catch(e) {}
-
-          // 1. Render from cache instantly for best UX
-          if (localCacheList.length > 0) {
-            catalogProducts = localCacheList.map(mapCatalogProduct);
-            refreshAllRows();
-            populateBrandsFilter();
-          }
-
-          // 2. Fetch fresh data from authoritative sources
           const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
           
           const cloudUrl = isLocalhost
@@ -526,18 +514,19 @@
 
           fetchCloudWithRetry(3).then(cloudProducts => {
             if (cloudProducts === null) {
-              console.log('[DevTech Store] All cloud fetch attempts failed. Using cache.');
-              if (localCacheList.length === 0) {
-                const noMsg = document.getElementById('no-products-msg');
-                if (noMsg) {
-                  noMsg.style.display = 'block';
-                  noMsg.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:40px 20px;">Unable to load products. Please refresh the page.</p>';
-                }
+              console.log('[DevTech Store] All cloud fetch attempts failed. Not using local product cache.');
+              catalogProducts = [];
+              localStorage.removeItem('dtf_admin_products');
+              refreshAllRows();
+              const noMsg = document.getElementById('no-products-msg');
+              if (noMsg) {
+                noMsg.style.display = 'block';
+                noMsg.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:40px 20px;">Unable to load products from the production catalog. Please refresh the page.</p>';
               }
               return;
             }
 
-            // Cloud is authoritative — overwrite localStorage
+            // Cloud is authoritative — localStorage is only a non-authoritative mirror.
             localStorage.setItem('dtf_admin_products', JSON.stringify(cloudProducts));
             catalogProducts = cloudProducts.map(mapCatalogProduct);
             refreshAllRows();

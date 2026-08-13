@@ -1322,20 +1322,8 @@
             { id: 'k4', title: 'Junior Explorer Sneakers', price: 3999, mrp: 4999, category: "Kids", brand: "DevTech Footwear", sizes: "11, 12, 13", image: 'https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=600&q=80&fit=crop', description: "Lightweight and non-slip sneakers for active young explorers.", fabric: "Mesh / Rubber", fit: "Standard", pattern: "Sporty", suitable_for: "Casual / Sports" }
           ];
 
-          // 1. Read from localStorage as an instant cache
-          try {
-            const storedAdminProducts = localStorage.getItem('dtf_admin_products');
-            if (storedAdminProducts) {
-              const parsed = JSON.parse(storedAdminProducts);
-              if (Array.isArray(parsed)) {
-                parsedAdminProducts = parsed.filter(p => p && typeof p === 'object');
-                if (cleanId) liveProduct = parsedAdminProducts.find(p => String(p.id || p.pid || '') === cleanId) || null;
-                if (!liveProduct && cleanTitle) liveProduct = parsedAdminProducts.find(p => p.title && String(p.title).trim().toLowerCase() === cleanTitle) || null;
-              }
-            }
-          } catch (e) {}
-
-          // 2. Fetch authoritative fresh product details from Netlify cloud / local DB
+          // 1. Fetch authoritative fresh product details from Netlify cloud / local DB.
+          // Product localStorage is not used as a source of truth.
           const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
           const cloudUrl = isLocalhost
             ? 'https://fashion-company.netlify.app/.netlify/functions/products'
@@ -1386,7 +1374,7 @@
             liveProduct = localProduct;
           }
 
-          // 3. Fallback: Fetch all products and find the best match (handles search matching)
+          // 2. Fallback: Fetch all products and find the best match (handles search matching)
           if (!liveProduct) {
             try {
               const allFetchPromises = [];
@@ -1440,14 +1428,7 @@
           }
 
           if (!liveProduct && cleanTitle) {
-            liveProduct = parsedAdminProducts.find(p => p.title && String(p.title).toLowerCase().includes(cleanTitle)) || null;
-            if (!liveProduct) liveProduct = allApiProducts.find(p => p.title && String(p.title).toLowerCase().includes(cleanTitle)) || null;
-          }
-
-          if (!liveProduct) {
-            if (parsedAdminProducts.length > 0) liveProduct = parsedAdminProducts[0];
-            else if (allApiProducts.length > 0) liveProduct = allApiProducts[0];
-            else liveProduct = defaultCatalog[0];
+            liveProduct = allApiProducts.find(p => p.title && String(p.title).toLowerCase().includes(cleanTitle)) || null;
           }
 
           if (!liveProduct) {
@@ -1686,9 +1667,20 @@
               const catKey = (cat) => { const c = String(cat).toLowerCase(); return c.includes('women') ? 'womens' : (c.includes('men') ? 'mens' : (c.includes('kid') ? 'kids' : c)); };
               let localAlternates = [];
               try {
-                const res = await fetch(apiUrl('/products?_t=' + Date.now()));
+                const res = await fetch(cloudUrl + '?t=' + Date.now());
                 const data = await res.json();
-                if (res.ok && data.success) localAlternates = data.products.map(lp => ({ id: lp.id, title: lp.title, brand: lp.brand, category: lp.category, price: parseFloat(lp.price), images: [(lp.image || '').split(',')[0]] }));
+                if (res.ok && data.success) localAlternates = data.products.map(lp => {
+                  const imageRaw = lp.image_url || lp.imageUrl || lp.image || '';
+                  return {
+                    id: lp.id || lp.pid,
+                    title: lp.title,
+                    brand: lp.brand,
+                    category: lp.category,
+                    price: parseFloat(lp.price || 0),
+                    mrp: parseFloat(lp.mrp || 0),
+                    images: imageRaw.split(',').map(u => normalizeImageUrl(u.trim())).filter(Boolean)
+                  };
+                });
               } catch (e) {}
               const currentCat = catKey(product.category);
               let alts = localAlternates.filter(p => String(p.id) !== String(product.id)).sort((a,b) => (catKey(a.category) === currentCat ? 0 : 1) - (catKey(b.category) === currentCat ? 0 : 1)).slice(0, 8);

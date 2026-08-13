@@ -2576,8 +2576,7 @@ void main() {
           }
 
           // Fetch products catalog — cloud is the authoritative source.
-          // localStorage is updated as a cache AFTER cloud data is received,
-          // never used as an additive merge source (prevents deleted products from reappearing).
+          // localStorage may mirror successful reads for non-authoritative UI cache only.
           async function fetchProducts() {
             let cloudList = [];
             let cloudError = null;
@@ -2603,19 +2602,14 @@ void main() {
               console.warn('[DevTech Admin] Cloud products fetch error:', err.message);
             }
 
-            if (cloudList.length > 0) {
-              // Cloud data is authoritative — replace localStorage entirely.
-              // Do NOT additive-merge with localStorage; that would resurface deleted products.
+            if (!cloudError) {
               cachedProducts = cloudList;
               localStorage.setItem('dtf_admin_products', JSON.stringify(cachedProducts));
-            } else if (cloudError) {
-              // Cloud unavailable — fall back to localStorage cache as a read-only display.
-              // Do NOT trust it for writes.
-              const stored = localStorage.getItem('dtf_admin_products');
-              try { cachedProducts = JSON.parse(stored) || []; } catch (e) { cachedProducts = []; }
-              console.warn('[DevTech Admin] Using localStorage cache (cloud unavailable). Writes may not persist.');
+            } else {
+              cachedProducts = [];
+              localStorage.removeItem('dtf_admin_products');
+              console.warn('[DevTech Admin] Cloud unavailable. Product localStorage cache was not used as source of truth.');
             }
-            // If cloud returned empty array (no products added yet), cachedProducts stays []
 
             updateCategoryCounts();
             filterAndRenderProducts();
@@ -2675,12 +2669,21 @@ void main() {
                   try {
                     const cloudRes = await fetch(getCloudApiUrl(), {
                       method: 'DELETE',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user ? user.token : ''}`
+                      },
                       body: JSON.stringify({ id: pid, pid: pid }),
                       signal: AbortSignal.timeout(6000)
                     });
                     if (cloudRes.ok) {
-                      const resJson = await cloudRes.json();
+                      const cloudText = await cloudRes.text();
+                      let resJson = {};
+                      try {
+                        resJson = cloudText ? JSON.parse(cloudText) : {};
+                      } catch (parseErr) {
+                        resJson = { error: `Production API returned non-JSON response (${cloudRes.status}): ${cloudText.slice(0, 120)}` };
+                      }
                       if (resJson && resJson.success) {
                         deleteOk = true;
                         console.log(`[DevTech Admin] Deleted product from cloud: ${pid}`);
@@ -2688,7 +2691,8 @@ void main() {
                         deleteErrorMsg = (resJson && resJson.error) || 'Unknown error';
                       }
                     } else {
-                      deleteErrorMsg = `HTTP status ${cloudRes.status}`;
+                      const cloudText = await cloudRes.text().catch(() => '');
+                      deleteErrorMsg = `HTTP status ${cloudRes.status}${cloudText ? ': ' + cloudText.slice(0, 120) : ''}`;
                     }
                   } catch (e) {
                     deleteErrorMsg = e.message;
@@ -3483,16 +3487,25 @@ void main() {
 
               const cloudRes = await fetch(getCloudApiUrl(), {
                 method: id ? 'PUT' : 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${user ? user.token : ''}`
+                },
                 body: JSON.stringify(cloudPayload),
                 signal: AbortSignal.timeout(10000)
               });
-              const cloudResult = await cloudRes.json();
+              const cloudText = await cloudRes.text();
+              let cloudResult = {};
+              try {
+                cloudResult = cloudText ? JSON.parse(cloudText) : {};
+              } catch (parseErr) {
+                cloudResult = { error: `Production API returned non-JSON response (${cloudRes.status}): ${cloudText.slice(0, 120)}` };
+              }
               if (cloudRes.ok && cloudResult.success && cloudResult.product) {
                 savedProduct = cloudResult.product;
                 console.log(`[DevTech Admin] Product ${id ? 'updated' : 'created'} in cloud:`, savedProduct.id);
               } else {
-                cloudSaveError = cloudResult.error || `Cloud returned ${cloudRes.status}`;
+                cloudSaveError = cloudResult.error || `Production API returned ${cloudRes.status}`;
                 console.error('[DevTech Admin] Cloud save failed:', cloudSaveError);
               }
             } catch (cloudErr) {
@@ -3502,7 +3515,7 @@ void main() {
 
             // If cloud save failed, show error and stop — do not silently save to localStorage only
             if (!savedProduct) {
-              modalError.textContent = `❌ Failed to save product to cloud: ${cloudSaveError || 'Unknown error'}. Please check your internet connection and try again.`;
+              modalError.textContent = `❌ Failed to save product to production catalog: ${cloudSaveError || 'Unknown error'}. The product was not saved.`;
               modalError.style.display = 'block';
               submitBtn.disabled = false;
               submitBtn.textContent = 'Save Product';
@@ -4013,7 +4026,10 @@ void main() {
 
                   await fetch(getCloudApiUrl(), {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${user ? user.token : ''}`
+                    },
                     body: JSON.stringify({ ...prod, id: pid, pid: pid, sizeStock: newStockStr, size_stock: newStockStr }),
                     signal: AbortSignal.timeout(5000)
                   }).catch(() => {});
@@ -4395,7 +4411,10 @@ void main() {
 
                     await fetch(getCloudApiUrl(), {
                       method: 'PUT',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user ? user.token : ''}`
+                      },
                       body: JSON.stringify({ ...prod, id: update.pid, pid: update.pid, sizeStock: newStockStr, size_stock: newStockStr }),
                       signal: AbortSignal.timeout(5000)
                     }).catch(() => {});
