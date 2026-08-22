@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Orders — DevTech Fashion</title>
-    <meta name="description" content="Track your orders, view order history, and manage your purchases at DevTech Fashion." />
+    <title>My Orders — Fashion Company</title>
+    <meta name="description" content="Track your orders, view order history, and manage your purchases at Fashion Company." />
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -392,6 +392,78 @@
           font-size: 9px;
         }
       }
+
+      @media print {
+        @page {
+          size: auto;
+          margin: 8mm 12mm;
+        }
+
+        body {
+          background: #ffffff !important;
+          color: #000000 !important;
+        }
+
+        header, footer, nav, .orders-header, .orders-stats, #orders-list-container, #order-loading, #order-empty, #order-login-prompt, .nav-dock, .mobile-dock {
+          display: none !important;
+          height: 0 !important;
+          overflow: hidden !important;
+          visibility: hidden !important;
+        }
+
+        #order-invoice-modal {
+          display: block !important;
+          position: static !important;
+          background: transparent !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          overflow: visible !important;
+          width: 100% !important;
+          height: auto !important;
+          max-height: none !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+          visibility: visible !important;
+        }
+
+        #order-invoice-modal > div {
+          max-width: 100% !important;
+          width: 100% !important;
+          max-height: none !important;
+          height: auto !important;
+          box-shadow: none !important;
+          border: none !important;
+          border-radius: 0 !important;
+          overflow: visible !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          background: #ffffff !important;
+          color: #000000 !important;
+          visibility: visible !important;
+        }
+
+        #order-invoice-modal div[style*="background: #111827"],
+        #order-invoice-modal div[style*="background: rgb(17, 24, 39)"] {
+          display: none !important;
+        }
+
+        #printable-invoice-content {
+          display: block !important;
+          visibility: visible !important;
+          width: 100% !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          background: #ffffff !important;
+          color: #000000 !important;
+          overflow: visible !important;
+          position: static !important;
+        }
+
+        #printable-invoice-content * {
+          visibility: visible !important;
+          color: #000000 !important;
+        }
+      }
     </style>
   </head>
   <body class="auth-page">
@@ -498,9 +570,9 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 12px;">
               <div style="border-right: 1px solid #000; padding-right: 12px;">
                 <div style="font-weight: 700; text-transform: uppercase; font-size: 10px; color: #374151; margin-bottom: 4px;">SHIP FROM (SELLER):</div>
-                <div style="font-weight: 700; font-size: 13px;">DevTech Fashion Retail Pvt. Ltd.</div>
+                <div style="font-weight: 700; font-size: 13px;">Fashion Company Retail Pvt. Ltd.</div>
                 <div style="color: #374151; margin-top: 4px; line-height: 1.5; font-size: 11px;">
-                  Plot 42, DevTech Logistics Hub, Main Road,<br>
+                  Plot 42, Fashion Company Logistics Hub, Main Road,<br>
                   Mylavaram, NTR District, AP - 521230<br>
                   <strong>GSTIN:</strong> 37AAAAA0000A1Z5<br>
                   <strong>Phone:</strong> +91 98765 43210
@@ -536,12 +608,14 @@
             <table style="width: 100%; text-align: left; font-size: 12px; border-collapse: collapse; margin-bottom: 16px;">
               <thead>
                 <tr style="border-bottom: 2px solid #000; background: #f3f4f6; font-weight: 700; font-size: 10px; text-transform: uppercase; color: #374151;">
-                  <th style="padding: 8px;">#</th>
-                  <th style="padding: 8px;">Item Description</th>
-                  <th style="padding: 8px; text-align: center;">Qty</th>
-                  <th style="padding: 8px; text-align: right;">Unit Price</th>
-                  <th style="padding: 8px; text-align: right;">GST (18%)</th>
-                  <th style="padding: 8px; text-align: right;">Total</th>
+                  <th style="padding: 10px 12px;">#</th>
+                  <th style="padding: 10px 12px;">Product Description & SKU</th>
+                  <th style="padding: 10px 8px; text-align: center;">HSN</th>
+                  <th style="padding: 10px 8px; text-align: center;">Qty</th>
+                  <th style="padding: 10px 12px; text-align: right;">Gross Price</th>
+                  <th style="padding: 10px 12px; text-align: right;">Taxable Base</th>
+                  <th style="padding: 10px 12px; text-align: right;">GST (18%)</th>
+                  <th style="padding: 10px 12px; text-align: right;">Total (₹)</th>
                 </tr>
               </thead>
               <tbody id="inv-items-body" style="font-size: 11px;">
@@ -554,7 +628,7 @@
               <div style="font-size: 10px; color: #4b5563; line-height: 1.4;">
                 <div>* Goods once sold can be returned within 7 days.</div>
                 <div>* Computer generated tax invoice. No signature required.</div>
-                <div style="font-weight: 700; color: #000; margin-top: 8px; font-size: 11px;">Thank you for shopping with DevTech Fashion!</div>
+                <div style="font-weight: 700; color: #000; margin-top: 8px; font-size: 11px;">Thank you for shopping with Fashion Company!</div>
               </div>
               <div style="width: 250px; text-align: right; line-height: 1.6;">
                 <div style="display: flex; justify-content: space-between; color: #4b5563;">
@@ -610,6 +684,7 @@
     </nav>
 
     <!-- Custom JavaScript -->
+    <script src="../js/utils.js"></script>
     <script src="../js/script.js"></script>
     <script src="../js/mobile-ui.js"></script>
     <script>
@@ -715,7 +790,7 @@
             const statusIcon = getStatusIcon(status);
             const dateStr = formatDate(order.created_at);
             const orderId = `#DTF-${String(order.id).padStart(5, '0')}`;
-            const total = parseFloat(order.total_amount || 0);
+            const total = Math.round(parseFloat(order.total_amount || 0));
             const items = parseItems(order.items);
 
             // Build items HTML
@@ -724,13 +799,13 @@
               itemsHtml = items.map(item => `
                 <div class="order-item-row">
                   <div class="order-item-img">
-                    <img src="${item.image || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=200&q=80&fit=crop'}" alt="${item.title || 'Product'}" />
+                    <img src="${item.image || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=200&q=80&fit=crop'}" alt="${escapeHtml(item.title || 'Product')}" />
                   </div>
                   <div class="order-item-info">
-                    <p class="order-item-title">${item.title || 'Product'}</p>
-                    <span class="order-item-qty">Qty: ${item.quantity || 1}${item.size ? ' · Size: ' + item.size : ''}</span>
+                    <p class="order-item-title">${escapeHtml(item.title || 'Product')}</p>
+                    <span class="order-item-qty">Qty: ${parseInt(item.quantity || 1, 10)}${item.size ? ' · Size: ' + escapeHtml(item.size) : ''}</span>
                   </div>
-                  <span class="order-item-price">₹${parseFloat(item.price || 0).toLocaleString('en-IN')}</span>
+                  <span class="order-item-price">₹${Math.round(parseFloat(item.price || 0)).toLocaleString('en-IN')}</span>
                 </div>
               `).join('');
             } else {
@@ -769,7 +844,7 @@
                   <span class="order-id-value">${orderId}</span>
                   <span class="order-date">Placed on ${dateStr}</span>
                 </div>
-                <span class="order-status-badge ${statusClass}">${statusIcon} ${status}</span>
+                <span class="order-status-badge ${statusClass}">${statusIcon} ${escapeHtml(status)}</span>
               </div>
 
               <div class="order-items-list">
@@ -798,21 +873,271 @@
           });
         }
 
-        // Helper: Barcode SVG Generator
-        function generateBarcodeSvg(codeText) {
-          let bars = '';
-          let x = 15;
-          for (let i = 0; i < codeText.length; i++) {
-            const charCode = codeText.charCodeAt(i);
-            const w1 = (charCode % 3) + 1.5;
-            const w2 = ((charCode * 2) % 4) + 1;
-            const gap = (charCode % 2) + 1.5;
-            bars += `<rect x="${x}" y="2" width="${w1}" height="38" fill="#000" />`;
-            x += w1 + gap;
-            bars += `<rect x="${x}" y="2" width="${w2}" height="38" fill="#000" />`;
-            x += w2 + gap;
+        // Helper: Number to Words in Indian Currency format
+        function numberToWordsINR(num) {
+          num = Math.round(parseFloat(num) || 0);
+          if (num === 0) return 'Zero Rupees Only';
+          const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+          const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+          function inWords(n) {
+            if (n < 20) return a[n];
+            const digit = n % 10;
+            if (n < 100) return b[Math.floor(n / 10)] + (digit ? ' ' + a[digit] : '');
+            if (n < 1000) return a[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' and ' + inWords(n % 100) : '');
+            if (n < 100000) return inWords(Math.floor(n / 1000)) + ' Thousand' + (n % 1000 ? ' ' + inWords(n % 1000) : '');
+            if (n < 10000000) return inWords(Math.floor(n / 100000)) + ' Lakh' + (n % 100000 ? ' ' + inWords(n % 1000) : '');
+            return inWords(Math.floor(n / 10000000)) + ' Crore' + (n % 10000000 ? ' ' + inWords(n % 10000000) : '');
           }
-          return `<svg width="${Math.max(x + 15, 240)}" height="42" viewBox="0 0 ${Math.max(x + 15, 240)} 42" xmlns="http://www.w3.org/2000/svg">${bars}</svg>`;
+
+          return inWords(num) + ' Rupees Only';
+        }
+
+        // Full Commercial Tax Invoice & Shipping Bill HTML Generator
+        function buildCommercialInvoiceHTML(o) {
+          o = o || {};
+          const orderId = o.id || '1001';
+          const awbNo = `AWB${orderId}984710IN`;
+          const sortCode = `MYL / ${(o.addr_pincode || '521230')}-E`;
+          const custName = o.addr_name || (userData ? ((userData.first_name || '') + ' ' + (userData.last_name || '')).trim() : '') || 'Valued Customer';
+          const addressFormatted = escapeHtml(o.delivery_address || 'Plot 104, Green Valley Enclave, Mylavaram, Andhra Pradesh - 521230');
+          const phone = escapeHtml(o.addr_mobile || '+91 98765 43210');
+          const email = escapeHtml(userData && userData.email ? userData.email : 'customer@fashioncompany.com');
+          const invNo = `INV-FC-2026-${orderId}`;
+          const invDate = new Date(o.created_at || o.placed_at || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          const payStatus = 'PAID (ONLINE)';
+          const barcodeSvg = generateBarcodeSvg(awbNo);
+
+          let itemsArray = parseItems(o.items);
+          if (!Array.isArray(itemsArray) || itemsArray.length === 0) {
+            itemsArray = [
+              { pid: 102, title: 'Oxford Classic Button-Down Shirt', brand: 'Fashion Company Casuals', price: o.total_amount || 3499, hsn: '6205', size: 'M', quantity: 1 }
+            ];
+          }
+
+          let totalCalculated = 0;
+          let rowsHtml = '';
+
+          itemsArray.forEach((item, idx) => {
+            const price = Math.round(parseFloat(item.price) || 0);
+            const qty = parseInt(item.quantity) || 1;
+            const lineTotal = price * qty;
+            totalCalculated += lineTotal;
+
+            const taxableLine = Math.round(lineTotal * 100 / 118);
+            const gstLine = lineTotal - taxableLine;
+            const cgstLine = Math.round(gstLine / 2);
+            const sgstLine = gstLine - cgstLine;
+            const sizeText = item.size || 'M';
+            const brandText = item.brand || 'Fashion Company';
+            const hsnText = item.hsn || '6203';
+            const pidText = item.pid ? `PID: #${item.pid}` : '';
+
+            rowsHtml += `
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 8px 10px; font-family: monospace; font-weight: 700; text-align: center;">${idx + 1}</td>
+                <td style="padding: 8px 10px;">
+                  <div style="font-weight: 700; color: #000; font-size: 11px;">${escapeHtml(item.title || 'Apparel Item')}</div>
+                  <div style="font-size: 9.5px; color: #4b5563; font-family: monospace; margin-top: 1px;">Brand: ${escapeHtml(brandText)} • Size: ${escapeHtml(sizeText)} ${pidText ? `• ${escapeHtml(pidText)}` : ''}</div>
+                </td>
+                <td style="padding: 8px 8px; text-align: center; font-family: monospace; font-size: 10px; color: #374151; font-weight: 600;">${escapeHtml(hsnText)}</td>
+                <td style="padding: 8px 8px; text-align: center; font-family: monospace; font-weight: 700; color: #000;">${qty}</td>
+                <td style="padding: 8px 10px; text-align: right; font-family: monospace;">₹${price.toLocaleString('en-IN')}</td>
+                <td style="padding: 8px 10px; text-align: right; font-family: monospace; color: #374151;">₹${taxableLine.toLocaleString('en-IN')}</td>
+                <td style="padding: 8px 10px; text-align: right; font-family: monospace; color: #374151;">₹${gstLine.toLocaleString('en-IN')}<span style="display:block;font-size:7.5px;color:#6b7280;">(CGST 9% + SGST 9%)</span></td>
+                <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: 700; color: #000;">₹${lineTotal.toLocaleString('en-IN')}</td>
+              </tr>
+            `;
+          });
+
+          const grandTotal = totalCalculated > 0 ? totalCalculated : (Math.round(parseFloat(o.total_amount) || 0));
+          const taxableVal = Math.round(grandTotal * 100 / 118);
+          const totalGst = grandTotal - taxableVal;
+          const cgst = Math.round(totalGst / 2);
+          const sgst = totalGst - cgst;
+          const amountWords = numberToWordsINR(grandTotal);
+
+          return `
+            <div style="width: 100%; max-width: 800px; margin: 0 auto; color: #000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.4;">
+
+              <!-- ================= SHIPPING LABEL SECTION ================= -->
+              <div style="border: 2px solid #000; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #fff;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 8px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="background: #000; color: #fff; padding: 3px 10px; font-weight: 900; font-size: 13px; letter-spacing: 1px; border-radius: 3px;">ATS EXPRESS</span>
+                    <span style="border: 1px solid #000; padding: 2px 6px; font-size: 9px; font-weight: 700; border-radius: 3px; text-transform: uppercase;">Standard Surface Delivery</span>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-weight: 700; font-size: 11px;">SORT CODE: <span style="font-family: monospace;">${sortCode}</span></div>
+                    <div style="font-size: 9px; color: #4b5563;">Routing Hub: AP-KR-DEL-01 • Dispatch Bag #42</div>
+                  </div>
+                </div>
+
+                <div style="text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 10px;">
+                  <div style="font-size: 8.5px; font-family: monospace; letter-spacing: 2px; color: #6b7280; margin-bottom: 2px;">AWB TRACKING BARCODE (ATS LOGISTICS)</div>
+                  <div style="display: flex; justify-content: center;">${barcodeSvg}</div>
+                  <div style="font-family: monospace; font-size: 11px; font-weight: 700; letter-spacing: 2px; margin-top: 2px;">${awbNo}</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                  <div style="border-right: 1px solid #000; padding-right: 12px;">
+                    <div style="font-size: 9px; font-weight: 700; text-transform: uppercase; color: #4b5563; margin-bottom: 3px; letter-spacing: 0.5px;">SOLD BY / DISPATCH FROM (SELLER):</div>
+                    <div style="font-weight: 800; font-size: 12px; color: #000;">Fashion Company Retail Pvt. Ltd.</div>
+                    <div style="font-size: 10px; color: #374151; margin-top: 3px; line-height: 1.45;">
+                      Central Fulfillment Hub, Plot 42-A, Main Industrial Corridor,<br>
+                      Mylavaram, NTR District, Andhra Pradesh, India - 521230<br>
+                      <strong>GSTIN:</strong> 37AAAAA0000A1Z5 | <strong>PAN:</strong> AAACF1234F<br>
+                      <strong>CIN:</strong> U51909AP2024PTC184920 | <strong>State:</strong> 37 - Andhra Pradesh<br>
+                      <strong>Helpline:</strong> +91 1800-420-9999 | <strong>Email:</strong> orders@fashioncompany.com
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style="font-size: 9px; font-weight: 700; text-transform: uppercase; color: #4b5563; margin-bottom: 3px; letter-spacing: 0.5px;">DELIVER TO / BILL TO (BUYER):</div>
+                    <div style="font-weight: 800; font-size: 12px; color: #000;">${escapeHtml(custName)}</div>
+                    <div style="font-size: 10px; color: #1f2937; margin-top: 3px; line-height: 1.45;">
+                      ${addressFormatted}
+                    </div>
+                    <div style="font-size: 10px; font-weight: 700; margin-top: 4px; color: #000;">
+                      Phone: ${phone} &bull; Email: ${email}
+                    </div>
+                    <div style="font-size: 9px; color: #4b5563; margin-top: 2px;">
+                      Place of Supply: Andhra Pradesh (Code: 37) &bull; Delivery Code: STD-PREPAID
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ================= TAX INVOICE SECTION ================= -->
+              <div style="border: 2px solid #000; border-radius: 8px; padding: 12px; background: #fff;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 8px;">
+                  <div>
+                    <h2 style="font-size: 13px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; margin: 0; color: #000;">TAX INVOICE / BILL OF SUPPLY</h2>
+                    <div style="font-size: 9px; color: #4b5563; margin-top: 1px;">(Issued under Section 31 of Central Goods and Services Tax Act, 2017)</div>
+                    <div style="font-family: monospace; font-weight: 700; font-size: 11px; margin-top: 3px; color: #000;">Invoice No: ${invNo}</div>
+                  </div>
+                  <div style="text-align: right; font-size: 10.5px;">
+                    <div><strong>Order ID:</strong> <span style="font-family: monospace; font-weight: 700;">#${orderId}</span></div>
+                    <div><strong>Order Date:</strong> <span>${invDate}</span></div>
+                    <div><strong>Payment Mode:</strong> <span style="font-weight: 700; color: #047857;">${payStatus}</span></div>
+                    <div style="font-size: 9px; color: #4b5563;">Transaction Ref: TXN${orderId}8491029</div>
+                  </div>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; font-size: 10.5px; margin-bottom: 8px;">
+                  <thead>
+                    <tr style="background: #f3f4f6; border-top: 1px solid #000; border-bottom: 1.5px solid #000; font-weight: 700; font-size: 9.5px; text-transform: uppercase; color: #374151;">
+                      <th style="padding: 6px 8px; width: 30px; text-align: center;">#</th>
+                      <th style="padding: 6px 8px; text-align: left;">Product Description & Brand / SKU</th>
+                      <th style="padding: 6px 6px; width: 55px; text-align: center;">HSN</th>
+                      <th style="padding: 6px 6px; width: 40px; text-align: center;">Qty</th>
+                      <th style="padding: 6px 8px; width: 75px; text-align: right;">Gross Price</th>
+                      <th style="padding: 6px 8px; width: 80px; text-align: right;">Taxable Base</th>
+                      <th style="padding: 6px 8px; width: 85px; text-align: right;">GST (18%)</th>
+                      <th style="padding: 6px 8px; width: 80px; text-align: right;">Total (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${rowsHtml}
+                  </tbody>
+                </table>
+
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1.5px solid #000; padding-top: 8px;">
+                  <div style="flex: 1; padding-right: 16px; font-size: 9.5px; color: #374151; line-height: 1.45;">
+                    <div><strong>Amount in Words:</strong> <span style="font-style: italic; color: #000; font-weight: 600;">${escapeHtml(amountWords)}</span></div>
+                    <div style="margin-top: 4px; font-size: 9px; color: #4b5563;">
+                      &bull; Whether tax is payable on Reverse Charge basis: <strong>No</strong><br>
+                      &bull; Covered under Fashion Company 7-Day Hassle-Free Exchange & Return Policy.<br>
+                      &bull; Certified that the particulars given in this tax invoice are true and correct.
+                    </div>
+                    <div style="margin-top: 8px; border-top: 1px dashed #d1d5db; padding-top: 4px; font-size: 8.5px; color: #4b5563;">
+                      <strong>Authorised Signatory:</strong> Fashion Company Retail Pvt. Ltd. (Digitally Signed & Certified)
+                    </div>
+                  </div>
+
+                  <div style="width: 250px; text-align: right; font-size: 10.5px; line-height: 1.6;">
+                    <div style="display: flex; justify-content: space-between; color: #4b5563;">
+                      <span>Taxable Amount:</span>
+                      <span style="font-family: monospace;">₹${taxableVal.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: #4b5563;">
+                      <span>CGST (9.00%):</span>
+                      <span style="font-family: monospace;">₹${cgst.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: #4b5563;">
+                      <span>SGST (9.00%):</span>
+                      <span style="font-family: monospace;">₹${sgst.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: #4b5563;">
+                      <span>Shipping & Packaging:</span>
+                      <span style="font-weight: 700; color: #047857;">FREE</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 13px; color: #000; border-top: 1.5px solid #000; padding-top: 4px; margin-top: 4px;">
+                      <span>Grand Total:</span>
+                      <span style="font-family: monospace;">₹${grandTotal.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="text-align: center; font-size: 8.5px; color: #6b7280; margin-top: 8px;">
+                This is a computer generated tax invoice in accordance with Rule 46 of the CGST Rules, 2017. No physical signature is required.
+              </div>
+            </div>
+          `;
+        }
+
+        // Dedicated Iframe Print Engine
+        function printInvoiceContent() {
+          const invoiceHtml = window._currentOrderInvoiceHtml;
+          if (!invoiceHtml) {
+            window.print();
+            return;
+          }
+
+          let iframe = document.getElementById('customer-invoice-print-frame');
+          if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.id = 'customer-invoice-print-frame';
+            iframe.style.position = 'fixed';
+            iframe.style.right = '0';
+            iframe.style.bottom = '0';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = '0';
+            iframe.style.opacity = '0';
+            document.body.appendChild(iframe);
+          }
+
+          const doc = iframe.contentWindow.document;
+          doc.open();
+          doc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>Tax Invoice & Shipping Bill</title>
+              <meta charset="utf-8" />
+              <style>
+                @page { size: A4 portrait; margin: 8mm 12mm; }
+                * { box-sizing: border-box; margin: 0; padding: 0; }
+                body { background: #fff !important; color: #000 !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 0; margin: 0; }
+              </style>
+            </head>
+            <body>
+              ${invoiceHtml}
+            </body>
+            </html>
+          `);
+          doc.close();
+
+          setTimeout(() => {
+            try {
+              iframe.contentWindow.focus();
+              iframe.contentWindow.print();
+            } catch (e) {
+              window.print();
+            }
+          }, 300);
         }
 
         // Open Invoice Modal
@@ -820,60 +1145,13 @@
           const modal = document.getElementById('order-invoice-modal');
           if (!modal) return;
 
-          const awbNo = `AWB${o.id}984710IN`;
-          document.getElementById('invoice-barcode-awb').innerHTML = generateBarcodeSvg(awbNo);
-          document.getElementById('invoice-awb-text').textContent = awbNo;
-          document.getElementById('invoice-sort-code').textContent = `MYL / ${(o.addr_pincode || '521230')}-E`;
+          const invoiceHtml = buildCommercialInvoiceHTML(o);
+          window._currentOrderInvoiceHtml = invoiceHtml;
 
-          const custName = o.addr_name || (userData ? ((userData.first_name || '') + ' ' + (userData.last_name || '')).trim() : '') || 'Valued Customer';
-          document.getElementById('inv-to-name').textContent = custName;
-
-          const addressHtml = o.delivery_address || 'Flat 101, High Street, Downtown, Bengaluru, Karnataka - 560001';
-          document.getElementById('inv-to-address').innerHTML = addressHtml;
-          document.getElementById('inv-to-phone').textContent = 'Phone: ' + (o.addr_mobile || '98765 43210');
-
-          document.getElementById('inv-no').textContent = `Invoice No: INV-2026-${o.id}`;
-          document.getElementById('inv-order-id').textContent = `#${o.id}`;
-          const invDate = new Date(o.created_at || o.placed_at || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-          document.getElementById('inv-date').textContent = invDate;
-
-          const itemsArray = parseItems(o.items);
-          const itemsTbody = document.getElementById('inv-items-body');
-          itemsTbody.innerHTML = '';
-          let grandTotal = parseFloat(o.total_amount) || 0;
-
-          if (itemsArray.length === 0) {
-            itemsTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 12px; color: #6b7280;">Standard Fashion Apparel Item</td></tr>`;
-          } else {
-            itemsArray.forEach((item, idx) => {
-              const tr = document.createElement('tr');
-              const price = parseFloat(item.price) || 0;
-              const qty = parseInt(item.quantity) || 1;
-              const lineTotal = price * qty;
-              const gstVal = Math.round(lineTotal * 0.18);
-              const sizeText = item.size ? ` (Size: ${item.size})` : '';
-
-              tr.innerHTML = `
-                <td style="padding: 8px; font-family: monospace;">${idx + 1}</td>
-                <td style="padding: 8px; font-weight: 600; color: #000;">${item.title || 'Apparel Item'}${sizeText}</td>
-                <td style="padding: 8px; text-align: center; font-family: monospace; font-weight: 700;">${qty}</td>
-                <td style="padding: 8px; text-align: right; font-family: monospace;">₹${price.toLocaleString('en-IN')}</td>
-                <td style="padding: 8px; text-align: right; font-family: monospace;">₹${gstVal.toLocaleString('en-IN')}</td>
-                <td style="padding: 8px; text-align: right; font-family: monospace; font-weight: 700;">₹${lineTotal.toLocaleString('en-IN')}</td>
-              `;
-              itemsTbody.appendChild(tr);
-            });
+          const printable = document.getElementById('printable-invoice-content');
+          if (printable) {
+            printable.innerHTML = invoiceHtml;
           }
-
-          const taxableVal = Math.round(grandTotal / 1.18);
-          const totalGst = grandTotal - taxableVal;
-          const cgst = Math.round(totalGst / 2);
-          const sgst = totalGst - cgst;
-
-          document.getElementById('inv-taxable-val').textContent = '₹' + taxableVal.toLocaleString('en-IN');
-          document.getElementById('inv-cgst-val').textContent = '₹' + cgst.toLocaleString('en-IN');
-          document.getElementById('inv-sgst-val').textContent = '₹' + sgst.toLocaleString('en-IN');
-          document.getElementById('inv-grand-total').textContent = '₹' + Math.round(grandTotal).toLocaleString('en-IN');
 
           modal.style.display = 'flex';
         }
@@ -885,10 +1163,19 @@
           });
         }
 
+        const invModalEl = document.getElementById('order-invoice-modal');
+        if (invModalEl) {
+          invModalEl.addEventListener('click', (e) => {
+            if (e.target === invModalEl) {
+              invModalEl.style.display = 'none';
+            }
+          });
+        }
+
         const triggerPrintBtn = document.getElementById('trigger-print-btn');
         if (triggerPrintBtn) {
           triggerPrintBtn.addEventListener('click', () => {
-            window.print();
+            printInvoiceContent();
           });
         }
 
@@ -925,6 +1212,14 @@
           if (!dateStr) return 'N/A';
           const d = new Date(dateStr);
           return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function escapeHtml(str) {
+          if (window.escapeHtml) return window.escapeHtml(str);
+          if (str == null) return '';
+          const div = document.createElement('div');
+          div.textContent = String(str);
+          return div.innerHTML;
         }
 
         function parseItems(raw) {

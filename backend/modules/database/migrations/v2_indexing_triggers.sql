@@ -1,5 +1,5 @@
 -- ============================================================
--- DEVTECH FASHION — ENTERPRISE DATABASE INDEXING & TRIGGERS (V2)
+-- FASHIONCOMPANY FASHION — ENTERPRISE DATABASE INDEXING & TRIGGERS (V2)
 -- ============================================================
 
 -- 1. Create Indexes on Common Columns

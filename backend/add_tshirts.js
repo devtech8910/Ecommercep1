@@ -17,7 +17,7 @@ const tshirts = [
     imageUrl: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&q=80&fit=crop",
     category: "mens",
     description: "Classic crewneck t-shirt crafted from 100% long-staple organic cotton. Super soft, breathable, and pre-shrunk for the perfect fit.",
-    brand: "DevTech Luxe",
+    brand: "Fashion Company Luxe",
     titleDescription: "Classic white crewneck t-shirt in organic cotton.",
     sizes: "S, M, L, XL",
     replacementAllowed: true,

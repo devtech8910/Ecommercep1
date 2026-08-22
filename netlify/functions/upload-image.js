@@ -1,5 +1,5 @@
 // ============================================================
-// DEVTECH FASHION — IMAGE UPLOAD PROXY
+// FASHIONCOMPANY FASHION — IMAGE UPLOAD PROXY
 // Uploads product images to permanent free image cloud hosting (FreeImage.host CDN & Catbox)
 // Eliminates CORS issues and returns clean, permanent image URLs
 // ============================================================
@@ -67,7 +67,12 @@ exports.handler = async (event) => {
 
 // --- FreeImage.host API Upload (with encodeURIComponent base64 preservation) ---
 async function uploadToFreeImageHost(base64String) {
-  const body = `key=6d207e02198a847aa98d0a2a901485a5&action=upload&format=json&source=${encodeURIComponent(base64String)}`;
+  const apiKey = process.env.FREEIMAGE_API_KEY;
+  if (!apiKey) {
+    throw new Error('FREEIMAGE_API_KEY environment variable is not configured.');
+  }
+
+  const body = `key=${encodeURIComponent(apiKey)}&action=upload&format=json&source=${encodeURIComponent(base64String)}`;
 
   const res = await fetch('https://freeimage.host/api/1/upload', {
     method: 'POST',

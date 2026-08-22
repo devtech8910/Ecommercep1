@@ -1,16 +1,17 @@
 // ============================================================
-// DEVTECH FASHION - NETLIFY SERVERLESS CLOUD PRODUCTS CATALOG
+// FASHIONCOMPANY FASHION - NETLIFY SERVERLESS CLOUD PRODUCTS CATALOG
 // Single source of truth for cross-device product synchronisation
 // ============================================================
 
 import { getStore } from '@netlify/blobs';
 
-const PRODUCTS_STORE_NAME = 'devtech-products';
+const PRODUCTS_STORE_NAME = 'fashioncompany-products';
 const PRODUCTS_BLOB_KEY = 'catalog.json';
 
 // Optional legacy import URL. If this points to a removed JSONBlob/resource and
 // returns 404, writes must still work through Netlify Blobs.
 const CLOUD_PRODUCTS_URL = process.env.CLOUD_PRODUCTS_URL;
+const CLOUD_AUTH_USERS_URL = process.env.CLOUD_DB_URL || 'https://jsonblob.com/api/jsonBlob/019f9cba-929a-7931-ad23-922a9b668aa9';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -84,6 +85,32 @@ async function parseJsonBody(request) {
   }
 }
 
+async function requireAdmin(request) {
+  const auth = request.headers.get('Authorization') || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+  if (!token) return false;
+
+  try {
+    const res = await fetch(CLOUD_AUTH_USERS_URL, {
+      headers: { Accept: 'application/json' }
+    });
+    if (!res.ok) return false;
+
+    const users = await res.json();
+    if (!Array.isArray(users)) return false;
+
+    return users.some(user =>
+      user &&
+      user.role === 'admin' &&
+      user.token &&
+      String(user.token) === String(token)
+    );
+  } catch (err) {
+    console.error('[Products Auth] Admin token verification failed:', err.message);
+    return false;
+  }
+}
+
 async function fetchLegacyProducts() {
   if (!CLOUD_PRODUCTS_URL) return [];
 
@@ -142,7 +169,7 @@ function normaliseProduct(payload, existing) {
     id: base.id || payload.id || payload.pid,
     pid: base.pid || payload.pid || payload.id,
     title: payload.title || base.title || '',
-    brand: payload.brand || base.brand || 'DevTech Collection',
+    brand: payload.brand || base.brand || 'Fashion Company Collection',
     category: normaliseCategory(payload.category || base.category || ''),
     title_description: payload.titleDescription || payload.title_description || base.title_description || '',
     titleDescription: payload.titleDescription || payload.title_description || base.titleDescription || '',
@@ -203,6 +230,13 @@ export default async function handler(request) {
       console.error('[Products GET] Error:', err.message);
       return jsonResponse(500, { success: false, error: err.message });
     }
+  }
+
+  if (!(await requireAdmin(request))) {
+    return jsonResponse(401, {
+      success: false,
+      error: 'Unauthorized. Admin access required.'
+    });
   }
 
   if (request.method === 'POST') {

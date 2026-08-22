@@ -20,6 +20,15 @@
   let priceAbsMin = 0;
   let priceAbsMax = 50000;
 
+  function getUserStorageKey(base) {
+    try {
+      const user = JSON.parse(localStorage.getItem('dtf_user') || 'null');
+      return user && user.email ? `${base}_${String(user.email).toLowerCase()}` : base;
+    } catch (e) {
+      return base;
+    }
+  }
+
   /* ---------- Bootstrap ---------- */
   window.initCategoryFilters = function (products, grid) {
     if (!products || products.length === 0 || !grid) return;
@@ -52,7 +61,8 @@
           const price = buyBtn.getAttribute('data-price');
           const image = buyBtn.getAttribute('data-image');
 
-          const cart = JSON.parse(localStorage.getItem('dtf_cart')) || [];
+          const cartKey = getUserStorageKey('dtf_cart');
+          const cart = JSON.parse(localStorage.getItem(cartKey)) || [];
           const existing = cart.findIndex(c => c.title === title);
 
           if (existing > -1) {
@@ -66,7 +76,7 @@
             });
           }
 
-          localStorage.setItem('dtf_cart', JSON.stringify(cart));
+          localStorage.setItem(cartKey, JSON.stringify(cart));
           window.dispatchEvent(new Event('dtf:cart:updated'));
           window.location.href = 'cart.html';
         }

@@ -136,7 +136,7 @@ export async function searchLocation(type, context, searchQuery) {
     const fullQuery = queryParts.join(', ');
     
     try {
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(fullQuery)}&format=json&addressdetails=1&limit=10&countrycodes=in&email=devtechfashion@example.com`;
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(fullQuery)}&format=json&addressdetails=1&limit=10&countrycodes=in&email=fashioncompany@example.com`;
         const response = await fetch(url, { headers: { 'User-Agent': 'EcommerceAddressPickerApp/2.0' } });
         
         if (!response.ok) {

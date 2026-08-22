@@ -1,6 +1,6 @@
 import pool from '../../../db.js';
 
-async function migrate() {
+export default async function migrate() {
   try {
     console.log('Starting migration for stock_movements...');
 
@@ -65,9 +65,6 @@ async function migrate() {
     console.log('🏁 Migration v11 completed successfully.');
   } catch (err) {
     console.error('❌ Migration failed:', err);
-  } finally {
-    pool.end();
+    throw err;
   }
 }
-
-migrate();

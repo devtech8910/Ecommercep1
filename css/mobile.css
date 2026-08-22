@@ -1,5 +1,5 @@
 /* ============================================================
-   DEVTECH FASHION - DEDICATED MOBILE PRESENTATION LAYER
+   FASHIONCOMPANY FASHION - DEDICATED MOBILE PRESENTATION LAYER
    Desktop remains the source of truth. These rules only apply
    to tablet and phone widths and do not duplicate business logic.
    ============================================================ */
@@ -72,13 +72,18 @@
   .nav-container {
     min-height: var(--mobile-header-height) !important;
     height: var(--mobile-header-height) !important;
-    padding: 0 8px !important;
+    padding: 0 14px !important;
     gap: 6px !important;
-    border-radius: 18px !important;
+    border-radius: 9999px !important;
     max-width: 100% !important;
-    background: rgba(15, 23, 42, 0.94) !important;
-    border: 1px solid rgba(255, 255, 255, 0.14) !important;
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5) !important;
+    background: rgba(8, 8, 22, 0.75) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.45),
+      0 2px 8px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: saturate(200%) blur(28px) !important;
+    -webkit-backdrop-filter: saturate(200%) blur(28px) !important;
   }
 
   .nav-links,
@@ -94,22 +99,23 @@
     min-width: 0 !important;
     max-width: none !important;
     margin: 0 !important;
-    height: 42px !important;
+    height: 40px !important;
   }
 
   .nav-search-input {
     min-width: 0 !important;
-    height: 42px !important;
-    padding: 0 42px 0 14px !important;
-    font-size: 0.9rem !important;
-    border-radius: 14px !important;
+    height: 40px !important;
+    padding: 0 42px 0 16px !important;
+    font-size: 0.875rem !important;
+    border-radius: 9999px !important;
     text-overflow: ellipsis;
   }
 
   .nav-search-btn {
-    width: 34px !important;
-    height: 34px !important;
+    width: 32px !important;
+    height: 32px !important;
     right: 4px !important;
+    border-radius: 9999px !important;
   }
 
   .nav-actions {
@@ -120,9 +126,9 @@
 
   .nav-icon-btn,
   .hamburger {
-    width: 42px !important;
-    height: 42px !important;
-    border-radius: 14px !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 9999px !important;
     flex-shrink: 0 !important;
   }
 
@@ -197,7 +203,7 @@
   }
 
   .location-subbar {
-    top: calc(var(--mobile-header-height) + max(18px, env(safe-area-inset-top, 0px)) + 6px) !important;
+    top: calc(var(--mobile-header-height) + max(8px, env(safe-area-inset-top, 0px)) + 6px) !important;
     left: 8px !important;
     right: 8px !important;
     max-width: calc(100vw - 16px) !important;
@@ -372,7 +378,7 @@
   .deep-dive-grid,
   .reviews-grid,
   .hero-grid,
-  #cart-columns {
+  #cart-columns:not([style*="display: none"]):not([style*="display:none"]) {
     display: grid !important;
     grid-template-columns: 1fr !important;
     gap: 18px !important;
@@ -438,28 +444,43 @@
   }
 
   /* Flipkart-Style Equal 50/50 Sticky Filter & Sort Bar (Mobile Only) */
+  /* Parent container styling to preserve layout height flow */
+  .container:has(> .cat-controls-bar),
+  section.container:has(> .cat-controls-bar) {
+    min-height: 52px !important;
+    padding-top: 12px !important;
+    padding-bottom: 8px !important;
+    box-sizing: content-box !important;
+  }
+
   .cat-controls-bar {
-    position: sticky !important;
-    top: calc(var(--mobile-header-height, 58px) + max(8px, env(safe-area-inset-top, 0px)) + 2px) !important;
+    position: fixed !important;
+    top: calc(var(--mobile-header-height, 58px) + max(8px, env(safe-area-inset-top, 0px)) + 8px) !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
     z-index: 950 !important;
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     gap: 8px !important;
     padding: 6px 8px !important;
-    margin: 2px 0 14px !important;
-    background: rgba(15, 23, 42, 0.94) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.14) !important;
-    border-radius: 18px !important;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45) !important;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.3s ease !important;
+    margin: 0 !important;
+    background: rgba(8, 8, 22, 0.75) !important;
+    backdrop-filter: saturate(200%) blur(28px) !important;
+    -webkit-backdrop-filter: saturate(200%) blur(28px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    border-radius: 9999px !important;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.45),
+      0 2px 8px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.3s ease !important;
     will-change: transform, opacity;
   }
 
-  /* Flipkart-Style Hide on Scroll Down */
+  /* Hide on Scroll Down */
   .cat-controls-bar.mobile-controls-hidden {
-    transform: translateY(-200%) !important;
+    transform: translateY(-260%) !important;
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
@@ -483,9 +504,9 @@
   #open-filter-btn,
   .filter-toggle-btn {
     width: 100% !important;
-    height: 44px !important;
-    min-height: 44px !important;
-    border-radius: 12px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    border-radius: 9999px !important;
     font-size: 13px !important;
     font-weight: 700 !important;
     display: flex !important;
@@ -494,7 +515,7 @@
     gap: 6px !important;
     padding: 0 10px !important;
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.28), rgba(139, 92, 246, 0.28)) !important;
-    border: 1.5px solid rgba(99, 102, 241, 0.45) !important;
+    border: 1px solid rgba(99, 102, 241, 0.45) !important;
     color: #ffffff !important;
     box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25) !important;
     cursor: pointer !important;
@@ -503,9 +524,9 @@
   .sort-select,
   .filter-sort-select {
     width: 100% !important;
-    height: 44px !important;
-    min-height: 44px !important;
-    border-radius: 12px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    border-radius: 9999px !important;
     font-size: 13px !important;
     font-weight: 700 !important;
     text-align: center !important;
@@ -513,9 +534,8 @@
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 0 10px !important;
-    background: rgba(255, 255, 255, 0.08) !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
     color: #ffffff !important;
     cursor: pointer !important;
     appearance: none !important;
@@ -568,10 +588,9 @@
   }
 
   .filter-drawer-overlay {
-    align-items: flex-end !important;
-    background: rgba(7, 8, 15, 0.72) !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
+    background: rgba(0, 0, 0, 0.55) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
   }
 
   .filter-drawer {
@@ -581,12 +600,20 @@
     bottom: 0 !important;
     width: 100% !important;
     max-width: none !important;
-    height: min(86dvh, 720px) !important;
-    border-right: 0 !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
-    border-radius: var(--mobile-sheet-radius) var(--mobile-sheet-radius) 0 0 !important;
+    height: min(82dvh, 640px) !important;
+    max-height: 85dvh !important;
+    border: none !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 24px 24px 0 0 !important;
     transform: translateY(105%) !important;
-    box-shadow: 0 -24px 70px rgba(0, 0, 0, 0.62) !important;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5) !important;
+    background: rgba(14, 14, 30, 0.96) !important;
+    backdrop-filter: saturate(180%) blur(24px) !important;
+    -webkit-backdrop-filter: saturate(180%) blur(24px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
   }
 
   .filter-drawer-overlay.active .filter-drawer {
@@ -594,22 +621,70 @@
   }
 
   .filter-drawer-header {
-    padding: 16px var(--mobile-page-pad) !important;
+    padding: 14px 18px !important;
+    flex: 0 0 auto !important;
   }
 
   .filter-drawer-body {
-    padding: 14px var(--mobile-page-pad) !important;
+    padding: 10px 16px !important;
+    gap: 8px !important;
+    flex: 1 1 0px !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 
-  .filter-drawer-footer {
-    padding: 12px var(--mobile-page-pad) calc(12px + env(safe-area-inset-bottom, 0px)) !important;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
+  .filter-accordion {
+    border-radius: 12px !important;
+  }
+
+  .filter-accordion-btn {
+    padding: 11px 12px !important;
+    font-size: 10.5px !important;
+  }
+
+  .filter-accordion-content {
+    padding: 0 12px 10px !important;
+  }
+
+  .filter-checkbox-list {
+    gap: 0 !important;
   }
 
   .filter-checkbox-item {
-    min-height: 42px !important;
-    align-items: center !important;
+    min-height: 36px !important;
+    padding: 4px 2px !important;
+    font-size: 13px !important;
+  }
+
+  .filter-price-input {
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+
+  .category-breadcrumb {
+    padding: 6px 8px !important;
+    font-size: 11.5px !important;
+    gap: 2px !important;
+  }
+
+  .filter-drawer-footer {
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .filter-btn-reset,
+  #reset-drawer-filters-btn,
+  .filter-btn-apply,
+  #apply-drawer-filters-btn {
+    flex: unset !important;
+    padding: 11px 14px !important;
+    font-size: 12.5px !important;
   }
 
   .size-selector,
@@ -728,43 +803,61 @@
     display: grid !important;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     position: fixed;
-    left: 8px;
-    right: 8px;
-    bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    left: 12px;
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
     height: var(--mobile-bottom-nav-height);
-    padding: 6px;
+    padding: 6px 8px;
     z-index: 9996;
-    border-radius: 20px;
-    background: rgba(16, 16, 30, 0.94);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 -12px 38px rgba(0, 0, 0, 0.45);
-    backdrop-filter: saturate(180%) blur(22px);
-    -webkit-backdrop-filter: saturate(180%) blur(22px);
+    border-radius: 9999px;
+    background: rgba(8, 8, 22, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.55),
+      0 2px 8px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    backdrop-filter: saturate(200%) blur(28px);
+    -webkit-backdrop-filter: saturate(200%) blur(28px);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.3s ease;
   }
 
   .mobile-bottom-nav-item {
     min-width: 0;
-    height: 54px;
+    height: 52px;
     display: flex !important;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
-    border-radius: 15px;
-    color: rgba(255, 255, 255, 0.62);
-    font-size: 10px;
-    font-weight: 700;
+    gap: 2px;
+    border-radius: 9999px;
+    color: rgba(255, 255, 255, 0.50);
+    font-size: 9.5px;
+    font-weight: 600;
     line-height: 1;
+    text-decoration: none;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    -webkit-tap-highlight-color: transparent;
   }
 
   .mobile-bottom-nav-item svg {
-    width: 20px;
-    height: 20px;
+    width: 19px;
+    height: 19px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                color 0.25s ease;
   }
 
   .mobile-bottom-nav-item.active {
     color: #ffffff !important;
-    background: rgba(99, 102, 241, 0.22);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.30), rgba(79, 70, 229, 0.20));
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.25),
+                inset 0 1px 1px rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(129, 140, 248, 0.30);
+  }
+
+  .mobile-bottom-nav-item.active svg {
+    transform: scale(1.1);
   }
 
   .footer {
@@ -852,13 +945,15 @@
   position: relative;
   width: 100%;
   max-width: 500px;
-  background: rgba(20, 20, 35, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 24px 24px 0 0;
+  background: rgba(8, 8, 22, 0.72) !important;
+  backdrop-filter: saturate(200%) blur(28px) !important;
+  -webkit-backdrop-filter: saturate(200%) blur(28px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 32px 32px 0 0 !important;
   padding: 16px 20px 28px;
   transform: translateY(100%);
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 -16px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
   z-index: 10001;
 }
 
@@ -869,7 +964,7 @@
 .mobile-sheet-handle {
   width: 40px;
   height: 4px;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 99px;
   margin: 0 auto 16px;
 }
@@ -878,118 +973,197 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .mobile-sheet-header h3 {
   margin: 0;
-  font-size: 1.15rem;
-  font-weight: 800;
+  font-size: 1.1rem;
+  font-weight: 700;
   color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-sheet-header h3 svg {
+  opacity: 0.6;
 }
 
 .mobile-sheet-close {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   border: none;
-  color: #ffffff;
+  color: #9ca3af;
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  font-size: 20px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.mobile-sheet-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 .mobile-categories-grid {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .category-choice-card {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  border-radius: 16px;
-  color: #ffffff !important;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 20px !important;
+  color: rgba(255, 255, 255, 0.65) !important;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.category-choice-card:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(79, 70, 229, 0.08)) !important;
+  color: #ffffff !important;
+  border-color: rgba(129, 140, 248, 0.22) !important;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.10) !important;
+}
+
+.choice-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 0;
+  font-size: 0;
+  box-shadow: none;
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  transition: color 0.25s, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.category-choice-card:hover .choice-icon {
+  color: #a5b4fc !important;
+  transform: scale(1.08);
+}
+
+.choice-info strong {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 2px;
+  transition: color 0.25s;
+}
+
+.category-choice-card:hover .choice-info strong {
+  color: #ffffff;
+}
+
+.choice-info span {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 500;
+}
+
+.choice-arrow {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.25);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s, opacity 0.2s;
+}
+
+.category-choice-card:hover .choice-arrow {
+  transform: translateX(3px);
+  color: #a5b4fc;
 }
 
 /* ============================================================
    MOBILE READABILITY & CONTRAST ENHANCEMENTS
    ============================================================ */
 
-/* Mobile Bottom Navigation Bar */
+/* Mobile Bottom Navigation Bar — Glass Capsule Dock */
 .mobile-bottom-nav {
-  background: rgba(10, 10, 24, 0.95) !important;
-  backdrop-filter: blur(24px) !important;
-  border-top: 1.5px solid rgba(255, 255, 255, 0.16) !important;
-  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4) !important;
+  background: rgba(8, 8, 22, 0.72) !important;
+  backdrop-filter: saturate(200%) blur(28px) !important;
+  -webkit-backdrop-filter: saturate(200%) blur(28px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
 .mobile-bottom-nav-item {
-  color: rgba(255, 255, 255, 0.70) !important;
+  color: rgba(255, 255, 255, 0.48) !important;
   font-weight: 600 !important;
-  border-radius: 16px !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  border-radius: 9999px !important;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
   border: 1px solid transparent !important;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .mobile-bottom-nav-item svg {
-  color: rgba(255, 255, 255, 0.85) !important;
-  transition: transform 0.2s ease, color 0.2s ease !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              color 0.25s ease !important;
 }
 
 /* Hover & Focus state for NON-ACTIVE bottom nav buttons */
 .mobile-bottom-nav-item:not(.active):hover,
 .mobile-bottom-nav-item:not(.active):focus {
-  color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.12) !important;
-  border-color: rgba(255, 255, 255, 0.20) !important;
-  transform: translateY(-2px);
+  color: rgba(255, 255, 255, 0.85) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: transparent !important;
 }
 
 .mobile-bottom-nav-item:not(.active):hover svg {
-  color: #ffffff !important;
-  transform: scale(1.08);
+  color: rgba(255, 255, 255, 0.9) !important;
+  transform: scale(1.08) translateY(-1px);
 }
 
 .mobile-bottom-nav-item:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
 }
 
-/* Active Marking / Blue Pill Indicator (Persists as long as on current page) */
+/* Active Pill — Subtle Glow */
 .mobile-bottom-nav-item.active,
 .mobile-bottom-nav-item.active:hover,
 .mobile-bottom-nav-item.active:focus {
   color: #ffffff !important;
-  font-weight: 800 !important;
-  background: linear-gradient(135deg, rgba(37, 43, 94, 0.98), rgba(28, 33, 75, 0.98)) !important;
-  border: 1.5px solid rgba(129, 140, 248, 0.75) !important;
-  box-shadow: 0 4px 20px rgba(79, 70, 229, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.15) !important;
-  border-radius: 20px !important;
+  font-weight: 700 !important;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.28), rgba(79, 70, 229, 0.18)) !important;
+  border: 1px solid rgba(129, 140, 248, 0.25) !important;
+  box-shadow: 0 0 24px rgba(99, 102, 241, 0.20),
+              inset 0 1px 1px rgba(255, 255, 255, 0.06) !important;
+  border-radius: 9999px !important;
 }
 
 .mobile-bottom-nav-item.active svg,
 .mobile-bottom-nav-item.active:hover svg {
-  color: #818cf8 !important;
-  stroke: #818cf8 !important;
+  color: #a5b4fc !important;
+  stroke: #a5b4fc !important;
   stroke-width: 2.2 !important;
-  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.7)) !important;
+  filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.5)) !important;
+  transform: scale(1.1) translateY(-1px);
 }
 
 .mobile-bottom-nav-item.active span,
 .mobile-bottom-nav-item.active:hover span {
   color: #ffffff !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
 }
 
 /* Mobile Drawer Links & Headers */
@@ -1075,11 +1249,11 @@ body.auth-page #mobile-bottom-nav,
    COMMERCIAL E-COMMERCE MOBILE GRID (2 PRODUCTS PER ROW - AMAZON / FLIPKART STYLE)
    ============================================================ */
 @media (max-width: 768px) {
-  #category-products-grid,
-  #wishlist-grid,
-  .category-products-grid,
-  .products-grid,
-  .shop-products-grid {
+  #category-products-grid:not([style*="display: none"]):not([style*="display:none"]),
+  #wishlist-grid:not([style*="display: none"]):not([style*="display:none"]),
+  .category-products-grid:not([style*="display: none"]):not([style*="display:none"]),
+  .products-grid:not([style*="display: none"]):not([style*="display:none"]),
+  .shop-products-grid:not([style*="display: none"]):not([style*="display:none"]) {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;

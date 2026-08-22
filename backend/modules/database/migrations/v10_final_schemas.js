@@ -1,6 +1,6 @@
 import pool from '../../../db.js';
 
-async function migrate() {
+export default async function migrate() {
   try {
     console.log('Starting final schema adjustments for categories, orders, and coupons...');
 
@@ -52,7 +52,7 @@ async function migrate() {
     // Seed a default coupon
     await pool.query(`
       INSERT INTO coupons (code, discount_type, discount_value, start_date, end_date, applicable_products, applicable_categories)
-      VALUES ('DEVTECH30', 'percentage', 30.00, CURRENT_DATE - INTERVAL '1 day', CURRENT_DATE + INTERVAL '30 days', '[]', '[]')
+      VALUES ('FASHIONCOMPANY30', 'percentage', 30.00, CURRENT_DATE - INTERVAL '1 day', CURRENT_DATE + INTERVAL '30 days', '[]', '[]')
       ON CONFLICT (code) DO NOTHING;
     `);
     console.log('✅ Default coupon seeded.');
@@ -60,9 +60,6 @@ async function migrate() {
     console.log('🏁 All final schema migrations completed successfully.');
   } catch (err) {
     console.error('❌ Migration failed:', err);
-  } finally {
-    pool.end();
+    throw err;
   }
 }
-
-migrate();

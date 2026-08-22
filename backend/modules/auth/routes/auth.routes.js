@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import * as controller from '../controller/auth.controller.js';
+import { loginRateLimiter } from '../middleware/rateLimiter.js';
 
 const router = Router();
 
 router.post('/register', controller.register);
-router.post('/login', controller.login);
+router.post('/login', loginRateLimiter, controller.login);
+router.post('/logout', controller.logout);
 router.get('/check-phone', controller.checkPhone);
 router.get('/check-email', controller.checkEmail);
 router.get('/profile', controller.getProfile);

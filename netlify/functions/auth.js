@@ -1,18 +1,88 @@
 // ============================================================
-// DEVTECH FASHION — NETLIFY SERVERLESS CLOUD AUTHENTICATION
+// FASHIONCOMPANY FASHION — NETLIFY SERVERLESS CLOUD AUTHENTICATION
 // Enables 24/7 global multi-device login across Mobile & Desktop
 // ============================================================
 
+import bcrypt from 'bcryptjs';
+
 const CLOUD_DB_URL = process.env.CLOUD_DB_URL || 'https://jsonblob.com/api/jsonBlob/019f9cba-929a-7931-ad23-922a9b668aa9';
+
+const adminPasswordHash = process.env.DEFAULT_ADMIN_PASSWORD_HASH || '';
 
 // Default Admin users seeded automatically across Netlify & Cloud DB
 const DEFAULT_ADMINS = [
-  { name: 'DevTech Administrator', email: 'admin@devtech.com', phone: '9999999999', dob: '1990-01-01', password: 'Purna@2007', role: 'admin', token: 'dtf_token_admin_1' },
-  { name: 'DevTech Administrator', email: 'admin@devtechfashion.com', phone: '9999999999', dob: '1990-01-01', password: 'Purna@2007', role: 'admin', token: 'dtf_token_admin_2' },
-  { name: 'DevTech Administrator', email: 'devtechadmin@gmail.com', phone: '9999999999', dob: '1990-01-01', password: 'Purna@2007', role: 'admin', token: 'dtf_token_admin_3' }
-];
+  { name: 'Fashion Company Administrator', email: 'admin@fashioncompany.com', phone: '9999999999', dob: '1990-01-01', password: adminPasswordHash, role: 'admin', token: 'dtf_token_admin_1' },
+  { name: 'Fashion Company Administrator', email: 'fashioncompanyadmin@gmail.com', phone: '9999999999', dob: '1990-01-01', password: adminPasswordHash, role: 'admin', token: 'dtf_token_admin_2' }
+].filter(user => user.password);
 
 let memoryUsersCache = null;
+
+// Failed login attempt tracker (in-memory sliding window)
+const failedLoginAttempts = new Map();
+
+function checkLoginRateLimit(key) {
+  if (!key) return null;
+  const cleanKey = String(key).trim().toLowerCase();
+  const record = failedLoginAttempts.get(cleanKey);
+  const now = Date.now();
+  if (record && record.blockedUntil && now < record.blockedUntil) {
+    const waitSec = Math.ceil((record.blockedUntil - now) / 1000);
+    return `Too many failed login attempts. Please wait ${waitSec} seconds before trying again.`;
+  }
+  return null;
+}
+
+function recordFailedAttempt(key) {
+  if (!key) return;
+  const cleanKey = String(key).trim().toLowerCase();
+  const now = Date.now();
+  const WINDOW_MS = 15 * 60 * 1000;
+  const BLOCK_MS = 15 * 60 * 1000;
+  const record = failedLoginAttempts.get(cleanKey) || { count: 0, resetAt: now + WINDOW_MS, blockedUntil: 0 };
+
+  if (now > record.resetAt) {
+    record.count = 1;
+    record.resetAt = now + WINDOW_MS;
+    record.blockedUntil = 0;
+  } else {
+    record.count += 1;
+  }
+
+  if (record.count >= 5) {
+    record.blockedUntil = now + BLOCK_MS;
+  }
+  failedLoginAttempts.set(cleanKey, record);
+}
+
+function clearFailedAttempts(key) {
+  if (!key) return;
+  failedLoginAttempts.delete(String(key).trim().toLowerCase());
+}
+
+function isBcryptHash(value) {
+  return typeof value === 'string' && /^\$2[aby]\$\d{2}\$/.test(value);
+}
+
+function stripSensitiveUserFields(user) {
+  if (!user) return user;
+  const {
+    password,
+    password_hash,
+    passwordHash,
+    resetOtp,
+    resetOtpHash,
+    resetOtpExpiresAt,
+    resetOtpRequestedAt,
+    resetOtpRequestCount,
+    ...safeUser
+  } = user;
+  return safeUser;
+}
+
+function createToken() {
+  if (globalThis.crypto?.randomUUID) return 'dtf_token_' + globalThis.crypto.randomUUID();
+  return 'dtf_token_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+}
 
 async function getCloudUsers() {
   try {
@@ -57,18 +127,50 @@ async function saveCloudUsers(users) {
   }
 }
 
+async function sendResetOtpEmail(email, otp, name) {
+  const serviceId = process.env.EMAILJS_SERVICE_ID;
+  const templateId = process.env.EMAILJS_PASSWORD_RESET_TEMPLATE_ID || process.env.EMAILJS_TEMPLATE_ID;
+  const publicKey = process.env.EMAILJS_PUBLIC_KEY;
+
+  if (!serviceId || !templateId || !publicKey) return false;
+
+  const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      service_id: serviceId,
+      template_id: templateId,
+      user_id: publicKey,
+      template_params: {
+        to_email: email,
+        otp_code: otp,
+        to_name: name || 'Fashion Company Member'
+      }
+    })
+  });
+
+  if (!res.ok) {
+    throw new Error(`Email OTP delivery failed with status ${res.status}.`);
+  }
+
+  return true;
+}
+
 export async function handler(event, context) {
   // CORS Headers
   const headers = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': event.headers?.origin || '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Credentials': 'true',
     'Content-Type': 'application/json'
   };
 
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: JSON.stringify({ message: 'OK' }) };
   }
+
+  const clientIp = event.headers?.['client-ip'] || event.headers?.['x-forwarded-for']?.split(',')[0].trim() || 'serverless_client';
 
   try {
     let body = {};
@@ -120,24 +222,30 @@ export async function handler(event, context) {
       }
 
       const newUser = {
-        name: name || 'DevTech Member',
+        name: name || 'Fashion Company Member',
         email: cleanEmail,
         phone: phone || '',
         dob: dob || '',
-        password: password,
+        password: await bcrypt.hash(password, 10),
         role: body.role || 'customer',
-        token: 'dtf_token_' + Date.now(),
+        token: createToken(),
         createdAt: new Date().toISOString()
       };
 
       users.push(newUser);
       await saveCloudUsers(users);
 
-      const { password: _, ...userWithoutPassword } = newUser;
-      return { statusCode: 201, headers, body: JSON.stringify({ success: true, user: newUser, token: newUser.token }) };
+      return {
+        statusCode: 201,
+        headers: {
+          ...headers,
+          'Set-Cookie': `dtf_token=${newUser.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`
+        },
+        body: JSON.stringify({ success: true, user: stripSensitiveUserFields(newUser), token: newUser.token })
+      };
     }
 
-    // === 3. LOGIN USER ===
+    // === 3. LOGIN USER (Rate-Limited, Generic Error, Enumeration Protected) ===
     if (action === 'login') {
       const { email, password } = body;
       const cleanEmail = (email || '').trim().toLowerCase();
@@ -146,16 +254,50 @@ export async function handler(event, context) {
         return { statusCode: 400, headers, body: JSON.stringify({ success: false, errors: ['Email and password are required.'] }) };
       }
 
-      const foundUser = users.find(u => u.email && u.email.toLowerCase() === cleanEmail);
-      if (!foundUser) {
-        return { statusCode: 404, headers, body: JSON.stringify({ success: false, errors: ['No account found with this email address. Please check your email or sign up.'] }) };
+      // Check Rate Limits (Client IP & Email)
+      const ipBlocked = checkLoginRateLimit(clientIp);
+      const emailBlocked = checkLoginRateLimit(cleanEmail);
+      if (ipBlocked || emailBlocked) {
+        return {
+          statusCode: 429,
+          headers,
+          body: JSON.stringify({ success: false, errors: [ipBlocked || emailBlocked] })
+        };
       }
 
-      const isPasswordMatch = (foundUser.password === password) || 
-                              (foundUser.role === 'admin' && (password === 'Purna@2007' || password === 'password'));
+      const foundUser = users.find(u => u.email && u.email.toLowerCase() === cleanEmail);
+      if (!foundUser) {
+        recordFailedAttempt(clientIp);
+        recordFailedAttempt(cleanEmail);
+        return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['Invalid email or password.'] }) };
+      }
+
+      let isPasswordMatch = false;
+      let passwordUpgraded = false;
+
+      if (isBcryptHash(foundUser.password)) {
+        isPasswordMatch = await bcrypt.compare(password, foundUser.password);
+      } else if (typeof foundUser.password === 'string' && foundUser.password.length > 0) {
+        isPasswordMatch = foundUser.password === password;
+        if (isPasswordMatch) {
+          foundUser.password = await bcrypt.hash(password, 10);
+          passwordUpgraded = true;
+        }
+      }
 
       if (!isPasswordMatch) {
-        return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['Incorrect password. Please enter the correct password.'] }) };
+        recordFailedAttempt(clientIp);
+        recordFailedAttempt(cleanEmail);
+        return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['Invalid email or password.'] }) };
+      }
+
+      // Login Succeeded: Clear failed attempt counters
+      clearFailedAttempts(clientIp);
+      clearFailedAttempts(cleanEmail);
+
+      if (!foundUser.token) {
+        foundUser.token = createToken();
+        passwordUpgraded = true;
       }
 
       // Check 30-day deletion grace period
@@ -174,51 +316,158 @@ export async function handler(event, context) {
           foundUser.deletionScheduled = false;
           delete foundUser.deletionDate;
           deletionCancelled = true;
-
-          const updatedUsers = users.map(u => (u.email && u.email.toLowerCase() === cleanEmail) ? foundUser : u);
-          await saveCloudUsers(updatedUsers);
+          passwordUpgraded = true;
         }
       }
+
+      if (passwordUpgraded || deletionCancelled) {
+        const updatedUsers = users.map(u => (u.email && u.email.toLowerCase() === cleanEmail) ? foundUser : u);
+        await saveCloudUsers(updatedUsers);
+      }
+
+      return {
+        statusCode: 200,
+        headers: {
+          ...headers,
+          'Set-Cookie': `dtf_token=${foundUser.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`
+        },
+        body: JSON.stringify({
+          success: true,
+          user: stripSensitiveUserFields(foundUser),
+          token: foundUser.token,
+          deletionCancelled
+        })
+      };
+    }
+
+    // === 4. REQUEST RESET OTP (Server-Side 60s Cooldown & Rate Limit) ===
+    if (action === 'request-reset-otp') {
+      const cleanEmail = (body.email || '').trim().toLowerCase();
+
+      if (!cleanEmail) {
+        return { statusCode: 400, headers, body: JSON.stringify({ success: false, errors: ['Email is required.'] }) };
+      }
+
+      const idx = users.findIndex(u => u.email && u.email.toLowerCase() === cleanEmail);
+      if (idx === -1) {
+        // Return generic success to eliminate user enumeration
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            success: true,
+            message: 'If an account exists with this email address, a password reset OTP has been sent.',
+            otpSent: false
+          })
+        };
+      }
+
+      const targetUser = users[idx];
+      const now = Date.now();
+      const COOLDOWN_MS = 60 * 1000; // 60 seconds
+
+      // Server-side OTP cooldown enforcement
+      if (targetUser.resetOtpRequestedAt) {
+        const lastRequested = new Date(targetUser.resetOtpRequestedAt).getTime();
+        if (now - lastRequested < COOLDOWN_MS) {
+          const waitSec = Math.ceil((COOLDOWN_MS - (now - lastRequested)) / 1000);
+          return {
+            statusCode: 429,
+            headers,
+            body: JSON.stringify({
+              success: false,
+              errors: [`Please wait ${waitSec} seconds before requesting another OTP code.`]
+            })
+          };
+        }
+      }
+
+      // Check request count (max 5 in 15 minutes)
+      const windowStart = targetUser.resetOtpWindowStart ? new Date(targetUser.resetOtpWindowStart).getTime() : 0;
+      if (now - windowStart > 15 * 60 * 1000) {
+        targetUser.resetOtpWindowStart = new Date(now).toISOString();
+        targetUser.resetOtpRequestCount = 1;
+      } else {
+        targetUser.resetOtpRequestCount = (targetUser.resetOtpRequestCount || 0) + 1;
+        if (targetUser.resetOtpRequestCount > 5) {
+          return {
+            statusCode: 429,
+            headers,
+            body: JSON.stringify({
+              success: false,
+              errors: ['Too many OTP requests. Please wait 15 minutes before trying again.']
+            })
+          };
+        }
+      }
+
+      const otp = String(Math.floor(100000 + Math.random() * 900000));
+      targetUser.resetOtpHash = await bcrypt.hash(otp, 10);
+      targetUser.resetOtpExpiresAt = new Date(now + 10 * 60 * 1000).toISOString(); // 10 minutes
+      targetUser.resetOtpRequestedAt = new Date(now).toISOString();
+      delete targetUser.resetOtp;
+
+      const otpSent = await sendResetOtpEmail(cleanEmail, otp, targetUser.name);
+      await saveCloudUsers(users);
 
       return {
         statusCode: 200,
         headers,
         body: JSON.stringify({
           success: true,
-          user: foundUser,
-          token: foundUser.token || ('dtf_token_' + Date.now()),
-          deletionCancelled
+          message: otpSent
+            ? 'Password reset OTP has been sent.'
+            : 'Password reset OTP generated, but email delivery is not configured.',
+          otpSent
         })
       };
     }
 
-    // === 4. RESET PASSWORD ===
+    // === 5. RESET PASSWORD ===
     if (action === 'reset-password') {
       const { email, newPassword } = body;
+      const otp = String(body.otp || '').trim();
       const cleanEmail = (email || '').trim().toLowerCase();
 
-      if (!cleanEmail || !newPassword) {
-        return { statusCode: 400, headers, body: JSON.stringify({ success: false, errors: ['Email and new password are required.'] }) };
+      if (!cleanEmail || !otp || !newPassword) {
+        return { statusCode: 400, headers, body: JSON.stringify({ success: false, errors: ['Email, OTP, and new password are required.'] }) };
       }
 
-      let userFound = false;
-      const updatedUsers = users.map(u => {
-        if (u.email && u.email.toLowerCase() === cleanEmail) {
-          u.password = newPassword;
-          userFound = true;
-        }
-        return u;
-      });
-
-      if (!userFound) {
-        return { statusCode: 404, headers, body: JSON.stringify({ success: false, errors: ['No account found with this email address.'] }) };
+      const userIdx = users.findIndex(u => u.email && u.email.toLowerCase() === cleanEmail);
+      if (userIdx === -1) {
+        return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['Invalid password reset request.'] }) };
       }
 
-      await saveCloudUsers(updatedUsers);
+      const targetUser = users[userIdx];
+      if (!targetUser.resetOtpHash || !targetUser.resetOtpExpiresAt) {
+        return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['A valid password reset OTP is required.'] }) };
+      }
+
+      if (Date.now() > new Date(targetUser.resetOtpExpiresAt).getTime()) {
+        delete targetUser.resetOtpHash;
+        delete targetUser.resetOtpExpiresAt;
+        await saveCloudUsers(users);
+        return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['This password reset OTP has expired. Please request a new one.'] }) };
+      }
+
+      const otpMatches = await bcrypt.compare(otp, targetUser.resetOtpHash);
+      if (!otpMatches) {
+        return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['Invalid password reset OTP code.'] }) };
+      }
+
+      targetUser.password = await bcrypt.hash(newPassword, 10);
+      targetUser.token = createToken();
+      delete targetUser.resetOtpHash;
+      delete targetUser.resetOtpExpiresAt;
+      delete targetUser.resetOtpRequestedAt;
+      delete targetUser.resetOtpRequestCount;
+      delete targetUser.resetOtpWindowStart;
+
+      await saveCloudUsers(users);
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'Password reset successfully.' }) };
     }
 
-    // === 5. DELETE ACCOUNT (SCHEDULE FOR 30 DAYS) ===
+    // === 6. DELETE ACCOUNT (SCHEDULE FOR 30 DAYS) ===
     if (action === 'delete-account') {
       const { email } = body;
       const cleanEmail = (email || '').trim().toLowerCase();

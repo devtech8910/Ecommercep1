@@ -1,6 +1,6 @@
 import pool from '../../../db.js';
 
-async function migrate() {
+export default async function migrate() {
   try {
     console.log('Altering orders table to add status, items, and address fields...');
     
@@ -14,9 +14,6 @@ async function migrate() {
     console.log('✅ Alterations completed successfully.');
   } catch (err) {
     console.error('Migration failed:', err);
-  } finally {
-    pool.end();
+    throw err;
   }
 }
-
-migrate();

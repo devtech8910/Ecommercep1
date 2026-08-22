@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Settings — DevTech Fashion</title>
+    <title>Settings — Fashion Company</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -350,7 +350,7 @@
             generatedEmailOtp = generateOtp();
 
             // Send Phone OTP via alert (same pattern as signup)
-            alert(`🔑 DevTech Verification Code\n\nYour account deletion verification OTP is:\n\n📱 ${generatedPhoneOtp}\n\nDo not share this code with anyone.`);
+            alert(`🔑 Fashion Company Verification Code\n\nYour account deletion verification OTP is:\n\n📱 ${generatedPhoneOtp}\n\nDo not share this code with anyone.`);
 
             // Send Email OTP via EmailJS (if available)
             const userEmail = user.email || '';
@@ -359,11 +359,11 @@
                 await emailjs.send('service_bsuum3h', 'template_mzxvnz9', {
                   to_email: userEmail,
                   otp_code: generatedEmailOtp,
-                  to_name: user.name || 'DevTech Member'
+                  to_name: user.name || 'Fashion Company Member'
                 });
-                console.log('[DevTech] Email OTP sent to', userEmail);
+                console.log('[Fashion Company] Email OTP sent to', userEmail);
               } catch (emailErr) {
-                console.warn('[DevTech] EmailJS send failed, showing email OTP in alert:', emailErr);
+                console.warn('[Fashion Company] EmailJS send failed, showing email OTP in alert:', emailErr);
                 alert(`📧 Email OTP: ${generatedEmailOtp}\n\n(EmailJS delivery failed — use this code instead)`);
               }
             } else {

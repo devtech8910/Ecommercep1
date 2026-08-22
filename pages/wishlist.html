@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Wishlist — DevTech Fashion</title>
+    <title>My Wishlist — Fashion Company</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -105,6 +105,7 @@
     </main>
 
     <!-- Custom JavaScript -->
+    <script src="../js/utils.js"></script>
     <script src="../js/script.js"></script>
     <script src="../js/mobile-ui.js"></script>
     <script>
@@ -114,9 +115,26 @@
         const grid = document.getElementById('wishlist-grid');
         const emptyState = document.getElementById('wishlist-empty');
 
+        function escapeHtml(str) {
+          if (window.escapeHtml) return window.escapeHtml(str);
+          if (str == null) return '';
+          const div = document.createElement('div');
+          div.textContent = String(str);
+          return div.innerHTML;
+        }
+
+        function getUserStorageKey(base) {
+          try {
+            const user = JSON.parse(localStorage.getItem('dtf_user') || 'null');
+            return user && user.email ? `${base}_${user.email.toLowerCase()}` : base;
+          } catch {
+            return base;
+          }
+        }
+
         function loadWishlist() {
           try {
-            const raw = localStorage.getItem('dtf_wishlist');
+            const raw = localStorage.getItem(getUserStorageKey('dtf_wishlist'));
             return JSON.parse(raw) || [];
           } catch {
             return [];
@@ -124,13 +142,13 @@
         }
 
         function saveWishlist(items) {
-          localStorage.setItem('dtf_wishlist', JSON.stringify(items));
+          localStorage.setItem(getUserStorageKey('dtf_wishlist'), JSON.stringify(items));
           window.dispatchEvent(new Event('dtf:wishlist:updated'));
         }
 
         function loadCart() {
           try {
-            const raw = localStorage.getItem('dtf_cart');
+            const raw = localStorage.getItem(getUserStorageKey('dtf_cart'));
             return JSON.parse(raw) || [];
           } catch {
             return [];
@@ -138,7 +156,7 @@
         }
 
         function saveCart(items) {
-          localStorage.setItem('dtf_cart', JSON.stringify(items));
+          localStorage.setItem(getUserStorageKey('dtf_cart'), JSON.stringify(items));
           window.dispatchEvent(new Event('dtf:cart:updated'));
         }
 
@@ -161,14 +179,14 @@
 
             card.innerHTML = `
               <div style="height: 220px; overflow: hidden; background: #1e1e30; position: relative;">
-                <img src="${item.image || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop'}" style="width: 100%; height: 100%; object-fit: cover;" alt="${item.title || 'Product'}" />
+                <img src="${item.image || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop'}" style="width: 100%; height: 100%; object-fit: cover;" alt="${escapeHtml(item.title || 'Product')}" />
                 <button class="remove-wishlist-btn" style="position: absolute; top: 12px; right: 12px; border: none; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ef4444; font-size: 16px; transition: transform 0.2s;">
                   &times;
                 </button>
               </div>
               <div style="padding: 18px; display: flex; flex-direction: column; gap: 8px; flex-grow: 1;">
-                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #ffffff;">${item.title || 'Classic Product'}</h4>
-                <p style="margin: 0; font-size: 15px; font-weight: 800; color: #818cf8;">₹${parseFloat(item.price || 0).toLocaleString('en-IN')}</p>
+                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #ffffff;">${escapeHtml(item.title || 'Classic Product')}</h4>
+                <p style="margin: 0; font-size: 15px; font-weight: 800; color: #818cf8;">₹${Math.round(parseFloat(item.price || 0)).toLocaleString('en-IN')}</p>
                 <div style="margin-top: auto; padding-top: 10px;">
                   <button class="add-to-cart-btn btn-gradient-indigo" style="width: 100%; padding: 12px;">
                     🛒 Move to Cart
@@ -201,7 +219,6 @@
               updatedWishlist.splice(index, 1);
               saveWishlist(updatedWishlist);
 
-              alert(`🛒 "${item.title || 'Product'}" moved to your Cart!`);
               render();
             });
 
@@ -211,6 +228,7 @@
 
         render();
         window.addEventListener('storage', render);
+        window.addEventListener('dtf:wishlist:updated', render);
       });
     </script>
   </body>

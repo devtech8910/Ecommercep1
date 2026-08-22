@@ -18,6 +18,39 @@ export async function findUserById(id) {
   return result.rows[0] || null;
 }
 
+export async function ensureProfileEditLimitTable() {
+  await query(`
+    CREATE TABLE IF NOT EXISTS profile_edit_limits (
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      edit_year INTEGER NOT NULL,
+      edit_count INTEGER NOT NULL DEFAULT 0,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (user_id, edit_year)
+    );
+  `);
+}
+
+export async function getProfileEditUsage(userId, editYear) {
+  await ensureProfileEditLimitTable();
+  const result = await query(
+    'SELECT edit_count FROM profile_edit_limits WHERE user_id = $1 AND edit_year = $2;',
+    [userId, editYear]
+  );
+  return result.rows[0] ? parseInt(result.rows[0].edit_count, 10) || 0 : 0;
+}
+
+export async function recordProfileEdit(userId, editYear) {
+  await ensureProfileEditLimitTable();
+  const result = await query(`
+    INSERT INTO profile_edit_limits (user_id, edit_year, edit_count, updated_at)
+    VALUES ($1, $2, 1, CURRENT_TIMESTAMP)
+    ON CONFLICT (user_id, edit_year)
+    DO UPDATE SET edit_count = profile_edit_limits.edit_count + 1, updated_at = CURRENT_TIMESTAMP
+    RETURNING edit_count;
+  `, [userId, editYear]);
+  return parseInt(result.rows[0].edit_count, 10) || 0;
+}
+
 export async function createUser(userData) {
   const {
     firstName,

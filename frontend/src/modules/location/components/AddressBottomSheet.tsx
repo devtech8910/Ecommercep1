@@ -209,7 +209,7 @@ export const AddressBottomSheet: React.FC<AddressBottomSheetProps> = ({
                       matchDistrictNames(po.District, district)
                     );
                     if (!isMatch) {
-                      console.warn(`[DevTech Geo] Pincode ${pincode} does not match state "${state}" & district "${district}". Invalidating.`);
+                      console.warn(`[Fashion Company Geo] Pincode ${pincode} does not match state "${state}" & district "${district}". Invalidating.`);
                       isPincodeMissing = true;
                       finalPincode = '';
                     }

@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Sign in to your DevTech Fashion account. Access your luxury wardrobe, track orders, and experience personalized recommendations."
+      content="Sign in to your Fashion Company account. Access your luxury wardrobe, track orders, and experience personalized recommendations."
     />
-    <meta name="author" content="DevTech Solutions" />
-    <title>Sign In — DevTech Fashion</title>
+    <meta name="author" content="Fashion Company" />
+    <title>Sign In — Fashion Company</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -56,7 +56,7 @@
         <div class="auth-card glass-card">
           <!-- Card Header -->
           <div class="auth-card-header">
-            <span class="auth-subtitle">DevTech Fashion</span>
+            <span class="auth-subtitle">Fashion Company</span>
             <h1 class="auth-title">Welcome Back</h1>
             <p class="auth-description">Sign in to your account with your credentials.</p>
           </div>
@@ -103,13 +103,14 @@
                   autocomplete="current-password"
                   required
                   aria-required="true"
+                  style="padding-right: 48px;"
                 />
-                <button type="button" class="password-toggle-btn" id="password-toggle" aria-label="Show password">
-                  <svg class="eye-icon eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <button type="button" class="password-toggle-btn cursor-pointer" id="password-toggle" aria-label="Show password" title="Show password" style="z-index: 20; cursor: pointer; pointer-events: auto;">
+                  <svg class="eye-icon eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" style="pointer-events: none;">
                     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
                     <line x1="1" y1="1" x2="23" y2="23"/>
                   </svg>
-                  <svg class="eye-icon eye-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" style="display:none;">
+                  <svg class="eye-icon eye-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" style="display:none; pointer-events: none;">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                     <circle cx="12" cy="12" r="3"/>
                   </svg>
@@ -135,7 +136,7 @@
 
           <!-- Card Footer -->
           <div class="auth-card-footer">
-            <p>New to DevTech Fashion? <a href="signup.html" class="auth-redirect-link">Sign Up</a></p>
+            <p>New to Fashion Company? <a href="signup.html" class="auth-redirect-link">Sign Up</a></p>
           </div>
         </div>
       </div>
@@ -145,7 +146,7 @@
     <footer class="footer auth-footer" role="contentinfo">
       <div class="container">
         <div class="footer-bottom-content">
-          <p class="footer-copy">&copy; <span id="footer-year"></span> DevTech Solutions. All rights reserved.</p>
+          <p class="footer-copy">&copy; <span id="footer-year"></span> Fashion Company. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -156,7 +156,7 @@ export async function handleNominatimReverse(req, res) {
 
     // Forward request to OpenStreetMap Nominatim API
     const randomId = Math.random().toString(36).substring(7);
-    const email = `devtech_${randomId}@gmail.com`;
+    const email = `fashioncompany_${randomId}@gmail.com`;
     const userAgent = `AddressPickerAgent_${randomId}`;
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=jsonv2&email=${email}`;
 

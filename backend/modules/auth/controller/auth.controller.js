@@ -1,8 +1,25 @@
 import * as service from '../service/auth.service.js';
+import { recordFailedLogin, recordSuccessfulLogin, checkOtpRateLimit } from '../middleware/rateLimiter.js';
 
 function sanitize(val) {
   if (typeof val !== 'string') return val;
   return val.replace(/<[^>]*>/g, '').trim();
+}
+
+function setAuthCookie(res, token) {
+  if (!token) return;
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
+}
+
+function stripPrivateUserFields(user) {
+  if (!user) return user;
+  const { password_hash, ...safeUser } = user;
+  return safeUser;
 }
 
 export async function register(req, res) {
@@ -29,6 +46,10 @@ export async function register(req, res) {
       password
     });
 
+    if (result && result.token) {
+      setAuthCookie(res, result.token);
+    }
+
     return res.status(201).json({
       success: true,
       message: 'User registered successfully.',
@@ -41,18 +62,27 @@ export async function register(req, res) {
 }
 
 export async function login(req, res) {
-  try {
-    const { email, password } = req.body;
+  const { email, password } = req.body || {};
+  const cleanEmail = sanitize(email || '');
 
+  try {
     const errors = [];
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('A valid email address is required.');
+    if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) errors.push('A valid email address is required.');
     if (!password) errors.push('Password is required.');
 
     if (errors.length > 0) {
       return res.status(400).json({ success: false, errors });
     }
 
-    const result = await service.loginUser(sanitize(email), password);
+    const result = await service.loginUser(cleanEmail, password);
+
+    // Record successful login (clears failed attempts counter)
+    recordSuccessfulLogin(req, cleanEmail);
+
+    // Set secure HttpOnly session cookie
+    if (result && result.token) {
+      setAuthCookie(res, result.token);
+    }
 
     return res.status(200).json({
       success: true,
@@ -60,8 +90,29 @@ export async function login(req, res) {
       data: result
     });
   } catch (error) {
-    console.error('Login controller error:', error);
-    return res.status(401).json({ success: false, errors: [error.message] });
+    // Record failed attempt for rate limiting
+    recordFailedLogin(req, cleanEmail);
+    console.warn(`[Failed Login Attempt] IP: ${req.ip}, Email: ${cleanEmail}`);
+
+    // Return generic authentication error (prevents user enumeration)
+    return res.status(401).json({
+      success: false,
+      errors: ['Invalid email or password.']
+    });
+  }
+}
+
+export async function logout(req, res) {
+  try {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    });
+    res.clearCookie('dtf_token');
+    return res.status(200).json({ success: true, message: 'Logged out successfully.' });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: 'Error during logout.' });
   }
 }
 
@@ -98,7 +149,7 @@ export async function getProfile(req, res) {
     if (!req.userId) {
       return res.status(401).json({ success: false, error: 'Unauthorized.' });
     }
-    const user = await service.getUserById(req.userId);
+    const user = await service.getUserProfile(req.userId);
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found.' });
     }
@@ -139,7 +190,7 @@ export async function updateProfile(req, res) {
     return res.status(200).json({
       success: true,
       message: 'Profile updated successfully.',
-      data: result
+      data: stripPrivateUserFields(result)
     });
   } catch (error) {
     console.error('updateProfile error:', error);
@@ -150,11 +201,15 @@ export async function updateProfile(req, res) {
 export async function forgotPassword(req, res) {
   try {
     const { email } = req.body;
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    const cleanEmail = sanitize(email || '');
+    if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       return res.status(400).json({ success: false, errors: ['A valid email address is required.'] });
     }
 
-    const otp = await service.sendForgotPasswordOtp(sanitize(email));
+    // Enforce server-side OTP cooldown (60s) & 15m window limits
+    checkOtpRateLimit(cleanEmail);
+
+    const otp = await service.sendForgotPasswordOtp(cleanEmail);
     
     return res.status(200).json({
       success: true,
@@ -163,7 +218,8 @@ export async function forgotPassword(req, res) {
     });
   } catch (error) {
     console.error('forgotPassword error:', error);
-    return res.status(400).json({ success: false, errors: [error.message] });
+    const status = error.message.includes('wait') ? 429 : 400;
+    return res.status(status).json({ success: false, errors: [error.message] });
   }
 }
 
@@ -206,19 +262,21 @@ export async function sendVerificationOtp(req, res) {
       return res.status(400).json({ success: false, errors: ['Type and value are required.'] });
     }
 
+    const cleanValue = sanitize(value);
+
     if (type === 'email') {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanValue)) {
         return res.status(400).json({ success: false, errors: ['A valid email address is required.'] });
       }
-      const existing = await service.getUserByEmail(sanitize(value));
+      const existing = await service.getUserByEmail(cleanValue);
       if (existing && existing.id !== req.userId) {
         return res.status(400).json({ success: false, errors: ['Email is already in use by another account.'] });
       }
     } else if (type === 'phone') {
-      if (!/^\d{10}$/.test(value)) {
-        return res.status(400).json({ success: false, errors: ['Mobile number must be exactly 10 digits.'] });
+      if (!/^\+?\d{10,15}$/.test(cleanValue)) {
+        return res.status(400).json({ success: false, errors: ['Mobile number must be a valid 10-15 digit number.'] });
       }
-      const existing = await service.getUserByPhone(sanitize(value));
+      const existing = await service.getUserByPhone(cleanValue);
       if (existing && existing.id !== req.userId) {
         return res.status(400).json({ success: false, errors: ['Mobile number is already in use by another account.'] });
       }
@@ -229,10 +287,10 @@ export async function sendVerificationOtp(req, res) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-    await service.saveVerificationOtp(sanitize(value), otp, expiresAt);
+    await service.saveVerificationOtp(cleanValue, otp, expiresAt);
 
     console.log(`\n📨 ============================================================`);
-    console.log(`📨 [VERIFICATION OTP SUCCESS] OTP code to verify new ${type} "${value}" is: ${otp}`);
+    console.log(`📨 [VERIFICATION OTP SUCCESS] OTP code to verify new ${type} "${cleanValue}" is: ${otp}`);
     console.log(`📨 Expires at: ${expiresAt.toLocaleTimeString()}`);
     console.log(`📨 ============================================================\n`);
 
@@ -275,7 +333,7 @@ export async function verifyAndUpdateProfile(req, res) {
     return res.status(200).json({
       success: true,
       message: 'Profile updated successfully.',
-      data: result
+      data: stripPrivateUserFields(result)
     });
   } catch (error) {
     console.error('verifyAndUpdateProfile error:', error);

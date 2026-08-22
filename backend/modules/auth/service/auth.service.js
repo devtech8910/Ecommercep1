@@ -1,8 +1,56 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import * as repository from '../repository/auth.repository.js';
+import { getJwtSecret } from '../../../config/jwt.config.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'devtech_fashion_secret_key';
+const JWT_SECRET = getJwtSecret();
+const PROFILE_EDIT_LIMIT_PER_YEAR = 2;
+
+function currentEditYear() {
+  return new Date().getFullYear();
+}
+
+function normalizeComparable(value) {
+  return value == null ? '' : String(value).trim();
+}
+
+function normalizePhoneComparable(value) {
+  return normalizeComparable(value).replace(/^\+91/, '');
+}
+
+function normalizeDateComparable(value) {
+  if (!value) return '';
+  return String(value).slice(0, 10);
+}
+
+function hasProfileDetailsChanged(user, updateData) {
+  return (
+    normalizeComparable(user.first_name) !== normalizeComparable(updateData.firstName) ||
+    normalizeComparable(user.last_name) !== normalizeComparable(updateData.lastName) ||
+    normalizeComparable(user.email).toLowerCase() !== normalizeComparable(updateData.email).toLowerCase() ||
+    normalizePhoneComparable(user.phone) !== normalizePhoneComparable(updateData.phone) ||
+    normalizeDateComparable(user.date_of_birth) !== normalizeDateComparable(updateData.dob)
+  );
+}
+
+async function getProfileEditLimit(userId) {
+  const year = currentEditYear();
+  const used = await repository.getProfileEditUsage(userId, year);
+  return {
+    year,
+    limit: PROFILE_EDIT_LIMIT_PER_YEAR,
+    used,
+    remaining: Math.max(PROFILE_EDIT_LIMIT_PER_YEAR - used, 0)
+  };
+}
+
+async function assertProfileEditAllowed(userId) {
+  const usage = await getProfileEditLimit(userId);
+  if (usage.used >= PROFILE_EDIT_LIMIT_PER_YEAR) {
+    throw new Error(`You have already used your ${PROFILE_EDIT_LIMIT_PER_YEAR} account detail edits for ${usage.year}. You can edit again next year.`);
+  }
+  return usage;
+}
 
 export async function registerUser(userData) {
   const existingUser = await repository.findUserByEmail(userData.email);
@@ -91,7 +139,19 @@ export async function getUserById(id) {
   return repository.findUserById(id);
 }
 
+export async function getUserProfile(id) {
+  const user = await repository.findUserById(id);
+  if (!user) return null;
+  const profileEditLimit = await getProfileEditLimit(id);
+  return { ...user, profileEditLimit };
+}
+
 export async function updateUser(id, updateData) {
+  const currentUser = await repository.findUserById(id);
+  if (!currentUser) {
+    throw new Error('User not found.');
+  }
+
   const emailUser = await repository.findUserByEmail(updateData.email);
   if (emailUser && emailUser.id !== id) {
     throw new Error('Email address is already in use by another user.');
@@ -108,6 +168,11 @@ export async function updateUser(id, updateData) {
     passwordHash = await bcrypt.hash(updateData.password, salt);
   }
 
+  const detailsChanged = hasProfileDetailsChanged(currentUser, updateData);
+  if (detailsChanged) {
+    await assertProfileEditAllowed(id);
+  }
+
   const updatedUser = await repository.updateUser(id, {
     firstName: updateData.firstName,
     lastName: updateData.lastName,
@@ -117,7 +182,11 @@ export async function updateUser(id, updateData) {
     passwordHash
   });
 
-  return updatedUser;
+  if (detailsChanged) {
+    await repository.recordProfileEdit(id, currentEditYear());
+  }
+
+  return { ...updatedUser, profileEditLimit: await getProfileEditLimit(id) };
 }
 
 export async function sendForgotPasswordOtp(email) {
@@ -172,6 +241,18 @@ export async function verifyAndUpdateProfile(userId, updateData) {
     throw new Error('User not found.');
   }
 
+  const requestedData = {
+    firstName: updateData.firstName,
+    lastName: updateData.lastName,
+    email: updateData.email,
+    phone: updateData.phone,
+    dob: updateData.dob
+  };
+  const detailsChanged = hasProfileDetailsChanged(user, requestedData);
+  if (detailsChanged) {
+    await assertProfileEditAllowed(userId);
+  }
+
   let email = user.email;
   if (updateData.email !== user.email) {
     const existing = await repository.findUserByEmail(updateData.email);
@@ -219,7 +300,11 @@ export async function verifyAndUpdateProfile(userId, updateData) {
     passwordHash: null
   });
 
-  return updatedUser;
+  if (detailsChanged) {
+    await repository.recordProfileEdit(userId, currentEditYear());
+  }
+
+  return { ...updatedUser, profileEditLimit: await getProfileEditLimit(userId) };
 }
 
 export async function requestDeleteAccountOtp(userId) {

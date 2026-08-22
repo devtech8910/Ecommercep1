@@ -1,6 +1,6 @@
 /* ============================================================
-   DEVTECH FASHION — MAIN JAVASCRIPT
-   Author: DevTech Solutions (Purna Sai & Prabhas)
+   FASHIONCOMPANY FASHION — MAIN JAVASCRIPT
+   Author: Fashion Company (Purna Sai & Prabhas)
    Version: 1.0.0
    ============================================================ */
 
@@ -39,6 +39,13 @@ window.dtfApiBase = function dtfApiBase() {
 
 window.dtfApiUrl = function dtfApiUrl(path) {
   return `${window.dtfApiBase()}${path}`;
+};
+
+const dtfEscapeHtml = window.escapeHtml || function escapeHtmlFallback(str) {
+  if (str == null) return '';
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
 };
 
 (function routeLocalApiFetchesForLan() {
@@ -104,6 +111,8 @@ const $$ = (selector, context = document) => context.querySelectorAll(selector);
   const navbar = $('#navbar');
   if (!navbar) return;
 
+
+
   // Set initial transparent state
   navbar.classList.add('nav-transparent');
 
@@ -121,6 +130,63 @@ const $$ = (selector, context = document) => context.querySelectorAll(selector);
 
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll(); // Run on load
+})();
+
+/* ============================================================
+   GLOBAL AUTH CHECK & PROTECTION FOR CART / WISHLIST
+   ============================================================ */
+window.isUserLoggedIn = function() {
+  try {
+    const rawUser = localStorage.getItem('dtf_user') || localStorage.getItem('user');
+    const token = localStorage.getItem('token') || localStorage.getItem('dtf_token');
+    if (token) return true;
+    if (rawUser && JSON.parse(rawUser)) return true;
+  } catch (e) {}
+  return false;
+};
+
+(function initCartWishlistAuthProtection() {
+  function getLoginUrl() {
+    const isPagesDir = /\/pages\//i.test(window.location.pathname.replace(/\\/g, '/'));
+    return isPagesDir ? 'login.html' : 'pages/login.html';
+  }
+
+  document.addEventListener('click', (e) => {
+    const wishlistTrigger = e.target.closest(
+      '.wishlist-btn, .btn-wishlist, .btn-add-wishlist, .add-wishlist, .product-card-wishlist, [data-action="wishlist"], .product-wishlist-btn, .add-to-wishlist'
+    );
+
+    const cartTrigger = e.target.closest(
+      '.buy-now-btn, .btn-add-cart, .add-to-cart-btn, #add-to-cart-cta, #buy-now-cta, [data-action="add-to-cart"], [data-action="buy-now"]'
+    );
+
+    const trigger = wishlistTrigger || cartTrigger;
+
+    if (trigger) {
+      if (!window.isUserLoggedIn || !window.isUserLoggedIn()) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        const isWishlist = !!wishlistTrigger;
+        const msg = isWishlist
+          ? 'Please sign in or create an account to save items to your wishlist.'
+          : 'Please sign in or create an account to add items to your cart.';
+
+        if (window.showToast) {
+          window.showToast(msg, 'warning');
+        } else {
+          alert(msg);
+        }
+
+        setTimeout(() => {
+          window.location.href = getLoginUrl();
+        }, 800);
+
+        return false;
+      }
+    }
+  }, true);
 })();
 
 /* ============================================================
@@ -145,7 +211,7 @@ function updateAuthUI() {
     const rawUser = localStorage.getItem('dtf_user') || localStorage.getItem('user');
     if (rawUser) {
       const user = JSON.parse(rawUser);
-      const name = user.full_name || user.name || user.username || user.email?.split('@')[0] || 'User';
+      const name = user.full_name || user.name || user.username || user.first_name || user.email?.split('@')[0] || 'User';
 
       // 1. Mobile Greeting & Auth Buttons Toggle
       const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
@@ -199,38 +265,42 @@ function updateAuthUI() {
 
         desktopUserContainer.style.display = 'inline-flex';
         desktopUserContainer.innerHTML = `
-          ${isAdmin ? `<a href="${adminUrl}" class="btn btn-ghost" style="color: #fbbf24; font-weight: 800; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 99px; padding: 6px 14px; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;">🛠️ Admin</a>` : ''}
-          <a href="${ordersUrl}" class="btn btn-ghost" style="font-weight: 700; background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25); border-radius: 99px; padding: 6px 14px; color: #6366f1; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;">👤 ${name}</a>
-          <button type="button" id="desktop-logout-btn" class="btn btn-ghost" style="font-weight: 700; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; border-radius: 99px; padding: 6px 12px; font-size: 12px; cursor: pointer;" title="Logout">Logout</button>
+          ${isAdmin ? `<a href="${adminUrl}" class="desktop-admin-link" aria-label="Open admin dashboard">Admin</a>` : ''}
+          <a href="${ordersUrl}" class="desktop-orders-link" aria-label="Open my orders" title="${dtfEscapeHtml(name)}">My Orders</a>
+          <button type="button" id="desktop-logout-btn" class="desktop-logout-btn" title="Logout">Logout</button>
         `;
 
         const desktopLogout = document.getElementById('desktop-logout-btn');
         if (desktopLogout) {
           desktopLogout.onclick = () => {
+            try { fetch('http://localhost:5000/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
             localStorage.removeItem('dtf_user');
             localStorage.removeItem('dtf_token');
+            localStorage.removeItem('token');
             localStorage.removeItem('user');
             alert('Logged out successfully!');
             window.location.reload();
           };
         }
       }
-
+      return;
     }
   } catch (err) {
     console.warn('Auth UI update error:', err);
-    if (nameEl) nameEl.textContent = 'Hey Guest';
-
-    const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
-    const mobileAuthBtns = document.getElementById('mobile-auth-btns');
-    if (mobileLogoutBtn) mobileLogoutBtn.style.setProperty('display', 'none', 'important');
-    if (mobileAuthBtns) mobileAuthBtns.style.setProperty('display', 'flex', 'important');
-
-    if (adminItem) adminItem.style.display = 'none';
-    if (loginBtn) loginBtn.style.display = '';
-    if (signupBtn) signupBtn.style.display = '';
-    if (desktopUserContainer) desktopUserContainer.style.display = 'none';
   }
+
+  // Fallback for unauthenticated guest state
+  if (nameEl) nameEl.textContent = 'Hey Guest';
+
+  const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+  const mobileAuthBtns = document.getElementById('mobile-auth-btns');
+  if (mobileLogoutBtn) mobileLogoutBtn.style.setProperty('display', 'none', 'important');
+  if (mobileAuthBtns) mobileAuthBtns.style.setProperty('display', 'flex', 'important');
+
+  if (adminItem) adminItem.style.display = 'none';
+  if (loginBtn) loginBtn.style.display = '';
+  if (signupBtn) signupBtn.style.display = '';
+  if (desktopUserContainer) desktopUserContainer.style.display = 'none';
 }
 
 /* Run Auth UI update on script load & DOM ready */
@@ -275,8 +345,10 @@ document.addEventListener('DOMContentLoaded', updateAuthUI);
   document.addEventListener('click', (e) => {
     const logoutBtn = e.target.closest('#mobile-logout-btn');
     if (logoutBtn) {
+      try { fetch('http://localhost:5000/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
       localStorage.removeItem('dtf_user');
       localStorage.removeItem('dtf_token');
+      localStorage.removeItem('token');
       localStorage.removeItem('user');
       updateAuthUI();
       const hamburger = document.getElementById('hamburger');
@@ -341,9 +413,6 @@ document.addEventListener('DOMContentLoaded', updateAuthUI);
   updateAuthUI();
 })();
 
-/* ============================================================
-   MOBILE CATEGORY ACCORDION
-   ============================================================ */
 (function initMobileCategoryAccordion() {
   const categoryHeaders = document.querySelectorAll('.mobile-category-header');
   categoryHeaders.forEach(header => {
@@ -664,9 +733,18 @@ document.addEventListener('DOMContentLoaded', updateAuthUI);
    CART & WISHLIST COUNT — localStorage sync
    ============================================================ */
 (function initCartWishlistCounts() {
+  function getUserStorageKey(base) {
+    try {
+      const user = JSON.parse(localStorage.getItem('dtf_user') || 'null');
+      return user && user.email ? `${base}_${user.email.toLowerCase()}` : base;
+    } catch {
+      return base;
+    }
+  }
+
   function getCount(key) {
     try {
-      const data = JSON.parse(localStorage.getItem(key));
+      const data = JSON.parse(localStorage.getItem(getUserStorageKey(key)));
       return Array.isArray(data) ? data.length : 0;
     } catch {
       return 0;
@@ -695,54 +773,6 @@ document.addEventListener('DOMContentLoaded', updateAuthUI);
   // Custom event for same-page updates
   window.addEventListener('dtf:cart:updated',    updateAll);
   window.addEventListener('dtf:wishlist:updated', updateAll);
-})();
-
-/* ============================================================
-   GLOBAL AUTH CHECK & PROTECTION FOR CART / WISHLIST
-   ============================================================ */
-window.isUserLoggedIn = function() {
-  try {
-    const rawUser = localStorage.getItem('dtf_user') || localStorage.getItem('user');
-    const token = localStorage.getItem('token') || localStorage.getItem('dtf_token');
-    if (token) return true;
-    if (rawUser && JSON.parse(rawUser)) return true;
-  } catch (e) {}
-  return false;
-};
-
-(function initCartWishlistAuthProtection() {
-  function getLoginUrl() {
-    const isPagesDir = /\/pages\//i.test(window.location.pathname.replace(/\\/g, '/'));
-    return isPagesDir ? 'login.html' : 'pages/login.html';
-  }
-
-  // Allow guest cart additions & handle wishlist auth protection cleanly
-  document.addEventListener('click', (e) => {
-    const trigger = e.target.closest(
-      '.wishlist-btn, .btn-wishlist, .add-wishlist, .product-card-wishlist, [data-action="wishlist"], .product-wishlist-btn, .add-to-wishlist'
-    );
-
-    if (trigger) {
-      if (!window.isUserLoggedIn || !window.isUserLoggedIn()) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-
-        const msg = 'Please sign in or create an account to save items to your wishlist.';
-        if (window.showToast) {
-          window.showToast(msg, 'warning');
-        } else {
-          alert(msg);
-        }
-
-        setTimeout(() => {
-          window.location.href = getLoginUrl();
-        }, 800);
-
-        return false;
-      }
-    }
-  }, true);
 })();
 
 /* ============================================================
@@ -878,7 +908,7 @@ window.isUserLoggedIn = function() {
    ============================================================ */
 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
   console.info(
-    '%c DevTech Fashion %c v1.0.0 ',
+    '%c Fashion Company %c v1.0.0 ',
     'background: #1a1a2e; color: #4f8ef7; padding: 4px 8px; border-radius: 4px 0 0 4px; font-weight: bold;',
     'background: #4f8ef7; color: white; padding: 4px 8px; border-radius: 0 4px 4px 0;'
   );
@@ -915,11 +945,11 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
   subbarRoot.innerHTML = `
     <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; font-family: 'Inter', sans-serif;">
       <div style="display: flex; align-items: center; gap: 8px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700;">Deliver to:</span>
-        <span id="subbar-location-text" style="font-size: 12.5px; font-weight: 700; color: #6366f1; cursor: pointer; background: rgba(99,102,241,0.06); padding: 4px 10px; border-radius: 8px;">${renderSubbarText()}</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; font-weight: 700;">Deliver to:</span>
+        <span id="subbar-location-text" style="font-size: 12.5px; font-weight: 700; color: #a5b4fc; cursor: pointer; background: rgba(165,180,252,0.1); padding: 4px 10px; border-radius: 8px;">${renderSubbarText()}</span>
       </div>
-      <button id="subbar-change-location-btn" style="background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); color: #6366f1; padding: 5px 14px; border-radius: 99px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;">Change Location</button>
+      <button id="subbar-change-location-btn" style="background: rgba(165,180,252,0.1); border: 1px solid rgba(165,180,252,0.25); color: #a5b4fc; padding: 5px 14px; border-radius: 99px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;">Change</button>
     </div>
   `;
 
@@ -946,9 +976,14 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
         localStorage.setItem('dtf_saved_addresses', JSON.stringify(savedAddresses));
         if (!savedLoc && savedAddresses.length > 0) {
           savedLoc = savedAddresses[0];
-          const textEl = document.getElementById('subbar-location-text');
-          if (textEl) textEl.textContent = renderSubbarText();
+          document.querySelectorAll('#subbar-location-text, #desktop-location-text, .desktop-location-text').forEach(el => {
+            el.textContent = renderSubbarText();
+          });
         }
+        // Initial sync of desktop location text
+        document.querySelectorAll('#desktop-location-text, .desktop-location-text').forEach(el => {
+          el.textContent = renderSubbarText();
+        });
       }
     } catch {}
   }
@@ -1175,10 +1210,11 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
       const isSelected = (savedLoc && (savedLoc.id === addr.id || (savedLoc.pin === addr.pin && savedLoc.name === addr.name)));
       const card = document.createElement('div');
       card.className = `saved-address-card ${isSelected ? 'selected' : ''}`;
+      const addressText = addr.fullAddress || `${addr.name || ''}, ${addr.district || ''} - ${addr.pin || ''}`;
       card.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
           <div style="display: flex; align-items: center; gap: 8px;">
-            <span class="type-pill-badge">${addr.typeIcon || '📍'} ${addr.label || 'HOME'}</span>
+            <span class="type-pill-badge">${dtfEscapeHtml(addr.typeIcon || '📍')} ${dtfEscapeHtml(addr.label || 'HOME')}</span>
             ${isSelected ? '<span class="active-pill-badge">★ ACTIVE</span>' : ''}
           </div>
           <button type="button" class="btn-select-addr" style="padding: 6px 14px; background: ${isSelected ? '#6366f1' : 'rgba(99,102,241,0.08)'}; color: ${isSelected ? '#ffffff' : '#6366f1'}; border: none; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer;">
@@ -1187,10 +1223,10 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
         </div>
         <div>
           <div style="font-size: 14px; font-weight: 800; color: #111827; margin-bottom: 2px;">
-            ${addr.personName || 'Customer'} <span style="font-size: 12px; font-weight: 500; color: #6b7280;">• ${addr.phone || ''}</span>
+            ${dtfEscapeHtml(addr.personName || 'Customer')} <span style="font-size: 12px; font-weight: 500; color: #6b7280;">• ${dtfEscapeHtml(addr.phone || '')}</span>
           </div>
           <p style="margin: 0; font-size: 12.5px; font-weight: 500; color: #4b5563; line-height: 1.4;">
-            ${addr.fullAddress || addr.name + ', ' + (addr.district || '') + ' - ' + addr.pin}
+            ${dtfEscapeHtml(addressText)}
           </p>
         </div>
         
@@ -1257,7 +1293,9 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
   function selectActiveAddress(addr) {
     savedLoc = { name: addr.name || addr.label, pin: addr.pin, id: addr.id, full: addr.fullAddress };
     localStorage.setItem('dtf_user_location', JSON.stringify(savedLoc));
-    if (textEl) textEl.textContent = `📍 ${savedLoc.name} ${savedLoc.pin}`;
+    document.querySelectorAll('#subbar-location-text, #desktop-location-text, .desktop-location-text').forEach(el => {
+      el.textContent = `📍 ${savedLoc.name} ${savedLoc.pin}`;
+    });
     backdrop.classList.remove('active');
     renderSavedAddresses();
   }
@@ -1466,8 +1504,8 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
       return;
     }
 
-    // 2. Open trigger from subbar
-    const openTrigger = e.target.closest('.location-subbar, #react-address-picker-root, #subbar-change-location-btn, #subbar-location-text');
+    // 2. Open trigger from subbar or desktop location button
+    const openTrigger = e.target.closest('.location-subbar, #react-address-picker-root, #subbar-change-location-btn, #subbar-location-text, .desktop-location-btn, #desktop-location-btn, #desktop-location-text');
     if (openTrigger) {
       e.preventDefault();
       e.stopPropagation();
@@ -1576,7 +1614,7 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
               isDistrictMatch(po.District, district)
             );
             if (!isMatch) {
-              console.warn(`[DevTech Geo] Pincode ${pin} does not match state "${state}" & district "${district}". Invalidating pin.`);
+              console.warn(`[Fashion Company Geo] Pincode ${pin} does not match state "${state}" & district "${district}". Invalidating pin.`);
               pin = ''; // Mismatched pincode — mark invalid to trigger fallback search
             }
           }
@@ -1607,7 +1645,7 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
 
               if (matchedPO && matchedPO.Pincode) {
                 pin = matchedPO.Pincode;
-                console.log(`[DevTech Geo] Resolved verified pincode ${pin} for place "${cleanToken}"`);
+                console.log(`[Fashion Company Geo] Resolved verified pincode ${pin} for place "${cleanToken}"`);
                 if (area === 'Detected Location') area = matchedPO.Name;
                 break;
               }

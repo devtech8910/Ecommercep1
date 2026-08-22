@@ -1,4 +1,4 @@
-# Netlify Build Configuration for DevTech Fashion E-Commerce
+# Netlify Build Configuration for Fashion Company E-Commerce
 [build]
   publish = "."
   command = ""

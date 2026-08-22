@@ -1,5 +1,5 @@
 -- ============================================================
--- DEVTECH FASHION — ENTERPRISE DATABASE SCHEMA (V1 CORE)
+-- FASHIONCOMPANY FASHION — ENTERPRISE DATABASE SCHEMA (V1 CORE)
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS users (

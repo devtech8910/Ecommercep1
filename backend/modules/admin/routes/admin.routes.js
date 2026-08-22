@@ -1,7 +1,12 @@
 import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { query } from '../../../db.js';
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Middleware to verify admin privileges
 async function requireAdmin(req, res, next) {
@@ -21,6 +26,36 @@ async function requireAdmin(req, res, next) {
 
 // Apply admin check to all admin routes
 router.use(requireAdmin);
+
+// Local development image upload. Production Netlify deploys should use the
+// existing serverless upload function because local filesystem storage is ephemeral.
+router.post('/upload', async (req, res) => {
+  const { base64Data, filename } = req.body;
+  if (!base64Data) {
+    return res.status(400).json({ success: false, error: 'No image data provided.' });
+  }
+
+  try {
+    const base64Image = base64Data.replace(/^data:image\/\w+;base64,/, '');
+    const ext = filename ? path.extname(filename) : '.jpg';
+    const newFilename = `prod_${Date.now()}${ext}`;
+    const uploadDir = path.join(__dirname, '../../../../../uploads');
+
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    const filePath = path.join(uploadDir, newFilename);
+    fs.writeFileSync(filePath, base64Image, { encoding: 'base64' });
+
+    const url = `/uploads/${newFilename}`;
+    console.log('[Upload] Saved image to:', filePath, 'URL:', url);
+    res.status(200).json({ success: true, url });
+  } catch (err) {
+    console.error('[Upload] Failed:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // Helper: Parse size_stock string like 'S:10, M:10, L:10' into object {S: 10, M: 10, L: 10}
 function parseSizeStock(sizeStockStr) {
@@ -195,7 +230,7 @@ router.post('/products', async (req, res) => {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING pid AS id, *;`,
       [
         title, price, imageUrl, category, description,
-        brand || 'DevTech', titleDescription, mrp || 0, sizes || 'S, M, L',
+        brand || 'Fashion Company', titleDescription, mrp || 0, sizes || 'S, M, L',
         replacementAllowed !== false, replacementDays || 7, codAvailable !== false,
         fabric || 'Cotton', pattern || 'Solid', fit || 'Regular Fit', suitableFor || 'Casual',
         sizeStock || 'S:10, M:10, L:10', couponApplicable !== false

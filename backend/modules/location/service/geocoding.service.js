@@ -1,12 +1,12 @@
 
-const USER_AGENT = 'EcommerceAddressPickerApp/2.0 (devtech@example.com)';
+const USER_AGENT = 'EcommerceAddressPickerApp/2.0 (fashioncompany@example.com)';
 
 /**
  * Helper: Execute a single Nominatim search query and return the first result.
  * Returns null if no results found.
  */
 async function nominatimSearch(query) {
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=in&email=devtechfashion@example.com`;
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=in&email=fashioncompany@example.com`;
   const response = await fetch(url, {
     headers: { 'User-Agent': USER_AGENT }
   });
@@ -97,7 +97,7 @@ export async function reverseGeocode(lat, lon) {
 
   // 2. Fallback to Nominatim OpenStreetMap
   const randomId = Math.random().toString(36).substring(7);
-  const email = `devtech_${randomId}@gmail.com`;
+  const email = `fashioncompany_${randomId}@gmail.com`;
   const userAgent = `AddressPickerAgent_${randomId}`;
   const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1&email=${email}`;
 
@@ -157,7 +157,7 @@ function generateMockReverse(lat, lon) {
  * Returns up to 5 suggestions based on the query.
  */
 export async function autocompleteSearch(query) {
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=8&countrycodes=in&email=devtechfashion@example.com`;
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=8&countrycodes=in&email=fashioncompany@example.com`;
   try {
     const response = await fetch(url, {
       headers: { 'User-Agent': USER_AGENT }

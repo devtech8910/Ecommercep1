@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Edit your DevTech Fashion account details and manage your profile settings." />
-    <title>Edit Profile — DevTech Fashion</title>
+    <meta name="description" content="View and edit your Fashion Company account details." />
+    <title>Account Details — Fashion Company</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="../css/responsive.css" />
     <link rel="stylesheet" href="../css/mobile.css" />
   </head>
-  <body class="auth-page">
+  <body class="profile-page">
     <!-- Noise overlay -->
     <div class="noise-overlay" aria-hidden="true"></div>
 
@@ -32,37 +32,65 @@
     </div>
 
     <!-- ========================================
-         MAIN PROFILE SECTION
+         NOT LOGGED IN STATE (hidden by default)
     ========================================= -->
-    <main class="auth-main-container" style="padding-top: 80px !important; padding-bottom: var(--space-12);">
+    <main class="auth-main-container" id="not-logged-in-view" style="display: none; padding-top: 80px !important; padding-bottom: var(--space-12);">
+      <div class="auth-card-wrapper fade-in-up">
+        <div class="auth-card glass-card">
+          <div class="profile-not-logged-in">
+            <div class="nli-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <h2>Account Details</h2>
+            <p>Please log in to view and manage your account details, order history, and preferences.</p>
+            <a href="login.html" class="profile-login-link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+              Sign In
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ========================================
+         MAIN PROFILE SECTION (shown when logged in)
+    ========================================= -->
+    <main class="auth-main-container" id="profile-main-view" style="display: none; padding-top: 80px !important; padding-bottom: var(--space-12);">
       <div class="auth-card-wrapper fade-in-up">
         <div class="auth-card glass-card">
           <!-- Card Header -->
           <div class="auth-card-header">
             <span class="auth-subtitle">Account Management</span>
-            <h1 class="auth-title">Edit Profile</h1>
-            <p class="auth-description">Update your personal account details below.</p>
+            <h1 class="auth-title">Account Details</h1>
+            <p class="auth-description" id="profile-description">Review the details used when your account was created.</p>
           </div>
 
           <!-- Profile Form -->
           <form class="auth-form" id="profile-page-form" novalidate>
-            <div id="profile-error-banner" style="display: none; padding: 12px 16px; border-radius: 12px; background-color: #fef2f2; border: 1.5px solid #fee2e2; color: #ef4444; font-size: 13px; font-weight: 500; margin-bottom: 16px; line-height: 1.4;"></div>
-            <div id="profile-success-banner" style="display: none; padding: 12px 16px; border-radius: 12px; background-color: #f0fdf4; border: 1.5px solid #dcfce7; color: #16a34a; font-size: 13px; font-weight: 500; margin-bottom: 16px; line-height: 1.4;"></div>
+            <div id="profile-error-banner" style="display: none; padding: 12px 16px; border-radius: 12px; background-color: rgba(239, 68, 68, 0.1); border: 1.5px solid rgba(239, 68, 68, 0.3); color: #ef4444; font-size: 13px; font-weight: 500; margin-bottom: 16px; line-height: 1.4;"></div>
+            <div id="profile-success-banner" style="display: none; padding: 12px 16px; border-radius: 12px; background-color: rgba(34, 197, 94, 0.1); border: 1.5px solid rgba(34, 197, 94, 0.3); color: #4ade80; font-size: 13px; font-weight: 500; margin-bottom: 16px; line-height: 1.4;"></div>
+            <div id="profile-edit-limit-card" style="padding: 14px 16px; border-radius: 16px; background: rgba(99,102,241,0.1); border: 1.5px solid rgba(165,180,252,0.26); color: #c7d2fe; font-size: 13px; font-weight: 650; margin-bottom: 18px; line-height: 1.45;">
+              <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap;">
+                <span>Account detail edits</span>
+                <span id="profile-edit-limit-count" style="color: #ffffff;">Loading...</span>
+              </div>
+              <div id="profile-edit-limit-help" style="margin-top: 4px; color: #a5b4fc; font-size: 12px; font-weight: 500;">You can edit these details 2 times per year.</div>
+            </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
               <div class="form-group-input" style="margin-bottom: 0;">
                 <label for="firstName" class="form-label-input">First Name *</label>
-                <input type="text" id="firstName" class="glass-input-field" required />
+                <input type="text" id="firstName" class="glass-input-field profile-readonly-field" readonly required />
               </div>
               <div class="form-group-input" style="margin-bottom: 0;">
                 <label for="lastName" class="form-label-input">Last Name *</label>
-                <input type="text" id="lastName" class="glass-input-field" required />
+                <input type="text" id="lastName" class="glass-input-field profile-readonly-field" readonly required />
               </div>
             </div>
 
             <div class="form-group-input">
               <label for="email" class="form-label-input">Email Address *</label>
-              <input type="email" id="email" class="glass-input-field" required />
+              <input type="email" id="email" class="glass-input-field profile-readonly-field" readonly required />
             </div>
 
             <div class="form-group-input">
@@ -77,9 +105,10 @@
                   <input
                     type="tel"
                     id="phone"
-                    class="glass-input-field"
+                    class="glass-input-field profile-readonly-field"
                     placeholder="98765 43210"
                     pattern="[0-9]{10}"
+                    readonly
                     required
                   />
                 </div>
@@ -88,42 +117,51 @@
 
             <div class="form-group-input" style="margin-bottom: 24px;">
               <label for="dob" class="form-label-input">Date of Birth</label>
-              <input type="date" id="dob" class="glass-input-field" />
+              <input type="date" id="dob" class="glass-input-field profile-readonly-field" readonly />
             </div>
 
-            <!-- Submit Button -->
-            <button type="submit" class="btn btn-primary btn-full" id="profile-submit-btn">
-              <span id="profile-submit-text">Save Changes</span>
+            <!-- Edit Details Button (shown in read-only mode) -->
+            <button type="button" class="profile-edit-btn" id="profile-edit-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit Details
             </button>
+
+            <!-- Save & Cancel Buttons (hidden in read-only mode) -->
+            <div id="profile-edit-actions" style="display: none;">
+              <button type="submit" class="btn btn-primary btn-full" id="profile-submit-btn">
+                <span id="profile-submit-text">Save Changes</span>
+              </button>
+              <button type="button" class="profile-cancel-btn" id="profile-cancel-btn">Cancel</button>
+            </div>
           </form>
         </div>
       </div>
     </main>
 
     <!-- OTP Verification Modal Overlay -->
-    <div id="otp-verify-modal" style="position: fixed; inset: 0; z-index: 99999; display: none; align-items: center; justify-content: center; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(8px); padding: 20px; font-family: 'Inter', -apple-system, sans-serif;">
-      <div style="background: #ffffff; border-radius: 24px; width: 100%; max-width: 440px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); overflow: hidden; animation: modalFadeIn 0.3s ease-out;">
-        <div style="padding: 24px 24px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.06);">
-          <h2 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--text-primary);">🔐 Verify Changes</h2>
-          <button id="close-otp-modal" style="background: rgba(0,0,0,0.05); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-muted); font-weight: bold;">&times;</button>
+    <div id="otp-verify-modal" style="position: fixed; inset: 0; z-index: 99999; display: none; align-items: center; justify-content: center; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(8px); padding: 20px; font-family: 'Inter', -apple-system, sans-serif;">
+      <div style="background: rgba(18, 18, 34, 0.95); border-radius: 24px; width: 100%; max-width: 440px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); overflow: hidden; animation: modalFadeIn 0.3s ease-out; backdrop-filter: blur(20px);">
+        <div style="padding: 24px 24px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06);">
+          <h2 style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">🔐 Verify Changes</h2>
+          <button id="close-otp-modal" style="background: rgba(255,255,255,0.05); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #9ca3af; font-weight: bold; transition: all 0.2s;">&times;</button>
         </div>
         <div style="padding: 24px;">
-          <p style="margin: 0 0 16px; font-size: 13px; color: var(--text-muted); line-height: 1.5;">To verify changes to your email or mobile number, enter the OTP verification code(s) sent (check your terminal console logs).</p>
-          <div id="otp-modal-error" style="display: none; padding: 10px 14px; border-radius: 10px; background-color: #fef2f2; border: 1px solid #fee2e2; color: #ef4444; font-size: 13px; margin-bottom: 14px; font-weight: 500;"></div>
+          <p style="margin: 0 0 16px; font-size: 13px; color: #9ca3af; line-height: 1.5;">To verify changes to your email or mobile number, enter the OTP verification code(s) sent (check your terminal console logs).</p>
+          <div id="otp-modal-error" style="display: none; padding: 10px 14px; border-radius: 10px; background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; font-size: 13px; margin-bottom: 14px; font-weight: 500;"></div>
           
           <!-- Email OTP Section -->
           <div id="email-otp-group" style="margin-bottom: 16px; display: none;">
-            <label style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px; display: block;">Email OTP (sent to <span id="target-new-email"></span>)</label>
-            <input type="text" id="email-otp-input" placeholder="6-digit code" maxLength="6" style="width: 100%; padding: 12px 16px; font-size: 15px; font-weight: 700; text-align: center; letter-spacing: 0.1em; border: 1.5px solid var(--glass-border); border-radius: 12px; background-color: var(--bg-elevated); outline: none; color: var(--text-primary);" />
+            <label style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin-bottom: 6px; display: block;">Email OTP (sent to <span id="target-new-email" style="color:#fff;"></span>)</label>
+            <input type="text" id="email-otp-input" placeholder="6-digit code" maxLength="6" style="width: 100%; padding: 12px 16px; font-size: 15px; font-weight: 700; text-align: center; letter-spacing: 0.1em; border: 1.5px solid rgba(255,255,255,0.1); border-radius: 12px; background-color: rgba(255,255,255,0.05); outline: none; color: #ffffff;" />
           </div>
 
           <!-- Phone OTP Section -->
           <div id="phone-otp-group" style="margin-bottom: 20px; display: none;">
-            <label style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px; display: block;">Mobile OTP (sent to <span id="target-new-phone"></span>)</label>
-            <input type="text" id="phone-otp-input" placeholder="6-digit code" maxLength="6" style="width: 100%; padding: 12px 16px; font-size: 15px; font-weight: 700; text-align: center; letter-spacing: 0.1em; border: 1.5px solid var(--glass-border); border-radius: 12px; background-color: var(--bg-elevated); outline: none; color: var(--text-primary);" />
+            <label style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin-bottom: 6px; display: block;">Mobile OTP (sent to <span id="target-new-phone" style="color:#fff;"></span>)</label>
+            <input type="text" id="phone-otp-input" placeholder="6-digit code" maxLength="6" style="width: 100%; padding: 12px 16px; font-size: 15px; font-weight: 700; text-align: center; letter-spacing: 0.1em; border: 1.5px solid rgba(255,255,255,0.1); border-radius: 12px; background-color: rgba(255,255,255,0.05); outline: none; color: #ffffff;" />
           </div>
 
-          <button id="confirm-otp-btn" style="width: 100%; padding: 14px; background: #6366f1; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; color: #ffffff; cursor: pointer; box-shadow: 0 4px 12px rgba(99,102,241,0.25);">Confirm & Save Changes</button>
+          <button id="confirm-otp-btn" style="width: 100%; padding: 14px; background: #6366f1; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; color: #ffffff; cursor: pointer; box-shadow: 0 4px 12px rgba(99,102,241,0.25); transition: background 0.2s;">Confirm & Save Changes</button>
         </div>
       </div>
     </div>
@@ -158,8 +196,13 @@
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         const rawUser = localStorage.getItem('dtf_user');
+        const notLoggedInView = document.getElementById('not-logged-in-view');
+        const profileMainView = document.getElementById('profile-main-view');
+
+        // ── NOT LOGGED IN: show message instead of redirecting ──
         if (!rawUser) {
-          window.location.href = 'login.html';
+          notLoggedInView.style.display = 'flex';
+          profileMainView.style.display = 'none';
           return;
         }
 
@@ -167,24 +210,136 @@
         try {
           user = JSON.parse(rawUser);
         } catch (e) {
-          window.location.href = 'login.html';
+          notLoggedInView.style.display = 'flex';
+          profileMainView.style.display = 'none';
           return;
         }
 
-        if (!user || !user.token) {
-          window.location.href = 'login.html';
+        const savedToken = user && user.token ? user.token : (localStorage.getItem('dtf_token') || localStorage.getItem('token'));
+        if (!user || !savedToken) {
+          notLoggedInView.style.display = 'flex';
+          profileMainView.style.display = 'none';
           return;
         }
+        user.token = savedToken;
+        localStorage.setItem('dtf_user', JSON.stringify(user));
+
+        // Show profile view
+        notLoggedInView.style.display = 'none';
+        profileMainView.style.display = 'flex';
 
         const errorBanner = document.getElementById('profile-error-banner');
         const successBanner = document.getElementById('profile-success-banner');
         const form = document.getElementById('profile-page-form');
         const submitBtn = document.getElementById('profile-submit-btn');
         const submitText = document.getElementById('profile-submit-text');
+        const editBtn = document.getElementById('profile-edit-btn');
+        const editActions = document.getElementById('profile-edit-actions');
+        const cancelBtn = document.getElementById('profile-cancel-btn');
+        const description = document.getElementById('profile-description');
+
+        // All editable fields
+        const editableFields = ['firstName', 'lastName', 'email', 'phone', 'dob'];
 
         // Store original values to track modifications
         let originalEmail = '';
         let originalPhone = '';
+        let originalPhoneFull = '';
+        let originalFirstName = '';
+        let originalLastName = '';
+        let originalDob = '';
+        let profileEditLimit = { limit: 2, used: 0, remaining: 2, year: new Date().getFullYear() };
+
+        function showError(message) {
+          errorBanner.textContent = message;
+          errorBanner.style.display = 'block';
+        }
+
+        function updateLocalUser(updatedUser) {
+          user.first_name = updatedUser.first_name;
+          user.last_name = updatedUser.last_name;
+          user.name = `${updatedUser.first_name || ''} ${updatedUser.last_name || ''}`.trim();
+          user.email = updatedUser.email;
+          user.phone = updatedUser.phone;
+          user.date_of_birth = updatedUser.date_of_birth;
+          if (updatedUser.profileEditLimit) profileEditLimit = updatedUser.profileEditLimit;
+          localStorage.setItem('dtf_user', JSON.stringify(user));
+        }
+
+        function hasFormChanges() {
+          return (
+            document.getElementById('firstName').value.trim() !== originalFirstName ||
+            document.getElementById('lastName').value.trim() !== originalLastName ||
+            document.getElementById('email').value.trim() !== originalEmail ||
+            document.getElementById('phone').value.trim() !== originalPhone ||
+            (document.getElementById('dob').value || '') !== originalDob
+          );
+        }
+
+        function renderEditLimitState() {
+          const count = document.getElementById('profile-edit-limit-count');
+          const help = document.getElementById('profile-edit-limit-help');
+          const card = document.getElementById('profile-edit-limit-card');
+          const year = profileEditLimit.year || new Date().getFullYear();
+          const limit = profileEditLimit.limit ?? 2;
+          const used = profileEditLimit.used ?? 0;
+          const remaining = profileEditLimit.remaining ?? Math.max(limit - used, 0);
+
+          count.textContent = `${used}/${limit} used in ${year}`;
+          help.textContent = remaining > 0
+            ? `${remaining} edit${remaining === 1 ? '' : 's'} remaining this year.`
+            : `You have used all account detail edits for ${year}.`;
+
+          if (remaining <= 0) {
+            card.style.background = 'rgba(239,68,68,0.12)';
+            card.style.borderColor = 'rgba(248,113,113,0.45)';
+            help.style.color = '#fca5a5';
+            // Disable edit button if no edits remaining
+            editBtn.disabled = true;
+            editBtn.style.opacity = '0.5';
+            editBtn.style.cursor = 'not-allowed';
+          }
+        }
+
+        // ── READ-ONLY / EDIT MODE TOGGLE ──
+        function setReadOnlyMode() {
+          editableFields.forEach(id => {
+            const el = document.getElementById(id);
+            el.setAttribute('readonly', '');
+            el.classList.add('profile-readonly-field');
+          });
+          editBtn.style.display = 'flex';
+          editActions.style.display = 'none';
+          description.textContent = 'Review the details used when your account was created.';
+          errorBanner.style.display = 'none';
+          successBanner.style.display = 'none';
+        }
+
+        function setEditMode() {
+          editableFields.forEach(id => {
+            const el = document.getElementById(id);
+            el.removeAttribute('readonly');
+            el.classList.remove('profile-readonly-field');
+            el.style.pointerEvents = 'auto';
+          });
+          editBtn.style.display = 'none';
+          editActions.style.display = 'block';
+          description.textContent = 'Update your account details below. Changes to email or phone require OTP verification.';
+        }
+
+        editBtn.addEventListener('click', () => {
+          setEditMode();
+        });
+
+        cancelBtn.addEventListener('click', () => {
+          // Revert values to original
+          document.getElementById('firstName').value = originalFirstName;
+          document.getElementById('lastName').value = originalLastName;
+          document.getElementById('email').value = originalEmail;
+          document.getElementById('phone').value = originalPhone;
+          document.getElementById('dob').value = originalDob;
+          setReadOnlyMode();
+        });
 
         // Load profile data
         fetch('http://localhost:5000/auth/profile', {
@@ -205,15 +360,21 @@
             document.getElementById('dob').value = u.date_of_birth ? u.date_of_birth.substring(0, 10) : '';
             
             // Record original state
+            originalFirstName = u.first_name || '';
+            originalLastName = u.last_name || '';
             originalEmail = u.email || '';
             originalPhone = displayPhoneNum;
+            originalPhoneFull = u.phone || '';
+            originalDob = u.date_of_birth ? u.date_of_birth.substring(0, 10) : '';
+            profileEditLimit = u.profileEditLimit || profileEditLimit;
+            renderEditLimitState();
           } else {
-            alert('Failed to load user profile data.');
+            showError('Failed to load user profile data.');
           }
         })
         .catch(err => {
           console.error(err);
-          alert('Failed to load profile. Please verify your connection.');
+          showError('Failed to load profile. Please verify your connection.');
         });
 
         // Submit form handler
@@ -235,6 +396,7 @@
           
           const isEmailChanged = email !== originalEmail;
           const isPhoneChanged = phone !== originalPhone;
+          const phoneForSubmit = isPhoneChanged ? `+91${phone}` : (originalPhoneFull || `+91${phone}`);
 
           if (isEmailChanged && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             errors.push('Please enter a valid email address.');
@@ -246,6 +408,18 @@
           if (errors.length > 0) {
             errorBanner.innerHTML = errors.join('<br>');
             errorBanner.style.display = 'block';
+            return;
+          }
+
+          if (!hasFormChanges()) {
+            successBanner.textContent = 'No changes detected.';
+            successBanner.style.display = 'block';
+            setReadOnlyMode();
+            return;
+          }
+
+          if (hasFormChanges() && (profileEditLimit.remaining ?? 2) <= 0) {
+            showError(`You have already used your ${profileEditLimit.limit || 2} account detail edits for ${profileEditLimit.year || new Date().getFullYear()}.`);
             return;
           }
 
@@ -273,7 +447,7 @@
                 const res = await fetch('http://localhost:5000/auth/send-verification-otp', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
-                  body: JSON.stringify({ type: 'phone', value: `+91${phone}` })
+                  body: JSON.stringify({ type: 'phone', value: phoneForSubmit })
                 });
                 const data = await res.json();
                 if (!res.ok || !data.success) throw new Error(data.errors ? data.errors.join(' ') : 'Mobile OTP failed.');
@@ -325,7 +499,7 @@
             fetch('http://localhost:5000/auth/update-profile', {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
-              body: JSON.stringify({ firstName, lastName, email, phone: `+91${phone}`, dob, password: null })
+              body: JSON.stringify({ firstName, lastName, email, phone: phoneForSubmit, dob, password: null })
             })
             .then(async (res) => {
               const data = await res.json();
@@ -333,12 +507,21 @@
               return data.data;
             })
             .then((updatedUser) => {
-              user.name = `${updatedUser.first_name} ${updatedUser.last_name}`;
-              localStorage.setItem('dtf_user', JSON.stringify(user));
-              
+              updateLocalUser(updatedUser);
+              // Update originals to new values
+              originalFirstName = updatedUser.first_name || '';
+              originalLastName = updatedUser.last_name || '';
+              originalEmail = updatedUser.email || '';
+              let newPhone = updatedUser.phone || '';
+              if (newPhone.startsWith('+91')) newPhone = newPhone.replace('+91', '');
+              originalPhone = newPhone;
+              originalPhoneFull = updatedUser.phone || '';
+              originalDob = updatedUser.date_of_birth ? updatedUser.date_of_birth.substring(0, 10) : '';
+
               successBanner.textContent = '✅ Profile updated successfully!';
               successBanner.style.display = 'block';
-              setTimeout(() => { window.location.href = '../index.html'; }, 1000);
+              renderEditLimitState();
+              setReadOnlyMode();
             })
             .catch(err => {
               errorBanner.textContent = err.message;
@@ -366,6 +549,7 @@
 
           const isEmailChanged = email !== originalEmail;
           const isPhoneChanged = phone !== originalPhone;
+          const phoneForSubmit = isPhoneChanged ? `+91${phone}` : (originalPhoneFull || `+91${phone}`);
 
           const emailOtp = document.getElementById('email-otp-input').value.trim();
           const phoneOtp = document.getElementById('phone-otp-input').value.trim();
@@ -391,7 +575,7 @@
           fetch('http://localhost:5000/auth/verify-and-update-profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
-            body: JSON.stringify({ firstName, lastName, email, phone: `+91${phone}`, dob, emailOtp, phoneOtp })
+            body: JSON.stringify({ firstName, lastName, email, phone: phoneForSubmit, dob, emailOtp, phoneOtp })
           })
           .then(async (res) => {
             const data = await res.json();
@@ -399,15 +583,22 @@
             return data.data;
           })
           .then((updatedUser) => {
-            user.name = `${updatedUser.first_name} ${updatedUser.last_name}`;
-            user.email = updatedUser.email;
-            localStorage.setItem('dtf_user', JSON.stringify(user));
+            updateLocalUser(updatedUser);
+            // Update originals to new values
+            originalFirstName = updatedUser.first_name || '';
+            originalLastName = updatedUser.last_name || '';
+            originalEmail = updatedUser.email || '';
+            let newPhone = updatedUser.phone || '';
+            if (newPhone.startsWith('+91')) newPhone = newPhone.replace('+91', '');
+            originalPhone = newPhone;
+            originalPhoneFull = updatedUser.phone || '';
+            originalDob = updatedUser.date_of_birth ? updatedUser.date_of_birth.substring(0, 10) : '';
 
             document.getElementById('otp-verify-modal').style.display = 'none';
             successBanner.textContent = '✅ Profile verified and updated successfully!';
             successBanner.style.display = 'block';
-            
-            setTimeout(() => { window.location.href = '../index.html'; }, 1000);
+            renderEditLimitState();
+            setReadOnlyMode();
           })
           .catch((err) => {
             modalError.textContent = err.message;

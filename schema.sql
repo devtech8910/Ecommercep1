@@ -1,5 +1,5 @@
 -- ============================================================
--- DEVTECH FASHION — POSTGRESQL DATABASE SCHEMA
+-- FASHIONCOMPANY FASHION — POSTGRESQL DATABASE SCHEMA
 -- Relational tables supporting multi-address delivery and order logs
 -- ============================================================
 

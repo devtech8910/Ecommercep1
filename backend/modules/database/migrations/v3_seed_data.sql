@@ -1,8 +1,8 @@
 -- Seed Default Users
 INSERT INTO users (id, first_name, last_name, email, phone, password_hash, role)
 VALUES 
-(1, 'System', 'Administrator', 'admin@devtech.com', '9999999999', '$2a$10$V0yU6BghcMeqgJb48/kPauoGZ04gqFz0zQG/t/4zP2dD/3wR2K3xG', 'admin'),
-(2, 'Demo', 'Customer', 'customer@devtech.com', '9876543210', '$2a$10$V0yU6BghcMeqgJb48/kPauoGZ04gqFz0zQG/t/4zP2dD/3wR2K3xG', 'customer')
+(1, 'System', 'Administrator', 'admin@fashioncompany.com', '9999999999', '$2a$10$V0yU6BghcMeqgJb48/kPauoGZ04gqFz0zQG/t/4zP2dD/3wR2K3xG', 'admin'),
+(2, 'Demo', 'Customer', 'customer@fashioncompany.com', '9876543210', '$2a$10$V0yU6BghcMeqgJb48/kPauoGZ04gqFz0zQG/t/4zP2dD/3wR2K3xG', 'customer')
 ON CONFLICT (id) DO NOTHING;
 
 -- Seed Customer Address

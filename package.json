@@ -1,9 +1,10 @@
 {
-  "name": "devtech-fashion-ecommerce",
+  "name": "fashioncompany-fashion-ecommerce",
   "version": "1.0.0",
   "private": true,
-  "description": "DevTech Fashion E-Commerce — Netlify-hosted storefront",
+  "description": "Fashion Company E-Commerce — Netlify-hosted storefront",
   "dependencies": {
-    "@netlify/blobs": "^8.1.0"
+    "@netlify/blobs": "^8.1.0",
+    "bcryptjs": "^3.0.3"
   }
 }

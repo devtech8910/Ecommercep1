@@ -137,7 +137,7 @@ const mensWearItems = [
     imageUrl: "https://images.unsplash.com/photo-1603252109303-2751441dd157?w=800&q=80&fit=crop",
     category: "mens",
     description: "Traditional heavy Oxford cotton shirt with a button-down collar, chest pocket, and signature locker loop.",
-    brand: "DevTech Luxe",
+    brand: "Fashion Company Luxe",
     titleDescription: "Crisp white Oxford cotton dress shirt.",
     sizes: "S, M, L, XL",
     replacementAllowed: true,
@@ -215,7 +215,7 @@ const mensWearItems = [
 // Generate remaining 40 items dynamically to reach exactly 50 total Men's Wear items
 const subCategories = ["Shirt", "Suit", "Trousers", "Jacket", "Polos", "Sweater", "Blazer", "Chinos", "Tee"];
 const fabrics = ["Cotton", "Linen", "Wool", "Denim", "Silk", "Corduroy", "Cashmere"];
-const brands = ["Savile Row", "Loro Piana", "Zegna", "Barbour", "Levi's Premium", "DevTech Luxe"];
+const brands = ["Savile Row", "Loro Piana", "Zegna", "Barbour", "Levi's Premium", "Fashion Company Luxe"];
 const fits = ["Slim Fit", "Regular Fit", "Tailored Fit", "Relaxed Fit"];
 const colors = ["Navy Blue", "Charcoal Grey", "Olive Green", "Ivory White", "Oatmeal Beige", "Burgundy Red", "Classic Black", "Desert Sand"];
 

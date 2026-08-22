@@ -1,6 +1,6 @@
-import pool from 'file:///c:/Users/Purna/OneDrive/Desktop/Ecom/backend/db.js';
+import pool from '../../../db.js';
 
-async function setupTables() {
+export default async function setupTables() {
   try {
     console.log('Creating products and orders tables...');
     
@@ -107,9 +107,6 @@ async function setupTables() {
     console.log('✅ Schema setup complete.');
   } catch (err) {
     console.error('Error setting up tables:', err);
-  } finally {
-    await pool.end();
+    throw err;
   }
 }
-
-setupTables();

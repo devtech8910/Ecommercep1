@@ -1,6 +1,6 @@
 /* ============================================================
-   DEVTECH FASHION — SIGNUP JAVASCRIPT (Nike-Style Multi-Step)
-   Author: DevTech Solutions (Purna Sai & Prabhas)
+   FASHIONCOMPANY FASHION — SIGNUP JAVASCRIPT (Nike-Style Multi-Step)
+   Author: Fashion Company (Purna Sai & Prabhas)
    Version: 1.0.0
    ============================================================ */
 
@@ -155,43 +155,26 @@ document.addEventListener('DOMContentLoaded', () => {
     phoneSubmitBtn.disabled = true;
     if (submitSpan) submitSpan.textContent = 'Verifying...';
 
-    // 1. Check if phone is already registered (local storage + remote API)
+    // 1. Check if phone is already registered through the backend when available.
     let isAlreadyRegistered = false;
 
     try {
-      const registeredUsers = JSON.parse(localStorage.getItem('dtf_registered_users') || '[]');
-      const currentUser = JSON.parse(localStorage.getItem('dtf_user') || 'null');
-      const cleanInput = phoneVal.replace(/[^0-9]/g, '');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-      const matchRegistered = registeredUsers.some(u => u.phone && u.phone.replace(/[^0-9]/g, '').endsWith(cleanInput));
-      const matchCurrent = currentUser && currentUser.phone && currentUser.phone.replace(/[^0-9]/g, '').endsWith(cleanInput);
+      const res = await fetch(`http://localhost:5000/auth/check-phone?phone=${encodeURIComponent(checkPhoneNum)}`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
 
-      if (matchRegistered || matchCurrent) {
-        isAlreadyRegistered = true;
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.exists) {
+          isAlreadyRegistered = true;
+        }
       }
     } catch (err) {
-      console.warn('Local registered users check error:', err);
-    }
-
-    if (!isAlreadyRegistered) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
-
-        const res = await fetch(`http://localhost:5000/auth/check-phone?phone=${encodeURIComponent(checkPhoneNum)}`, {
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        if (res.ok) {
-          const json = await res.json();
-          if (json.success && json.exists) {
-            isAlreadyRegistered = true;
-          }
-        }
-      } catch (err) {
-        console.log('Backend check-phone unreachable, relying on client verification:', err.message);
-      }
+      console.log('Backend check-phone unreachable, relying on server-side registration validation:', err.message);
     }
 
     if (isAlreadyRegistered) {
@@ -211,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sessionStorage.setItem('dtf_signup_otp', generatedPhoneOtp);
 
     // Prompt user with OTP in Alert Section on Webpage
-    alert(`🔑 DevTech Verification Code\n\nYour OTP is: ${generatedPhoneOtp}\n\nPlease enter this 6-digit code on the next screen to verify your phone number.`);
+    alert(`🔑 Fashion Company Verification Code\n\nYour OTP is: ${generatedPhoneOtp}\n\nPlease enter this 6-digit code on the next screen to verify your phone number.`);
 
     if (window.showToast) {
       window.showToast(`Your Verification OTP is: ${generatedPhoneOtp}`, 'info');
@@ -369,22 +352,22 @@ document.addEventListener('DOMContentLoaded', () => {
       emailVerifyTrigger.disabled = true;
       emailVerifyTrigger.textContent = 'Verifying...';
 
-      // 1. Check if email is already registered (local storage + remote API)
+      // 1. Check if email is already registered through the auth API.
       let isAlreadyRegistered = false;
 
       try {
-        const registeredUsers = JSON.parse(localStorage.getItem('dtf_registered_users') || '[]');
-        const currentUser = JSON.parse(localStorage.getItem('dtf_user') || 'null');
-        const cleanEmail = emailVal.toLowerCase();
+        const res = await fetch(`/.netlify/functions/auth?email=${encodeURIComponent(emailVal)}`, {
+          headers: { Accept: 'application/json' }
+        });
 
-        const matchRegistered = registeredUsers.some(u => u.email && u.email.toLowerCase() === cleanEmail);
-        const matchCurrent = currentUser && currentUser.email && currentUser.email.toLowerCase() === cleanEmail;
-
-        if (matchRegistered || matchCurrent) {
-          isAlreadyRegistered = true;
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.exists) {
+            isAlreadyRegistered = true;
+          }
         }
       } catch (err) {
-        console.warn('Local registered users check error:', err);
+        console.log('Cloud check-email unreachable, trying local backend:', err.message);
       }
 
       if (!isAlreadyRegistered) {
@@ -404,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
         } catch (err) {
-          console.log('Backend check-email unreachable, relying on client verification:', err.message);
+          console.log('Backend check-email unreachable, relying on server-side registration validation:', err.message);
         }
       }
 
@@ -426,14 +409,14 @@ document.addEventListener('DOMContentLoaded', () => {
           emailjs.send(OTP_CONFIG.emailjs.serviceId, OTP_CONFIG.emailjs.templateId, {
             to_email: emailVal,
             otp_code: generatedEmailOtp,
-            to_name: 'DevTech Member'
+            to_name: 'Fashion Company Member'
           });
-          console.log(`[DevTech] Realtime Email OTP sent to ${emailVal} via EmailJS: ${generatedEmailOtp}`);
+          console.log(`[Fashion Company] Realtime Email OTP sent to ${emailVal} via EmailJS: ${generatedEmailOtp}`);
         } catch (err) {
           console.warn('EmailJS transmission note:', err);
         }
       } else {
-        console.log(`[DevTech] Realtime Email OTP generated for ${emailVal}: ${generatedEmailOtp}`);
+        console.log(`[Fashion Company] Realtime Email OTP generated for ${emailVal}: ${generatedEmailOtp}`);
       }
 
       setTimeout(() => {
@@ -497,14 +480,14 @@ document.addEventListener('DOMContentLoaded', () => {
           await emailjs.send(OTP_CONFIG.emailjs.serviceId, OTP_CONFIG.emailjs.templateId, {
             to_email: emailVal,
             otp_code: generatedEmailOtp,
-            to_name: 'DevTech Member'
+            to_name: 'Fashion Company Member'
           });
-          console.log(`[DevTech] Resent Email OTP to ${emailVal} via EmailJS: ${generatedEmailOtp}`);
+          console.log(`[Fashion Company] Resent Email OTP to ${emailVal} via EmailJS: ${generatedEmailOtp}`);
         } catch (err) {
           console.warn('EmailJS resend failed:', err);
         }
       } else {
-        console.log(`[DevTech] Resent Email OTP for ${emailVal}: ${generatedEmailOtp}`);
+        console.log(`[Fashion Company] Resent Email OTP for ${emailVal}: ${generatedEmailOtp}`);
       }
 
       // Restart 60-second cooldown
@@ -647,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
-  detailsForm.addEventListener('submit', (e) => {
+  detailsForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     let isDetailsValid = true;
 
@@ -707,28 +690,11 @@ document.addEventListener('DOMContentLoaded', () => {
         email: emailInput.value.trim(),
         phone: verifiedPhoneNumber,
         dob: dobInput.value,
-        password: passwordInput.value,
-        role: 'customer',
-        token: 'dtf_token_' + Date.now()
+        role: 'customer'
       };
 
-      // Store logged in user & update registered users array in localStorage
-      localStorage.setItem('dtf_user', JSON.stringify(userObj));
-      localStorage.setItem('token', userObj.token);
-
       try {
-        const registeredUsers = JSON.parse(localStorage.getItem('dtf_registered_users') || '[]');
-        registeredUsers.push(userObj);
-        localStorage.setItem('dtf_registered_users', JSON.stringify(registeredUsers));
-      } catch (err) {
-        console.warn('Failed to update dtf_registered_users:', err);
-      }
-
-      // Sync registration to Netlify Serverless Cloud Auth DB & Direct Cloud DB (Works 24/7 globally across Mobile & PC)
-      const CLOUD_DB_URL = 'https://jsonblob.com/api/jsonBlob/019f9cba-929a-7931-ad23-922a9b668aa9';
-      
-      try {
-        fetch('/.netlify/functions/auth?action=register', {
+        const response = await fetch('/.netlify/functions/auth?action=register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -737,26 +703,31 @@ document.addEventListener('DOMContentLoaded', () => {
             email: userObj.email,
             phone: userObj.phone,
             dob: userObj.dob,
-            password: userObj.password
+            password: passwordInput.value
           })
-        }).catch(e => {});
+        });
 
-        // Direct Cloud DB Sync (Guarantees multi-device cross-platform account creation)
-        fetch(CLOUD_DB_URL, { headers: { 'Accept': 'application/json' } })
-          .then(res => res.json())
-          .then(cloudUsers => {
-            if (Array.isArray(cloudUsers)) {
-              if (!cloudUsers.some(u => u.email && u.email.toLowerCase() === userObj.email.toLowerCase())) {
-                cloudUsers.push(userObj);
-                fetch(CLOUD_DB_URL, {
-                  method: 'PUT',
-                  headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                  body: JSON.stringify(cloudUsers)
-                });
-              }
-            }
-          }).catch(e => {});
-      } catch (err) {}
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.success || !result.user || !result.token) {
+          throw new Error((result.errors && result.errors[0]) || result.error || 'Account creation failed.');
+        }
+
+        const { token, password, password_hash, passwordHash, ...safeUserData } = result.user || {};
+        const sessionObj = {
+          ...safeUserData,
+          role: safeUserData.role || 'customer'
+        };
+
+        localStorage.setItem('dtf_user', JSON.stringify(sessionObj));
+        localStorage.removeItem('token');
+        localStorage.removeItem('dtf_token');
+        window.dispatchEvent(new Event('dtf:auth:updated'));
+      } catch (err) {
+        detailsSubmitBtn.disabled = false;
+        if (submitSpan) submitSpan.textContent = 'Create Account';
+        showError(emailInput, emailErr, err.message || 'Account creation failed. Please try again.');
+        return;
+      }
 
       if (submitSpan) submitSpan.textContent = 'Account Setup Complete!';
       setTimeout(() => {

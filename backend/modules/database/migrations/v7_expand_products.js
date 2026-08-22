@@ -1,12 +1,12 @@
 import pool from '../../../db.js';
 
-async function expand() {
+export default async function expand() {
   try {
     console.log('Altering products table to add extended attributes...');
     
     await pool.query(`
       ALTER TABLE products 
-      ADD COLUMN IF NOT EXISTS brand VARCHAR(100) DEFAULT 'DevTech',
+      ADD COLUMN IF NOT EXISTS brand VARCHAR(100) DEFAULT 'Fashion Company',
       ADD COLUMN IF NOT EXISTS title_description TEXT NULL,
       ADD COLUMN IF NOT EXISTS mrp DECIMAL(10,2) DEFAULT 0,
       ADD COLUMN IF NOT EXISTS sizes VARCHAR(100) DEFAULT 'S, M, L',
@@ -24,7 +24,7 @@ async function expand() {
     // Update Midnight Blue Tuxedo
     await pool.query(`
       UPDATE products SET
-        brand = 'DevTech Premium',
+        brand = 'Fashion Company Premium',
         title_description = 'Slim fit designer cut with premium wool blend finish. Satin peak lapels.',
         mrp = 35712.00,
         sizes = 'S, M, L',
@@ -41,7 +41,7 @@ async function expand() {
     // Update Oxford Classic Shirt
     await pool.query(`
       UPDATE products SET
-        brand = 'DevTech Casuals',
+        brand = 'Fashion Company Casuals',
         title_description = 'Pure organic cotton build. Classic button-down collar.',
         mrp = 4999.00,
         sizes = 'S, M, L',
@@ -58,9 +58,6 @@ async function expand() {
     console.log('✅ Alterations and updates completed successfully.');
   } catch (err) {
     console.error('Alterations failed:', err);
-  } finally {
-    pool.end();
+    throw err;
   }
 }
-
-expand();
