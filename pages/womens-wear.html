@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Women's Wear — DevTech Fashion</title>
+    <title>Women's Wear — Fashion Company</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -123,7 +123,7 @@
           
           <!-- Left: Filter Trigger Button -->
           <div style="display: flex; align-items: center; gap: 12px;">
-            <button type="button" id="open-filter-btn" style="padding: 10px 22px; border-radius: 14px; font-size: 14px; font-weight: 800; background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.25)); border: 1.5px solid rgba(99, 102, 241, 0.4); color: #ffffff; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2); transition: all 0.2s ease;">
+            <button type="button" id="open-filter-btn" style="padding: 10px 22px; border-radius: 9999px; font-size: 14px; font-weight: 800; background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.25)); border: 1.5px solid rgba(99, 102, 241, 0.4); color: #ffffff; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2); transition: all 0.2s ease;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
               <span>Filters</span>
               <span id="active-filter-badge" style="display: none; background: #6366f1; color: white; border-radius: 99px; padding: 2px 8px; font-size: 11px; font-weight: 800;">0</span>
@@ -275,7 +275,7 @@
               <div class="filter-accordion-content active">
                 <div class="filter-price-inputs">
                   <input type="number" id="price-min-input" class="filter-price-input" placeholder="Min ₹" min="0" step="500" />
-                  <span style="color: #64748b; font-weight: bold;">to</span>
+                  <span class="filter-price-divider">to</span>
                   <input type="number" id="price-max-input" class="filter-price-input" placeholder="Max ₹" min="0" step="500" />
                 </div>
               </div>
@@ -299,10 +299,10 @@
 
           <!-- Drawer Footer -->
           <div class="filter-drawer-footer">
-            <button type="button" id="reset-drawer-filters-btn" style="flex: 1; padding: 13px; border: 1.5px solid rgba(255,255,255,0.15); background: transparent; border-radius: 14px; font-size: 13.5px; font-weight: 700; color: #94a3b8; cursor: pointer;">
+            <button type="button" id="reset-drawer-filters-btn" class="filter-btn-reset">
               Reset All
             </button>
-            <button type="button" id="apply-drawer-filters-btn" style="flex: 2; padding: 13px; border: none; background: linear-gradient(135deg, #6366f1, #4f46e5); border-radius: 14px; font-size: 13.5px; font-weight: 800; color: #ffffff; cursor: pointer; box-shadow: 0 4px 16px rgba(99,102,241,0.35);">
+            <button type="button" id="apply-drawer-filters-btn" class="filter-btn-apply">
               Apply Filters
             </button>
           </div>
@@ -314,7 +314,7 @@
     <!-- Footer -->
     <footer class="footer" style="padding-top: 60px; border-top: 1px solid rgba(255,255,255,0.08);">
       <div class="container text-center" style="padding-bottom: 40px; color: rgba(255,255,255,0.6);">
-        <p>&copy; 2026 DevTech Solutions. All rights reserved.</p>
+        <p>&copy; 2026 Fashion Company. All rights reserved.</p>
         <p style="margin-top: 10px;"><a href="../index.html" style="color: #818cf8; text-decoration: none; font-weight: 700;">← Back to Home</a></p>
       </div>
     <!-- Dedicated Mobile Bottom Navigation Bar (Mobile Only) -->
@@ -342,19 +342,14 @@
     </nav>
 
     <!-- Custom JavaScript -->
+    <script src="../js/utils.js"></script>
     <script src="../js/script.js"></script>
     <script src="../js/mobile-ui.js"></script>
+    <script src="../js/filter-drawer.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
         document.documentElement.setAttribute('data-theme', 'dark');
 
-        document.querySelectorAll('.filter-accordion-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            btn.classList.toggle('active');
-            const content = btn.nextElementSibling;
-            if (content) content.classList.toggle('active');
-          });
-        });
 
         const apiUrl = window.dtfApiUrl || ((path) => {
           const host = window.location.hostname;
@@ -375,12 +370,14 @@
           const rawImages = window.dtfSplitImages ? window.dtfSplitImages(p.image_url || p.image || p.imageUrl || '') : (p.image_url || p.image || p.imageUrl || '').split(',');
           const imageRaw = rawImages[0] ? rawImages[0].trim() : '';
           return {
+            ...p,
             id: p.id || p.pid || ('w_' + Math.random()),
+            pid: p.pid || p.id,
             title: p.title,
             price: parseFloat(p.price || 0),
             mrp: parseFloat(p.mrp || 0),
             category: p.category,
-            brand: p.brand || 'DevTech Collection',
+            brand: p.brand || 'Fashion Company Collection',
             sizes: p.sizes || 'S, M, L, XL',
             image: (window.dtfNormalizeImageUrl ? window.dtfNormalizeImageUrl(imageRaw) : imageRaw)
           };
@@ -402,7 +399,7 @@
           if (!brandContainer) return;
           const brandsSet = new Set(allProducts.map(p => p.brand).filter(Boolean));
           brandContainer.innerHTML = '';
-          if (brandsSet.size === 0) brandsSet.add('DevTech Collection');
+          if (brandsSet.size === 0) brandsSet.add('Fashion Company Collection');
           brandsSet.forEach(brand => {
             const label = document.createElement('label');
             label.className = 'filter-checkbox-item';
@@ -449,7 +446,7 @@
                 }
                 return [];
               } catch (err) {
-                console.warn('[DevTech Store] Cloud fetch attempt ' + attempt + ' failed:', err.message);
+                console.warn('[Fashion Company Store] Cloud fetch attempt ' + attempt + ' failed:', err.message);
                 if (attempt < maxAttempts) {
                   await new Promise(r => setTimeout(r, 1500 * attempt));
                 }
@@ -460,7 +457,7 @@
 
           fetchCloudWithRetry(3).then(cloudProducts => {
             if (cloudProducts === null) {
-              console.log('[DevTech Store] All cloud fetch attempts failed. Not using local product cache.');
+              console.log('[Fashion Company Store] All cloud fetch attempts failed. Not using local product cache.');
               allProducts = [];
               localStorage.removeItem('dtf_admin_products');
               if (grid) grid.style.display = 'none';
@@ -493,8 +490,6 @@
         const searchInput = document.getElementById('nav-search-input');
         const sortSelect = document.getElementById('sort-select');
         const drawerOverlay = document.getElementById('filter-drawer-overlay');
-        const openFilterBtn = document.getElementById('open-filter-btn');
-        const closeFilterBtn = document.getElementById('close-filter-drawer');
         const applyFilterBtn = document.getElementById('apply-drawer-filters-btn');
         const resetFilterBtn = document.getElementById('reset-drawer-filters-btn');
         const clearAllFiltersBtn = document.getElementById('clear-all-filters-btn');
@@ -506,11 +501,6 @@
           if (searchInput) searchInput.value = searchQuery;
         }
 
-        openFilterBtn.addEventListener('click', () => drawerOverlay.classList.add('active'));
-        closeFilterBtn.addEventListener('click', () => drawerOverlay.classList.remove('active'));
-        drawerOverlay.addEventListener('click', (e) => {
-          if (e.target === drawerOverlay) drawerOverlay.classList.remove('active');
-        });
 
         function updateFilterBadge() {
           let count = 0;
@@ -590,10 +580,16 @@
             const discPercent = mrpVal > priceVal ? Math.round(((mrpVal - priceVal) / mrpVal) * 100) : 0;
             const offerPay = Math.max(1, Math.round(priceVal * 0.95));
 
-            const wishlist = JSON.parse(localStorage.getItem('dtf_wishlist') || '[]');
+            const wishlistKey = (window.getUserStorageKey ? window.getUserStorageKey('dtf_wishlist') : 'dtf_wishlist');
+            const wishlist = JSON.parse(localStorage.getItem(wishlistKey) || '[]');
             const isWishlisted = wishlist.some(item => item.title === p.title);
 
             const imgSrc = p.image || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop';
+            card.addEventListener('click', (event) => {
+              if (event.target.closest('a[href*="product-details.html"]')) {
+                try { sessionStorage.setItem('dtf_selected_product', JSON.stringify(p)); } catch {}
+              }
+            });
             card.innerHTML = `
               <div style="position: relative; width: 100%; padding-top: 110%; overflow: hidden; background: #0a0a14;">
                 <a href="${detailsUrl}" style="position: absolute; inset: 0; display: block;">
@@ -610,7 +606,7 @@
               </div>
 
               <div style="padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 4px; flex-grow: 1; font-family: 'Inter', sans-serif;">
-                <span style="font-size: 12.5px; font-weight: 800; text-transform: uppercase; color: #f0f0f5; letter-spacing: 0.04em;">${p.brand || 'DevTech'}</span>
+                <span style="font-size: 12.5px; font-weight: 800; text-transform: uppercase; color: #f0f0f5; letter-spacing: 0.04em;">${p.brand || 'Fashion Company'}</span>
                 
                 <a href="${detailsUrl}" style="text-decoration: none; color: inherit;">
                   <h3 style="margin: 0; font-size: 13.5px; font-weight: 600; color: #a1a1aa; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.35; min-height: 36px;">${p.title}</h3>
@@ -647,32 +643,31 @@
             `;
 
             card.querySelector('.btn-add-cart').addEventListener('click', () => {
-              const cart = JSON.parse(localStorage.getItem('dtf_cart') || '[]');
+              const cartKey = (window.getUserStorageKey ? window.getUserStorageKey('dtf_cart') : 'dtf_cart');
+              const cart = JSON.parse(localStorage.getItem(cartKey) || '[]');
               const existingIdx = cart.findIndex(item => item.title === p.title);
               if (existingIdx > -1) {
                 cart[existingIdx].quantity = (cart[existingIdx].quantity || 1) + 1;
               } else {
-                cart.push({ title: p.title, price: p.price, image: p.image, quantity: 1 });
+                cart.push({ id: p.id || p.pid || 1, pid: p.pid || p.id || 1, title: p.title, price: p.price, image: p.image, size: 'M', quantity: 1 });
               }
-              localStorage.setItem('dtf_cart', JSON.stringify(cart));
+              localStorage.setItem(cartKey, JSON.stringify(cart));
               window.dispatchEvent(new Event('dtf:cart:updated'));
-              alert(`🛒 "${p.title}" added to your Cart!`);
             });
 
             card.querySelector('.btn-add-wishlist').addEventListener('click', (e) => {
               const btn = e.currentTarget;
-              const wishlist = JSON.parse(localStorage.getItem('dtf_wishlist') || '[]');
+              const wishlistKey = (window.getUserStorageKey ? window.getUserStorageKey('dtf_wishlist') : 'dtf_wishlist');
+              const wishlist = JSON.parse(localStorage.getItem(wishlistKey) || '[]');
               const idx = wishlist.findIndex(item => item.title === p.title);
               if (idx > -1) {
                 wishlist.splice(idx, 1);
                 btn.textContent = '🤍';
-                alert(`💔 Removed "${p.title}" from Wishlist.`);
               } else {
                 wishlist.push({ title: p.title, price: p.price, image: p.image });
                 btn.textContent = '💖';
-                alert(`💖 "${p.title}" saved to Wishlist!`);
               }
-              localStorage.setItem('dtf_wishlist', JSON.stringify(wishlist));
+              localStorage.setItem(wishlistKey, JSON.stringify(wishlist));
               window.dispatchEvent(new Event('dtf:wishlist:updated'));
             });
 
@@ -689,7 +684,7 @@
           selectedSizes = Array.from(document.querySelectorAll('.size-cb:checked')).map(cb => cb.value);
           selectedBrands = Array.from(document.querySelectorAll('.brand-cb:checked')).map(cb => cb.value);
 
-          drawerOverlay.classList.remove('active');
+          if (window.closeFilterDrawer) window.closeFilterDrawer();
           filterAndSortProducts();
         });
 
