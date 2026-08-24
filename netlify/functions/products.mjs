@@ -80,7 +80,13 @@ async function parseJsonBody(request) {
   try {
     return await request.json();
   } catch {
-    return {};
+    // Fallback: try reading as text and parsing manually
+    try {
+      const text = await request.text();
+      return text ? JSON.parse(text) : {};
+    } catch {
+      return {};
+    }
   }
 }
 
