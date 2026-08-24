@@ -1029,7 +1029,8 @@
             const discPercent = mrpVal > priceVal ? Math.round(((mrpVal - priceVal) / mrpVal) * 100) : 0;
             const prodId = p.id || p.pid || '';
             const detailsUrl = `pages/product-details.html?id=${encodeURIComponent(prodId)}&title=${encodeURIComponent(p.title || '')}`;
-            const pEncoded = encodeURIComponent(JSON.stringify(p));
+            // encodeURIComponent does not escape single quotes, which breaks the onclick attribute
+            const pEncoded = encodeURIComponent(JSON.stringify(p)).replace(/'/g, "%27");
 
             const card = document.createElement('article');
             card.className = 'product-card-wow';
