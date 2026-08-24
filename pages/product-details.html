@@ -1864,21 +1864,6 @@
               hasRenderedProduct = true;
             }
           }
-          
-          // Debug panel injection
-          try {
-            const debugPanel = document.createElement('div');
-            debugPanel.style.cssText = 'position: fixed; top: 10px; left: 10px; background: rgba(255,0,0,0.8); color: white; padding: 10px; z-index: 99999; font-size: 12px; pointer-events: none; border-radius: 8px; font-family: monospace; max-width: 400px; word-break: break-all;';
-            debugPanel.innerHTML = `
-              <b>URL ID:</b> ${cleanId}<br>
-              <b>URL Title:</b> ${cleanTitle}<br>
-              <b>Matched:</b> ${liveProduct ? liveProduct.title : 'NULL'}<br>
-              <b>Admin Products Count:</b> ${JSON.parse(localStorage.getItem('dtf_admin_products') || '[]').length}<br>
-              <b>Remembered:</b> ${getRememberedProduct() ? getRememberedProduct().title : 'NULL'}<br>
-              <b>Href:</b> ${window.location.href}
-            `;
-            document.body.appendChild(debugPanel);
-          } catch(e) {}
         }
 
         addEv('rating-scroll-btn', 'click', () => { const s = document.getElementById('ratings-reviews-section'); if (s) s.scrollIntoView({ behavior: 'smooth' }); });
