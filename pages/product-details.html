@@ -68,7 +68,7 @@
 
       .product-main-layout {
         display: grid;
-        grid-template-columns: minmax(420px, 0.95fr) minmax(420px, 1.05fr);
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
         gap: 24px;
         align-items: flex-start;
       }
@@ -128,9 +128,10 @@
         border: 1.5px solid rgba(148, 163, 184, 0.24);
         border-radius: 6px;
         background: #0b0d18;
-        padding: 4px;
+        padding: 3px;
         cursor: pointer;
         transition: border-color 0.16s ease, box-shadow 0.16s ease;
+        overflow: hidden;
       }
 
       .thumb-btn.active,
@@ -142,7 +143,8 @@
       .thumb-btn img {
         width: 100%;
         height: 100%;
-        object-fit: contain;
+        object-fit: cover;
+        border-radius: 4px;
         display: block;
       }
 
@@ -151,8 +153,8 @@
         width: 100%;
         aspect-ratio: 4 / 5;
         padding-top: 0;
-        background: #0b0d18;
-        border-radius: 8px;
+        background: #0d0f1d;
+        border-radius: 12px;
         overflow: hidden;
         border: 1px solid rgba(148, 163, 184, 0.16);
       }
@@ -161,24 +163,29 @@
         position: absolute;
         inset: 0;
         display: flex;
+        width: 100%;
+        height: 100%;
         transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       }
 
-      #image-carousel-container img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        flex-shrink: 0;
-        background: #0b0d18;
-      }
-
       .gallery-slide {
-        min-width: 100%;
+        flex: 0 0 100%;
+        width: 100%;
+        max-width: 100%;
         height: 100%;
         position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
+      }
+
+      #image-carousel-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center center;
+        display: block;
       }
 
       .carousel-control {
@@ -719,14 +726,16 @@
       .similar-product-image {
         aspect-ratio: 4 / 5;
         background: #0b0d18;
-        padding: 10px;
+        padding: 0;
+        overflow: hidden;
       }
 
       .similar-product-image img {
         width: 100%;
         height: 100%;
-        object-fit: contain;
+        object-fit: cover;
         display: block;
+        transition: transform 0.3s ease;
       }
 
       .similar-product-info {
@@ -833,9 +842,10 @@
           width: 58px;
           height: 72px;
           flex: 0 0 58px;
+          padding: 2px;
         }
         .image-viewer {
-          aspect-ratio: 1 / 1.12;
+          aspect-ratio: 4 / 5;
         }
         .info-col {
           width: 100%;
@@ -1487,11 +1497,11 @@
               if (categoryPill) categoryPill.textContent = 'Unavailable';
               const sizeContainer = document.querySelector('.size-selector');
               if (sizeContainer) sizeContainer.innerHTML = '';
-              const imgContainer = document.getElementById('product-images-container');
+              const imgContainer = document.getElementById('image-carousel-container');
               if (imgContainer) imgContainer.innerHTML = '<div class="gallery-slide"><div style="color:#94a3b8;font-weight:700;">Product image unavailable</div></div>';
               const dotsContainer = document.getElementById('carousel-dots');
               if (dotsContainer) dotsContainer.innerHTML = '';
-              const thumbnailStrip = document.getElementById('product-thumbnails');
+              const thumbnailStrip = document.getElementById('thumbnail-strip');
               if (thumbnailStrip) thumbnailStrip.innerHTML = '';
               const couponsSection = document.getElementById('coupons-section');
               if (couponsSection) couponsSection.style.display = 'none';
@@ -1854,6 +1864,21 @@
               hasRenderedProduct = true;
             }
           }
+          
+          // Debug panel injection
+          try {
+            const debugPanel = document.createElement('div');
+            debugPanel.style.cssText = 'position: fixed; top: 10px; left: 10px; background: rgba(255,0,0,0.8); color: white; padding: 10px; z-index: 99999; font-size: 12px; pointer-events: none; border-radius: 8px; font-family: monospace; max-width: 400px; word-break: break-all;';
+            debugPanel.innerHTML = `
+              <b>URL ID:</b> ${cleanId}<br>
+              <b>URL Title:</b> ${cleanTitle}<br>
+              <b>Matched:</b> ${liveProduct ? liveProduct.title : 'NULL'}<br>
+              <b>Admin Products Count:</b> ${JSON.parse(localStorage.getItem('dtf_admin_products') || '[]').length}<br>
+              <b>Remembered:</b> ${getRememberedProduct() ? getRememberedProduct().title : 'NULL'}<br>
+              <b>Href:</b> ${window.location.href}
+            `;
+            document.body.appendChild(debugPanel);
+          } catch(e) {}
         }
 
         addEv('rating-scroll-btn', 'click', () => { const s = document.getElementById('ratings-reviews-section'); if (s) s.scrollIntoView({ behavior: 'smooth' }); });
