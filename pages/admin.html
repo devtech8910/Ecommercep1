@@ -3792,8 +3792,8 @@ void main() {
               sizeStock, couponApplicable
             };
 
-            // Try to save to Netlify cloud function first (production catalog).
-            // If cloud is unreachable, fall back to local storage + local backend.
+            // CLOUD FIRST: Save to Netlify serverless function (the single source of truth).
+            // The cloud assigns the authoritative product ID for new products.
             let savedProduct = null;
             let cloudSaveError = null;
             try {
@@ -3819,36 +3819,38 @@ void main() {
               }
               if (cloudRes.ok && cloudResult.success && cloudResult.product) {
                 savedProduct = cloudResult.product;
-                console.log(`[Fashion Company Admin] Product ${id ? 'updated' : 'created'} in cloud:`, savedProduct.id);
+                console.log(`[DevTech Admin] Product ${id ? 'updated' : 'created'} in cloud:`, savedProduct.id);
               } else {
                 cloudSaveError = cloudResult.error || `Production API returned ${cloudRes.status}`;
-                console.warn('[Fashion Company Admin] Cloud save failed, will save locally:', cloudSaveError);
+                console.error('[DevTech Admin] Cloud save failed:', cloudSaveError);
               }
             } catch (cloudErr) {
               cloudSaveError = cloudErr.message;
-              console.warn('[Fashion Company Admin] Cloud unreachable, will save locally:', cloudErr.message);
+              console.error('[DevTech Admin] Cloud save error:', cloudErr.message);
             }
 
-            // Generate a local product ID if cloud didn't provide one
-            const prodIdVal = (savedProduct && (savedProduct.id || savedProduct.pid)) || id || ('prod_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6));
+            // If cloud save failed, show error and stop — do not silently save to localStorage only
+            if (!savedProduct) {
+              modalError.textContent = `❌ Failed to save product to production catalog: ${cloudSaveError || 'Unknown error'}. The product was not saved.`;
+              modalError.style.display = 'block';
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Save Product';
+              return;
+            }
 
-            // Try to sync to local backend DB (best-effort)
+            // ALSO try to sync to local DB (optional, best-effort only)
             try {
               const localMethod = id ? 'PUT' : 'POST';
               const localUrl = id ? `http://localhost:5000/admin/products/${id}` : 'http://localhost:5000/admin/products';
-              const localRes = await fetch(localUrl, {
+              await fetch(localUrl, {
                 method: localMethod,
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user ? user.token : ''}` },
-                body: JSON.stringify({ id: prodIdVal, pid: prodIdVal, ...payload }),
-                signal: AbortSignal.timeout(3000)
+                body: JSON.stringify({ id: savedProduct.id, pid: savedProduct.pid, ...payload }),
+                signal: AbortSignal.timeout(2000)
               });
-              if (localRes.ok) {
-                console.log('[Fashion Company Admin] Product synced to local backend DB.');
-              }
-            } catch (e) {
-              console.warn('[Fashion Company Admin] Local backend offline, saved to localStorage only.');
-            }
+            } catch (e) { /* Local DB offline — that's fine, cloud is the source of truth */ }
 
+            const prodIdVal = (savedProduct && (savedProduct.id || savedProduct.pid)) || id || ('prod_' + Date.now());
             const newProductObj = {
               ...(savedProduct || {}),
               id: prodIdVal,
@@ -3891,18 +3893,6 @@ void main() {
 
             localStorage.setItem('dtf_admin_products', JSON.stringify(cachedProducts));
             window.dispatchEvent(new Event('dtf:admin:products:updated'));
-
-            // Show a brief warning if cloud sync failed but product was saved locally
-            if (cloudSaveError) {
-              console.warn('[Fashion Company Admin] Product saved locally. Cloud sync pending.');
-              // Brief non-blocking toast — product IS saved
-              const toast = document.createElement('div');
-              toast.textContent = '⚠️ Product saved locally. Cloud sync will happen on next deploy.';
-              toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#ff9800;color:#fff;padding:12px 24px;border-radius:8px;z-index:100000;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
-              document.body.appendChild(toast);
-              setTimeout(() => toast.remove(), 4000);
-            }
-
             closeModal();
             updateCategoryCounts();
             filterAndRenderProducts();
