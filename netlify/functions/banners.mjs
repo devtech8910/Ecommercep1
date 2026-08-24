@@ -147,7 +147,7 @@ async function requireAdmin(request) {
 
 export default async function handler(request) {
   if (request.method === 'OPTIONS') {
-    return new Response('', { status: 204, headers: CORS_HEADERS });
+    return new Response('', { status: 200, headers: CORS_HEADERS });
   }
 
   if (request.method === 'GET') {
