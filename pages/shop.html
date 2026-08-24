@@ -72,6 +72,25 @@
         color: #a5b4fc;
         transform: translateX(4px);
       }
+      .shop-carousel-card-img-wrap {
+        width: 100%;
+        aspect-ratio: 3 / 4;
+        overflow: hidden;
+        position: relative;
+        background: #0d0e1a;
+        border-radius: 18px 18px 0 0;
+      }
+      .product-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top;
+        display: block;
+        transition: transform 0.4s ease;
+      }
+      .shop-carousel-card:hover .product-card-img {
+        transform: scale(1.05);
+      }
     </style>
   </head>
   <body>
@@ -317,11 +336,11 @@
 
             <!-- 2. BRAND ACCORDION -->
             <div class="filter-accordion">
-              <button type="button" class="filter-accordion-btn active">
+              <button type="button" class="filter-accordion-btn">
                 <span>BRAND</span>
                 <svg class="accordion-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
               </button>
-              <div class="filter-accordion-content active">
+              <div class="filter-accordion-content">
                 <div id="brands-checkbox-container" class="filter-checkbox-list">
                   <!-- Dynamically populated -->
                 </div>
@@ -346,11 +365,11 @@
 
             <!-- 4. PRICE RANGE ACCORDION -->
             <div class="filter-accordion">
-              <button type="button" class="filter-accordion-btn active">
+              <button type="button" class="filter-accordion-btn">
                 <span>PRICE RANGE (₹)</span>
                 <svg class="accordion-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
               </button>
-              <div class="filter-accordion-content active">
+              <div class="filter-accordion-content">
                 <div class="filter-price-inputs">
                   <input type="number" id="price-min-input" class="filter-price-input" placeholder="Min ₹" min="0" step="500" />
                   <span class="filter-price-divider">to</span>
@@ -590,9 +609,9 @@
             }
           });
           card.innerHTML = `
-            <div style="position: relative; width: 100%; padding-top: 110%; overflow: hidden; background: #0a0a14;">
-              <a href="${detailsUrl}" style="position: absolute; inset: 0; display: block;">
-                <img src="${imgSrc}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;" alt="${p.title}" class="product-card-img" />
+            <div class="shop-carousel-card-img-wrap" style="position: relative; width: 100%; aspect-ratio: 3 / 4; overflow: hidden; background: #0d0e1a; border-radius: 18px 18px 0 0;">
+              <a href="${detailsUrl}" style="position: absolute; inset: 0; display: block; width: 100%; height: 100%;">
+                <img src="${imgSrc}" style="width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; transition: transform 0.4s ease;" alt="${p.title}" class="product-card-img" />
               </a>
               
               <span style="position: absolute; top: 10px; left: 10px; background: rgba(10,10,20,0.7); backdrop-filter: blur(8px); color: #9ca3af; border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; pointer-events: none; border: 1px solid rgba(255,255,255,0.1);">

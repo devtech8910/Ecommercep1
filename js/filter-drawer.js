@@ -39,9 +39,21 @@
     overlay.addEventListener('click', function(e) {
       var btn = e.target.closest('.filter-accordion-btn');
       if (btn) {
-        btn.classList.toggle('active');
-        var content = btn.nextElementSibling;
-        if (content) content.classList.toggle('active');
+        var isOpening = !btn.classList.contains('active');
+        
+        // Close all other accordions
+        var allBtns = overlay.querySelectorAll('.filter-accordion-btn');
+        allBtns.forEach(function(b) {
+          b.classList.remove('active');
+          if (b.nextElementSibling) b.nextElementSibling.classList.remove('active');
+        });
+
+        // Open the clicked one if it was previously closed
+        if (isOpening) {
+          btn.classList.add('active');
+          var content = btn.nextElementSibling;
+          if (content) content.classList.add('active');
+        }
       }
     });
 

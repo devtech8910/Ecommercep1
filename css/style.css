@@ -3503,6 +3503,7 @@ iframe {
   border-radius: 14px;
   overflow: hidden;
   transition: border-color 0.2s ease;
+  flex-shrink: 0;
 }
 
 .filter-accordion:hover {
@@ -4049,6 +4050,41 @@ iframe {
   border-color: rgba(99, 102, 241, 0.4);
   transform: translateY(-6px);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* ============================================================
+   PRODUCT CARD IMAGE & ASPECT RATIO STANDARDS (R1)
+   ============================================================ */
+.product-card-img-wrap,
+.shop-carousel-card-img-wrap,
+.wishlist-card-img-wrap,
+.category-product-card-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: #0d0e1a;
+  border-radius: 18px 18px 0 0;
+}
+
+.product-card-img,
+.product-card-img-wrap img,
+.shop-carousel-card-img-wrap img,
+.wishlist-card-img-wrap img,
+.category-product-card-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.product-card-wow:hover .product-card-img,
+.shop-carousel-card:hover .product-card-img,
+.wishlist-card:hover .product-card-img,
+.product-card:hover .product-card-img {
+  transform: scale(1.05);
 }
 
 .scroll-btn {
