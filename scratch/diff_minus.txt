@@ -1,0 +1,41 @@
+    feat: implement clean two-option delivery location selector sheet and forms with alternateMobile support
+diff --git a/index.html b/index.html
+--- a/index.html
+@@ -47,11 +47,7 @@
+     ========================================= -->
+       <nav class="nav-container" aria-label="Main Navigation">
+-        <!-- Logo -->
+-        <a href="index.html" class="nav-logo" aria-label="DevTech Fashion Home">
+-          <span class="logo-mark" aria-hidden="true">DT</span>
+-          <span class="logo-text">DevTech <em>Fashion</em></span>
+-        </a>
++        <!-- Logo Removed -->
+         <!-- Desktop Nav Links -->
+         <ul class="nav-links" role="list" id="nav-links">
+@@ -91,14 +87,13 @@
+           <a href="pages/login.html" class="btn btn-ghost" id="login-btn">Login</a>
+           <a href="pages/signup.html" class="btn btn-primary" id="signup-btn">Sign Up</a>
++          <!-- Mobile Hamburger -->
++          <button class="hamburger" id="hamburger" aria-label="Toggle Menu" aria-expanded="false" aria-controls="mobile-menu">
++            <span class="ham-bar"></span>
++            <span class="ham-bar"></span>
++            <span class="ham-bar"></span>
+-
+-        <!-- Mobile Hamburger -->
+-        <button class="hamburger" id="hamburger" aria-label="Toggle Menu" aria-expanded="false" aria-controls="mobile-menu">
+-          <span class="ham-bar"></span>
+-          <span class="ham-bar"></span>
+-          <span class="ham-bar"></span>
+-        </button>
+       <!-- Mobile Menu -->
+@@ -120,6 +115,13 @@
++    <!-- Delivery Location Sub-Bar (React Mount) -->
++    <div class="location-subbar">
++      <div class="location-subbar-container">
++        <div id="react-address-picker-root"></div>
+     <!-- ========================================
+     ========================================= -->
+@@ -634,5 +636,35 @@
+     <!-- Scripts -->
++    <!-- React Address Picker Dynamic Integration -->
++            import RefreshRuntime from 'http://localhost:3000/@react-refresh'

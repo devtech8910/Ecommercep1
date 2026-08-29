@@ -1,0 +1,94 @@
+commit 308bfee9645b815164627f695a6055d404492201
+Author: devtech <devtech8910@gmail.com>
+Date:   Wed Jul 8 18:48:16 2026 +0530
+
+    feat: implement clean two-option delivery location selector sheet and forms with alternateMobile support
+
+diff --git a/index.html b/index.html
+index 328fe66..182fc5b 100644
+--- a/index.html
++++ b/index.html
+@@ -47,11 +47,7 @@
+     ========================================= -->
+     <header class="navbar" id="navbar" role="banner">
+       <nav class="nav-container" aria-label="Main Navigation">
+-        <!-- Logo -->
+-        <a href="index.html" class="nav-logo" aria-label="DevTech Fashion Home">
+-          <span class="logo-mark" aria-hidden="true">DT</span>
+-          <span class="logo-text">DevTech <em>Fashion</em></span>
+-        </a>
++        <!-- Logo Removed -->
+ 
+         <!-- Desktop Nav Links -->
+         <ul class="nav-links" role="list" id="nav-links">
+@@ -91,14 +87,13 @@
+           </a>
+           <a href="pages/login.html" class="btn btn-ghost" id="login-btn">Login</a>
+           <a href="pages/signup.html" class="btn btn-primary" id="signup-btn">Sign Up</a>
++          <!-- Mobile Hamburger -->
++          <button class="hamburger" id="hamburger" aria-label="Toggle Menu" aria-expanded="false" aria-controls="mobile-menu">
++            <span class="ham-bar"></span>
++            <span class="ham-bar"></span>
++            <span class="ham-bar"></span>
++          </button>
+         </div>
+-
+-        <!-- Mobile Hamburger -->
+-        <button class="hamburger" id="hamburger" aria-label="Toggle Menu" aria-expanded="false" aria-controls="mobile-menu">
+-          <span class="ham-bar"></span>
+-          <span class="ham-bar"></span>
+-          <span class="ham-bar"></span>
+-        </button>
+       </nav>
+ 
+       <!-- Mobile Menu -->
+@@ -120,6 +115,13 @@
+       </div>
+     </header>
+ 
++    <!-- Delivery Location Sub-Bar (React Mount) -->
++    <div class="location-subbar">
++      <div class="location-subbar-container">
++        <div id="react-address-picker-root"></div>
++      </div>
++    </div>
++
+     <!-- ========================================
+          HERO SECTION
+     ========================================= -->
+@@ -634,5 +636,35 @@
+ 
+     <!-- Scripts -->
+     <script src="js/script.js"></script>
++
++    <!-- React Address Picker Dynamic Integration -->
++    <script type="module">
++      fetch('http://localhost:3000/src/main.tsx')
++        .then(() => {
++          const preamble = document.createElement('script');
++          preamble.type = 'module';
++          preamble.innerHTML = `
++            import RefreshRuntime from 'http://localhost:3000/@react-refresh'
++            RefreshRuntime.injectIntoGlobalHook(window)
++            window.$RefreshReg$ = () => {}
++            window.$RefreshSig$ = () => (type) => type
++            window.__vite_plugin_react_preamble_installed__ = true
++          `;
++          document.head.appendChild(preamble);
++
++          const client = document.createElement('script');
++          client.type = 'module';
++          client.src = 'http://localhost:3000/@vite/client';
++          document.body.appendChild(client);
++
++          const main = document.createElement('script');
++          main.type = 'module';
++          main.src = 'http://localhost:3000/src/main.tsx';
++          document.body.appendChild(main);
++        })
++        .catch(() => {
++          console.info('React Address Picker dev server not running.');
++        });
++    </script>
+   </body>
+ </html>
