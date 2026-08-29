@@ -45,6 +45,25 @@
         transform: translateY(-4px);
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
       }
+      .wishlist-card-img-wrap {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 3 / 4;
+        overflow: hidden;
+        background: #0d0e1a;
+        border-radius: 20px 20px 0 0;
+      }
+      .product-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top;
+        display: block;
+        transition: transform 0.4s ease;
+      }
+      .wishlist-card:hover .product-card-img {
+        transform: scale(1.05);
+      }
       .btn-gradient-indigo {
         background: linear-gradient(135deg, #6366f1, #4f46e5);
         color: #ffffff;
@@ -178,8 +197,8 @@
             card.className = 'wishlist-card';
 
             card.innerHTML = `
-              <div style="height: 220px; overflow: hidden; background: #1e1e30; position: relative;">
-                <img src="${item.image || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop'}" style="width: 100%; height: 100%; object-fit: cover;" alt="${escapeHtml(item.title || 'Product')}" />
+              <div class="wishlist-card-img-wrap" style="position: relative; width: 100%; aspect-ratio: 3 / 4; overflow: hidden; background: #0d0e1a; border-radius: 20px 20px 0 0;">
+                <img src="${item.image || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop'}" class="product-card-img" style="width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; transition: transform 0.4s ease;" alt="${escapeHtml(item.title || 'Product')}" />
                 <button class="remove-wishlist-btn" style="position: absolute; top: 12px; right: 12px; border: none; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ef4444; font-size: 16px; transition: transform 0.2s;">
                   &times;
                 </button>

@@ -1265,11 +1265,15 @@ body.auth-page #mobile-bottom-nav,
   /* Product Card Grid Item Container */
   #category-products-grid > div,
   #category-products-grid > a,
+  #category-products-grid > article,
   #wishlist-grid > div,
   #wishlist-grid > a,
+  #wishlist-grid > article,
   .product-card,
-  .category-product-card {
-    padding: 10px !important;
+  .category-product-card,
+  .product-card-wow,
+  .shop-carousel-card,
+  .wishlist-card {
     border-radius: 16px !important;
     display: flex !important;
     flex-direction: column !important;
@@ -1278,18 +1282,40 @@ body.auth-page #mobile-bottom-nav,
     width: 100% !important;
     background: rgba(20, 20, 35, 0.6) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    overflow: hidden !important;
   }
 
-  /* Compact Product Image Aspect Ratio for 2-column Layout */
+  /* Product Card Image Wrapper & Responsive Sizing for Mobile */
+  .product-card-img-wrap,
+  .shop-carousel-card-img-wrap,
+  .wishlist-card-img-wrap,
+  .category-product-card-img-wrap {
+    position: relative !important;
+    width: 100% !important;
+    aspect-ratio: 3 / 4 !important;
+    overflow: hidden !important;
+    background: #0d0e1a !important;
+    border-radius: 14px 14px 0 0 !important;
+  }
+
+  /* Product Card Image Responsive Sizing for 2-column Layout */
   #category-products-grid img,
   #wishlist-grid img,
+  #trending-products-grid img,
+  #new-arrivals-products-grid img,
   .product-card img,
-  .category-product-card img {
-    aspect-ratio: 1 / 1.15 !important;
-    object-fit: cover !important;
+  .category-product-card img,
+  .product-card-wow img,
+  .shop-carousel-card img,
+  .wishlist-card img,
+  .product-card-img {
     width: 100% !important;
-    border-radius: 12px !important;
-    max-height: 200px !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center top !important;
+    border-radius: 14px 14px 0 0 !important;
+    max-height: none !important;
+    display: block !important;
   }
 
   /* Product Titles on 2-column Mobile View */
