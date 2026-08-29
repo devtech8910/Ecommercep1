@@ -4538,6 +4538,7 @@ button[type="submit"]:hover {
 
   .desktop-admin-link,
   .desktop-orders-link,
+  .desktop-settings-link,
   .desktop-logout-btn {
     min-height: 36px;
     display: inline-flex;
@@ -4566,6 +4567,12 @@ button[type="submit"]:hover {
     border: 1px solid rgba(67, 56, 202, 0.24) !important;
   }
 
+  .desktop-settings-link {
+    color: #065f46 !important;
+    background: rgba(16, 185, 129, 0.14) !important;
+    border: 1px solid rgba(6, 95, 70, 0.24) !important;
+  }
+
   .desktop-logout-btn {
     color: #991b1b !important;
     background: rgba(239, 68, 68, 0.12) !important;
@@ -4575,6 +4582,7 @@ button[type="submit"]:hover {
 
   .desktop-admin-link:hover,
   .desktop-orders-link:hover,
+  .desktop-settings-link:hover,
   .desktop-logout-btn:hover {
     transform: translateY(-1px);
   }
@@ -4587,6 +4595,11 @@ button[type="submit"]:hover {
   .desktop-orders-link:hover {
     background: rgba(99, 102, 241, 0.22) !important;
     border-color: rgba(67, 56, 202, 0.38) !important;
+  }
+
+  .desktop-settings-link:hover {
+    background: rgba(16, 185, 129, 0.22) !important;
+    border-color: rgba(6, 95, 70, 0.38) !important;
   }
 
   .desktop-logout-btn:hover {
