@@ -1993,7 +1993,7 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
     }
 
     modal.querySelector('#legal-pdf-title').textContent = title;
-    modal.querySelector('#legal-pdf-iframe').src = pdfUrl;
+    modal.querySelector('#legal-pdf-iframe').src = pdfUrl + '#toolbar=0&navpanes=0';
     
     // Animate in
     modal.style.visibility = 'visible';
