@@ -96,6 +96,7 @@ html {
   
   .editorial-grid {
     height: 560px;
+    aspect-ratio: auto;
   }
   
   .why-bento {
@@ -298,6 +299,7 @@ html {
   .editorial-grid {
     grid-template-columns: 1fr;
     height: auto;
+    aspect-ratio: auto;
   }
   
   .editorial-main {
