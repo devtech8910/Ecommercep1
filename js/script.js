@@ -206,7 +206,7 @@ function updateAuthUI() {
   const isInPages = window.location.pathname.includes('/pages/');
   const adminUrl = isInPages ? 'admin.html' : 'pages/admin.html';
   const ordersUrl = isInPages ? 'orders.html' : 'pages/orders.html';
-  const profileUrl = isInPages ? 'profile.html' : 'pages/profile.html';
+  const settingsUrl = isInPages ? 'settings.html' : 'pages/settings.html';
 
   try {
     const rawUser = localStorage.getItem('dtf_user') || localStorage.getItem('user');
@@ -268,7 +268,7 @@ function updateAuthUI() {
         desktopUserContainer.innerHTML = `
           ${isAdmin ? `<a href="${adminUrl}" class="desktop-admin-link" aria-label="Open admin dashboard">Admin</a>` : ''}
           <a href="${ordersUrl}" class="desktop-orders-link" aria-label="Open my orders" title="${dtfEscapeHtml(name)}">My Orders</a>
-          <a href="${profileUrl}" class="desktop-settings-link" aria-label="Open settings">Settings</a>
+          <a href="${settingsUrl}" class="desktop-settings-link" aria-label="Open settings">Settings</a>
           <button type="button" id="desktop-logout-btn" class="desktop-logout-btn" title="Logout">Logout</button>
         `;
 
