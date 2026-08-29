@@ -1821,7 +1821,7 @@ iframe {
   display: grid;
   grid-template-columns: 1.6fr 1fr;
   gap: var(--space-6);
-  /* Height is now determined by aspect-ratio of the contents */
+  height: 680px;
 }
 
 .editorial-main,
@@ -1829,10 +1829,6 @@ iframe {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-xl);
-}
-
-.editorial-main {
-  aspect-ratio: 4 / 3;
 }
 
 .editorial-small {
