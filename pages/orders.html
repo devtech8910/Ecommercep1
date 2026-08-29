@@ -825,9 +825,14 @@
             let btnHtml = '';
             if (isConfirmed) {
               btnHtml = `
-                <button class="print-invoice-btn" style="background: rgba(4, 120, 87, 0.15); color: #047857; border: 1px solid rgba(4, 120, 87, 0.3); padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                  🖨️ Print Tax Invoice / Bill
-                </button>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <button class="print-invoice-btn" style="background: rgba(4, 120, 87, 0.15); color: #047857; border: 1px solid rgba(4, 120, 87, 0.3); padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    🖨️ Print Bill
+                  </button>
+                  <button class="download-invoice-btn" style="background: rgba(99, 102, 241, 0.12); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.25); padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    📥 Download Bill
+                  </button>
+                </div>
               `;
             } else {
               btnHtml = `
@@ -866,6 +871,23 @@
             if (printBtn) {
               printBtn.addEventListener('click', () => {
                 openOrderInvoiceModal(order);
+              });
+            }
+
+            const downloadBtn = card.querySelector('.download-invoice-btn');
+            if (downloadBtn) {
+              downloadBtn.addEventListener('click', () => {
+                const invoiceHtml = buildCommercialInvoiceHTML(order);
+                const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice - Order #${order.id}</title><style>@page{size:A4 portrait;margin:8mm 12mm;}*{box-sizing:border-box;margin:0;padding:0;}body{background:#fff;color:#000;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:12px;}</style></head><body>${invoiceHtml}</body></html>`;
+                const blob = new Blob([fullHtml], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Invoice_Order_${order.id}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
               });
             }
 

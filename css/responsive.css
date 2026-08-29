@@ -605,4 +605,9 @@ html {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
   }
+  
+  .shop-carousel-card {
+    flex: 0 0 160px;
+    width: 160px;
+  }
 }

@@ -1685,7 +1685,135 @@
             const addCartCta = document.getElementById('add-to-cart-cta');
             if (addCartCta) addCartCta.onclick = () => { addProductToCart(); };
             const buyNowCta = document.getElementById('buy-now-cta');
-            if (buyNowCta) buyNowCta.onclick = () => { if (addProductToCart()) window.location.href = 'cart.html'; };
+            if (buyNowCta) {
+              buyNowCta.onclick = () => { 
+                if (!selectedSize) {
+                  alert("Please select a size first.");
+                  return;
+                }
+                const loc = JSON.parse(localStorage.getItem('dtf_user_location') || 'null');
+                if (!loc || !loc.pin || !loc.name) {
+                  alert("Please select a delivery location first!");
+                  const subbar = document.getElementById('react-address-picker-root');
+                  if (subbar) subbar.scrollIntoView({behavior: 'smooth', block: 'center'});
+                  return;
+                }
+                
+                const addressStr = `${loc.name} - ${loc.pin}`;
+                
+                // Show Custom Modal
+                const overlay = document.getElementById('buy-now-modal-overlay');
+                const addrText = document.getElementById('buy-now-addr-text');
+                if (overlay && addrText) {
+                  addrText.textContent = addressStr;
+                  overlay.classList.add('active');
+                }
+              };
+            }
+            
+            const buyNowOverlay = document.getElementById('buy-now-modal-overlay');
+            const buyNowCancel = document.getElementById('buy-now-cancel');
+            const buyNowConfirm = document.getElementById('buy-now-confirm');
+            const buyNowChange = document.getElementById('buy-now-change-btn');
+            
+            if (buyNowCancel) {
+              buyNowCancel.onclick = () => { buyNowOverlay.classList.remove('active'); };
+            }
+            if (buyNowChange) {
+              buyNowChange.onclick = () => {
+                buyNowOverlay.classList.remove('active');
+                if (window.openLocationSheet) window.openLocationSheet();
+              };
+            }
+            if (buyNowConfirm) {
+              buyNowConfirm.onclick = () => {
+                buyNowOverlay.classList.remove('active');
+                
+                const loc = JSON.parse(localStorage.getItem('dtf_user_location') || 'null');
+                const addressStr = loc ? `${loc.name} - ${loc.pin}` : 'No Address';
+                
+                // 1. Create Order
+                const price = Math.round(parseFloat(product.price || 0));
+                const tax = Math.round(price * 0.18);
+                const total = price + tax;
+                
+                const newOrder = {
+                  id: 'ORD' + Date.now(),
+                  customer: 'Guest User',
+                  address: addressStr,
+                  date: new Date().toISOString().split('T')[0],
+                  status: 'Order Placed',
+                  total_amount: total,
+                  items: [{
+                    id: product.id,
+                    title: product.title,
+                    price: price,
+                    quantity: 1,
+                    size: selectedSize,
+                    image: product.images && product.images.length ? product.images[0] : ''
+                  }]
+                };
+                
+                const existingOrders = JSON.parse(localStorage.getItem('dtf_orders') || '[]');
+                existingOrders.unshift(newOrder);
+                localStorage.setItem('dtf_orders', JSON.stringify(existingOrders));
+                window.dispatchEvent(new Event('dtf:orders:updated'));
+                
+                // 2. Generate Bill HTML
+                const invoiceHtml = `
+                 <!DOCTYPE html>
+                 <html>
+                 <head>
+                   <title>Invoice - ${newOrder.id}</title>
+                   <style>
+                     body { font-family: 'Inter', sans-serif; color: #000; padding: 40px; }
+                     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+                     th { background: #f3f4f6; }
+                     .header { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 20px; }
+                   </style>
+                 </head>
+                 <body>
+                   <div class="header">
+                     <div>
+                       <h1 style="margin:0;">FASHION COMPANY</h1>
+                       <p>Retail Pvt. Ltd.<br>Invoice # ${newOrder.id}</p>
+                     </div>
+                     <div style="text-align:right;">
+                       <h3 style="margin:0;">BILL TO</h3>
+                       <p>${addressStr.replace(/&/g, '&amp;').replace(/</g, '&lt;')}<br>Date: ${newOrder.date}</p>
+                     </div>
+                   </div>
+                   <table>
+                     <tr><th>Item</th><th>Size</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+                     <tr>
+                       <td>${product.title.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</td>
+                       <td>${selectedSize}</td>
+                       <td>1</td>
+                       <td>Rs. ${price}</td>
+                       <td>Rs. ${price}</td>
+                     </tr>
+                   </table>
+                   <div style="margin-top:20px; text-align:right; font-size:18px;">
+                     <p>Tax (18%): Rs. ${tax}</p>
+                     <p><strong>Grand Total: Rs. ${total}</strong></p>
+                   </div>
+                   <div style="margin-top: 50px; text-align: center; border-top: 1px dashed #ccc; padding-top: 20px;">
+                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('Order:' + newOrder.id + '|Total:' + total + '|Loc:' + addressStr)}" alt="QR Code" style="width: 100px; height: 100px; margin-bottom: 10px;">
+                     <p style="font-size: 12px;">Scan QR for Order Details</p>
+                   </div>
+                   <script>
+                     window.onload = () => { setTimeout(() => window.print(), 500); };
+                   <\/script>
+                 </body>
+                 </html>
+                `;
+                
+                const blob = new Blob([invoiceHtml], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+              };
+            }
 
             // Wishlist
             const wishlistBtn = document.getElementById('wishlist-toggle-btn');
@@ -1884,5 +2012,38 @@
       <button id="lightbox-close" aria-label="Close image inspect modal">✕</button>
       <img id="lightbox-img" src="" alt="HD Deep View Product Image" />
     </div>
+    <!-- Buy Now Custom Modal -->
+    <style>
+      #buy-now-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
+      #buy-now-modal-overlay.active { display: flex; opacity: 1; }
+      #buy-now-modal-content { background: #111827; border: 1px solid #1f2937; border-radius: 16px; width: 90%; max-width: 400px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); transform: scale(0.95); transition: transform 0.2s ease; }
+      #buy-now-modal-overlay.active #buy-now-modal-content { transform: scale(1); }
+      #buy-now-modal-title { font-size: 18px; font-weight: 700; color: #fff; margin: 0 0 8px 0; }
+      #buy-now-modal-desc { font-size: 13px; color: #9ca3af; margin: 0 0 20px 0; line-height: 1.4; }
+      .buy-now-addr-box { background: rgba(31,41,55,0.5); border: 1px solid rgba(55,65,81,0.5); border-radius: 12px; padding: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; }
+      .buy-now-addr-text { font-size: 13px; color: #d1d5db; line-height: 1.5; padding-right: 12px; }
+      .buy-now-change-btn { background: none; border: none; color: #818cf8; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; padding: 4px; letter-spacing: 0.5px; }
+      .buy-now-actions { display: flex; gap: 12px; }
+      .buy-now-action-btn { flex: 1; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; }
+      .buy-now-cancel { background: #1f2937; color: #fff; }
+      .buy-now-confirm { background: #4f46e5; color: #fff; box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
+      .buy-now-cancel:hover { background: #374151; }
+      .buy-now-confirm:hover { background: #4338ca; }
+    </style>
+    <div id="buy-now-modal-overlay">
+      <div id="buy-now-modal-content">
+        <h3 id="buy-now-modal-title">Confirm Delivery Details</h3>
+        <p id="buy-now-modal-desc">Please verify your location before generating the bill.</p>
+        <div class="buy-now-addr-box">
+          <div id="buy-now-addr-text" class="buy-now-addr-text"></div>
+          <button type="button" id="buy-now-change-btn" class="buy-now-change-btn">Change</button>
+        </div>
+        <div class="buy-now-actions">
+          <button type="button" id="buy-now-cancel" class="buy-now-action-btn buy-now-cancel">Cancel</button>
+          <button type="button" id="buy-now-confirm" class="buy-now-action-btn buy-now-confirm">Confirm & Bill</button>
+        </div>
+      </div>
+    </div>
+    
   </body>
 </html>

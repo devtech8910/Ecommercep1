@@ -444,18 +444,26 @@
 
           fetchCloudWithRetry(3).then(cloudProducts => {
             if (cloudProducts === null) {
-              console.log('[Fashion Company Store] All cloud fetch attempts failed. Not using local product cache.');
-              allProducts = [];
-              localStorage.removeItem('dtf_admin_products');
-              if (grid) grid.style.display = 'none';
-              if (noMsg) {
-                noMsg.style.display = 'block';
-                noMsg.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:40px 20px;">Unable to load products from the production catalog. Please refresh the page.</p>';
+              console.log('[Fashion Company Store] Cloud fetch failed. Using local product cache fallback.');
+              try {
+                const local = JSON.parse(localStorage.getItem('dtf_admin_products') || '[]');
+                allProducts = local.filter(p => categoryKey(p.category) === 'kids' && p.active !== false).map(mapKidsProduct);
+              } catch(e) {
+                allProducts = [];
               }
+              if (allProducts.length === 0) {
+                if (grid) grid.style.display = 'none';
+                if (noMsg) {
+                  noMsg.style.display = 'block';
+                  noMsg.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:40px 20px;">No active products found in the catalog.</p>';
+                }
+              }
+              filterAndSortProducts();
+              populateBrandsFilter();
               return;
             }
             localStorage.setItem('dtf_admin_products', JSON.stringify(cloudProducts));
-            allProducts = cloudProducts.filter(p => categoryKey(p.category) === 'kids').map(mapKidsProduct);
+            allProducts = cloudProducts.filter(p => categoryKey(p.category) === 'kids' && p.active !== false).map(mapKidsProduct);
             filterAndSortProducts();
             populateBrandsFilter();
           });

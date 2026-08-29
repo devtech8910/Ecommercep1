@@ -528,21 +528,28 @@
 
           fetchCloudWithRetry(3).then(cloudProducts => {
             if (cloudProducts === null) {
-              console.log('[Fashion Company Store] All cloud fetch attempts failed. Not using local product cache.');
-              catalogProducts = [];
-              localStorage.removeItem('dtf_admin_products');
-              refreshAllRows();
-              const noMsg = document.getElementById('no-products-msg');
-              if (noMsg) {
-                noMsg.style.display = 'block';
-                noMsg.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:40px 20px;">Unable to load products from the production catalog. Please refresh the page.</p>';
+              console.log('[Fashion Company Store] Cloud fetch failed. Using local product cache fallback.');
+              try {
+                const local = JSON.parse(localStorage.getItem('dtf_admin_products') || '[]');
+                catalogProducts = local.filter(p => p.active !== false).map(mapCatalogProduct);
+              } catch(e) {
+                catalogProducts = [];
               }
+              if (catalogProducts.length === 0) {
+                const noMsg = document.getElementById('no-products-msg');
+                if (noMsg) {
+                  noMsg.style.display = 'block';
+                  noMsg.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:40px 20px;">No active products found in the catalog.</p>';
+                }
+              }
+              refreshAllRows();
+              populateBrandsFilter();
               return;
             }
 
             // Cloud is authoritative — localStorage is only a non-authoritative mirror.
             localStorage.setItem('dtf_admin_products', JSON.stringify(cloudProducts));
-            catalogProducts = cloudProducts.map(mapCatalogProduct);
+            catalogProducts = cloudProducts.filter(p => p.active !== false).map(mapCatalogProduct);
             refreshAllRows();
             populateBrandsFilter();
             console.log('[Fashion Company Store] Loaded ' + catalogProducts.length + ' products from cloud.');
@@ -726,7 +733,17 @@
 
         function refreshAllRows() {
           updateFilterBadge();
-          populateRow('bestsellers-row', p => p.bestSeller || p.id.toString().startsWith('prod_'));
+          
+          // Guarantee min 5 bestsellers
+          let bestSellers = catalogProducts.filter(p => p.bestSeller || p.id.toString().startsWith('prod_'));
+          if (bestSellers.length < 5 && catalogProducts.length > 0) {
+             const sortedByPrice = [...catalogProducts].sort((a, b) => b.price - a.price);
+             // take top 5 items
+             bestSellers = sortedByPrice.slice(0, 5);
+          }
+          const bestSellerIds = new Set(bestSellers.map(p => p.id));
+          
+          populateRow('bestsellers-row', p => bestSellerIds.has(p.id));
           populateRow('mens-row', p => {
             const cat = (p.category || '').toLowerCase();
             return cat.includes('men') && !cat.includes('women');

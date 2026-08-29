@@ -600,7 +600,7 @@
               display: grid;
               gap: 16px;
               grid-auto-flow: column;
-              grid-auto-columns: minmax(150px, 1fr);
+              grid-auto-columns: 160px; /* Fixed width to prevent 1fr taking full screen width */
               overflow-x: auto;
               overscroll-behavior-inline: contain;
               scroll-snap-type: inline mandatory;
@@ -1001,9 +1001,22 @@
           return null;
         }
 
-        fetchProductsWithRetry(3).then(products => {
+        fetchProductsWithRetry(3).then(cloudProducts => {
           const trendingGrid = document.getElementById('trending-products-grid');
           const newArrivalsGrid = document.getElementById('new-arrivals-products-grid');
+
+          let products = [];
+          if (cloudProducts === null) {
+             console.log('[Fashion Company Store] Cloud fetch failed. Using local product cache fallback.');
+             try {
+               products = JSON.parse(localStorage.getItem('dtf_admin_products') || '[]');
+             } catch(e) {}
+          } else {
+             localStorage.setItem('dtf_admin_products', JSON.stringify(cloudProducts));
+             products = cloudProducts;
+          }
+          
+          products = products.filter(p => p.active !== false);
 
           if (!products || products.length === 0) {
             const noDataHtml = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #71717a;">Check back soon for new arrivals!</div>';
@@ -1011,8 +1024,6 @@
             if (newArrivalsGrid) newArrivalsGrid.innerHTML = noDataHtml;
             return;
           }
-
-          localStorage.setItem('dtf_admin_products', JSON.stringify(products));
 
           if (trendingGrid) trendingGrid.innerHTML = '';
           if (newArrivalsGrid) newArrivalsGrid.innerHTML = '';
