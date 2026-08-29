@@ -493,6 +493,58 @@ export async function handler(event, context) {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'Account deletion scheduled for 30 days.' }) };
     }
 
+    // === 7. UPDATE PROFILE ===
+    if (action === 'update-profile' || action === 'verify-and-update-profile') {
+      const authHeader = event.headers.authorization || event.headers.Authorization || '';
+      const token = authHeader.replace('Bearer ', '').trim();
+      
+      if (!token) {
+        return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['Unauthorized.'] }) };
+      }
+
+      const { firstName, lastName, email, phone, dob } = body;
+      const cleanEmail = (email || '').trim().toLowerCase();
+
+      let targetUser = users.find(u => u.token === token);
+      if (!targetUser) {
+        return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['Invalid token.'] }) };
+      }
+
+      // If email is changed, check if new email exists
+      if (cleanEmail && cleanEmail !== targetUser.email.toLowerCase()) {
+        const emailExists = users.some(u => u.email && u.email.toLowerCase() === cleanEmail);
+        if (emailExists) {
+          return { statusCode: 400, headers, body: JSON.stringify({ success: false, errors: ['Email is already in use by another account.'] }) };
+        }
+      }
+
+      targetUser.first_name = firstName || targetUser.first_name || '';
+      targetUser.last_name = lastName || targetUser.last_name || '';
+      targetUser.name = `${targetUser.first_name} ${targetUser.last_name}`.trim() || targetUser.name;
+      targetUser.email = cleanEmail || targetUser.email;
+      targetUser.phone = phone || targetUser.phone;
+      targetUser.date_of_birth = dob || targetUser.date_of_birth || targetUser.dob;
+      targetUser.dob = targetUser.date_of_birth;
+
+      const year = new Date().getFullYear();
+      targetUser.profileEditLimit = targetUser.profileEditLimit || { limit: 2, used: 0, remaining: 2, year };
+      if (targetUser.profileEditLimit.year !== year) {
+        targetUser.profileEditLimit = { limit: 2, used: 0, remaining: 2, year };
+      }
+      targetUser.profileEditLimit.used += 1;
+      targetUser.profileEditLimit.remaining = Math.max(targetUser.profileEditLimit.limit - targetUser.profileEditLimit.used, 0);
+
+      await saveCloudUsers(users);
+
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: stripSensitiveUserFields(targetUser) }) };
+    }
+
+    // === 8. SEND VERIFICATION OTP ===
+    if (action === 'send-verification-otp') {
+      // Stub: return a static dev OTP for testing without sending real emails/SMS
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, devOtp: '123456' }) };
+    }
+
     return { statusCode: 400, headers, body: JSON.stringify({ success: false, errors: ['Invalid API action.'] }) };
 
   } catch (error) {

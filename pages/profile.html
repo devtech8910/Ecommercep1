@@ -341,41 +341,38 @@
           setReadOnlyMode();
         });
 
-        // Load profile data
-        fetch('http://localhost:5000/auth/profile', {
-          headers: { 'Authorization': `Bearer ${user.token}` }
-        })
-        .then(res => res.json())
-        .then(json => {
-          if (json.success && json.data) {
-            const u = json.data;
-            document.getElementById('firstName').value = u.first_name || '';
-            document.getElementById('lastName').value = u.last_name || '';
-            document.getElementById('email').value = u.email || '';
-            let displayPhoneNum = u.phone || '';
-            if (displayPhoneNum.startsWith('+91')) {
-              displayPhoneNum = displayPhoneNum.replace('+91', '');
-            }
-            document.getElementById('phone').value = displayPhoneNum;
-            document.getElementById('dob').value = u.date_of_birth ? u.date_of_birth.substring(0, 10) : '';
-            
-            // Record original state
-            originalFirstName = u.first_name || '';
-            originalLastName = u.last_name || '';
-            originalEmail = u.email || '';
-            originalPhone = displayPhoneNum;
-            originalPhoneFull = u.phone || '';
-            originalDob = u.date_of_birth ? u.date_of_birth.substring(0, 10) : '';
-            profileEditLimit = u.profileEditLimit || profileEditLimit;
-            renderEditLimitState();
-          } else {
-            showError('Failed to load user profile data.');
+        // Load profile data from local storage
+        try {
+          const u = user;
+          // Split name into first and last name if not provided separately
+          const nameParts = (u.name || '').split(' ');
+          const firstName = u.first_name || nameParts[0] || '';
+          const lastName = u.last_name || nameParts.slice(1).join(' ') || '';
+          
+          document.getElementById('firstName').value = firstName;
+          document.getElementById('lastName').value = lastName;
+          document.getElementById('email').value = u.email || '';
+          
+          let displayPhoneNum = u.phone || '';
+          if (displayPhoneNum.startsWith('+91')) {
+            displayPhoneNum = displayPhoneNum.replace('+91', '');
           }
-        })
-        .catch(err => {
+          document.getElementById('phone').value = displayPhoneNum;
+          document.getElementById('dob').value = u.date_of_birth ? u.date_of_birth.substring(0, 10) : (u.dob ? u.dob.substring(0, 10) : '');
+          
+          // Record original state
+          originalFirstName = firstName;
+          originalLastName = lastName;
+          originalEmail = u.email || '';
+          originalPhone = displayPhoneNum;
+          originalPhoneFull = u.phone || '';
+          originalDob = document.getElementById('dob').value;
+          profileEditLimit = u.profileEditLimit || profileEditLimit;
+          renderEditLimitState();
+        } catch(err) {
           console.error(err);
-          showError('Failed to load profile. Please verify your connection.');
-        });
+          showError('Failed to load profile details.');
+        }
 
         // Submit form handler
         form.addEventListener('submit', async (e) => {
@@ -433,7 +430,7 @@
               let phoneOtpCode = '';
 
               if (isEmailChanged) {
-                const res = await fetch('http://localhost:5000/auth/send-verification-otp', {
+                const res = await fetch('/.netlify/functions/auth?action=send-verification-otp', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
                   body: JSON.stringify({ type: 'email', value: email })
@@ -444,7 +441,7 @@
               }
 
               if (isPhoneChanged) {
-                const res = await fetch('http://localhost:5000/auth/send-verification-otp', {
+                const res = await fetch('/.netlify/functions/auth?action=send-verification-otp', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
                   body: JSON.stringify({ type: 'phone', value: phoneForSubmit })
@@ -496,7 +493,7 @@
             submitBtn.disabled = true;
             submitText.textContent = 'Saving Changes...';
 
-            fetch('http://localhost:5000/auth/update-profile', {
+            fetch('/.netlify/functions/auth?action=update-profile', {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
               body: JSON.stringify({ firstName, lastName, email, phone: phoneForSubmit, dob, password: null })
@@ -572,7 +569,7 @@
           confirmBtn.disabled = true;
           confirmBtn.textContent = 'Verifying OTP...';
 
-          fetch('http://localhost:5000/auth/verify-and-update-profile', {
+          fetch('/.netlify/functions/auth?action=verify-and-update-profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
             body: JSON.stringify({ firstName, lastName, email, phone: phoneForSubmit, dob, emailOtp, phoneOtp })
