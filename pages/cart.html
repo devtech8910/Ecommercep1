@@ -191,6 +191,7 @@
         const confirmedModal = document.getElementById('order-confirmed-modal');
         const urlParams = new URLSearchParams(window.location.search);
         const isBuyNowCheckout = urlParams.get('checkout') === 'buy-now';
+        const shouldResumeCheckout = urlParams.get('resumeCheckout') === '1';
 
         function escapeHtml(str) {
           if (window.escapeHtml) return window.escapeHtml(str);
@@ -205,6 +206,13 @@
             return window.getUserStorageKey ? window.getUserStorageKey('dtf_buy_now_checkout') : 'dtf_buy_now_checkout';
           }
           return window.getUserStorageKey ? window.getUserStorageKey('dtf_cart') : 'dtf_cart';
+        }
+
+        function getCheckoutReturnUrl() {
+          const params = new URLSearchParams();
+          params.set('resumeCheckout', '1');
+          if (isBuyNowCheckout) params.set('checkout', 'buy-now');
+          return `${window.location.pathname}?${params}`;
         }
 
         // Helper to load cart from localStorage
@@ -326,7 +334,11 @@
         // Checkout Multi-Stage Trigger
         checkoutBtn.addEventListener('click', () => {
           const rawUser = localStorage.getItem('dtf_user') || localStorage.getItem('user');
-          if (!rawUser) { window.location.href = 'login.html'; return; }
+          if (!rawUser) {
+            const returnTo = encodeURIComponent(getCheckoutReturnUrl());
+            window.location.href = `login.html?returnTo=${returnTo}`;
+            return;
+          }
           const items = loadCart();
           if (items.length === 0) return;
 
@@ -339,7 +351,7 @@
         });
 
         render();
-        if (isBuyNowCheckout && loadCart().length > 0) {
+        if ((isBuyNowCheckout || shouldResumeCheckout) && loadCart().length > 0) {
           setTimeout(() => {
             if (window.openCheckoutModal) window.openCheckoutModal();
           }, 250);
@@ -628,6 +640,16 @@
             placedOrder = data.order;
           } else {
             orderError = data.error || `Production orders API returned ${res.status}`;
+            if (res.status === 401) {
+              localStorage.removeItem('dtf_user');
+              localStorage.removeItem('user');
+              localStorage.removeItem('dtf_token');
+              localStorage.removeItem('token');
+              alert('Your sign-in has expired. Your cart is saved; please sign in again to continue checkout.');
+              const returnTo = encodeURIComponent(getCheckoutReturnUrl());
+              window.location.href = `login.html?returnTo=${returnTo}`;
+              return;
+            }
           }
         } catch (err) {
           orderError = err.message || 'Production orders API is unavailable';

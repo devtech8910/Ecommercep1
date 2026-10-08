@@ -6,6 +6,20 @@
 
 'use strict';
 
+function getPostLoginDestination(role) {
+  const fallback = role === 'admin' ? 'admin.html' : '../index.html';
+  const requested = new URLSearchParams(window.location.search).get('returnTo');
+  if (!requested) return fallback;
+
+  try {
+    const destination = new URL(requested, window.location.origin);
+    if (destination.origin !== window.location.origin || destination.pathname.endsWith('/login.html')) return fallback;
+    return destination.pathname + destination.search + destination.hash;
+  } catch {
+    return fallback;
+  }
+}
+
 function initLoginModule() {
   const loginForm      = document.getElementById('login-form');
   const emailInput     = document.getElementById('email');
@@ -173,11 +187,7 @@ function initLoginModule() {
 
         if (submitTextSpan) submitTextSpan.textContent = 'Success! Redirecting...';
         setTimeout(() => {
-          if (sessionObj.role === 'admin') {
-            window.location.href = 'admin.html';
-          } else {
-            window.location.href = '../index.html';
-          }
+          window.location.href = getPostLoginDestination(sessionObj.role);
         }, 500);
         return;
       } else if (localRes.status === 400 || localRes.status === 401 || localRes.status === 429) {
@@ -255,7 +265,7 @@ function initLoginModule() {
 
       if (submitTextSpan) submitTextSpan.textContent = 'Success! Redirecting...';
       setTimeout(() => {
-        window.location.href = sessionObj.role === 'admin' ? 'admin.html' : '../index.html';
+        window.location.href = getPostLoginDestination(sessionObj.role);
       }, 600);
       return;
     }
