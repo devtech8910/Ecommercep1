@@ -33,7 +33,8 @@ async function createLocalFlowFixture(password, accounts) {
   let source = await fs.readFile(path.join(root, 'netlify/functions/auth.js'), 'utf8');
   const auth = (await load(source
     .replace("import bcrypt from 'bcryptjs';", 'const bcrypt = global.__localFlowBcrypt;')
-    .replace("import { getAccountUsers, saveAccountUsers } from './lib/account-store.mjs';", 'const getAccountUsers = global.__localFlowAccountUsers.get; const saveAccountUsers = global.__localFlowAccountUsers.save;')
+    .replace("const { getAccountUsers, saveAccountUsers } = await import('./lib/account-store.mjs');", 'const { get: getAccountUsers, save: saveAccountUsers } = global.__localFlowAccountUsers;')
+    .replace("const { saveAccountUsers } = await import('./lib/account-store.mjs');", 'const { save: saveAccountUsers } = global.__localFlowAccountUsers;')
     .replace('const DEFAULT_ADMINS = getConfiguredAdmins();', 'const DEFAULT_ADMINS = [];'))).handler;
   source = await fs.readFile(path.join(root, 'netlify/functions/lib/account-session.mjs'), 'utf8');
   const resolveUser = (await load(source.replace("import { getAccountUsers } from './account-store.mjs';", 'const getAccountUsers = global.__localFlowAccountUsers.get;'))).resolveAccountUser;

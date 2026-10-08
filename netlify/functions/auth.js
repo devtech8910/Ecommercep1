@@ -4,7 +4,6 @@
 // ============================================================
 
 import bcrypt from 'bcryptjs';
-import { getAccountUsers, saveAccountUsers } from './lib/account-store.mjs';
 
 function getConfiguredAdmins() {
   const rawAdmins = process.env.DEFAULT_ADMIN_USERS || '';
@@ -96,6 +95,7 @@ function createToken() {
 }
 
 async function getCloudUsers() {
+  const { getAccountUsers, saveAccountUsers } = await import('./lib/account-store.mjs');
   const users = await getAccountUsers();
   let updated = false;
   DEFAULT_ADMINS.forEach(admin => {
@@ -109,6 +109,7 @@ async function getCloudUsers() {
 }
 
 async function saveCloudUsers(users) {
+  const { saveAccountUsers } = await import('./lib/account-store.mjs');
   await saveAccountUsers(users);
 }
 
