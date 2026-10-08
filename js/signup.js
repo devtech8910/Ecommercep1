@@ -712,15 +712,19 @@ document.addEventListener('DOMContentLoaded', () => {
           throw new Error((result.errors && result.errors[0]) || result.error || 'Account creation failed.');
         }
 
-        const { token, password, password_hash, passwordHash, ...safeUserData } = result.user || {};
+        const { token: userToken, password, password_hash, passwordHash, ...safeUserData } = result.user || {};
+        const token = result.token || userToken || '';
         const sessionObj = {
           ...safeUserData,
+          token,
           role: safeUserData.role || 'customer'
         };
 
         localStorage.setItem('dtf_user', JSON.stringify(sessionObj));
-        localStorage.removeItem('token');
-        localStorage.removeItem('dtf_token');
+        if (token) {
+          localStorage.setItem('token', token);
+          localStorage.setItem('dtf_token', token);
+        }
         window.dispatchEvent(new Event('dtf:auth:updated'));
       } catch (err) {
         detailsSubmitBtn.disabled = false;

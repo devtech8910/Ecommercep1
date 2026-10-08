@@ -33,9 +33,7 @@ function getOrdersStore(name = ORDERS_STORE_NAME) {
   } catch (err) {
     const manualOptions = getManualBlobsOptions(name);
     if (manualOptions) return getStore(manualOptions);
-    throw new Error(
-      'Netlify Blobs order store is unavailable. Set NETLIFY_BLOBS_SITE_ID and NETLIFY_BLOBS_TOKEN in Netlify environment variables.'
-    );
+    throw new Error('Netlify Blobs order store is unavailable.');
   }
 }
 
@@ -93,9 +91,7 @@ function normalizeItems(rawItems) {
 
 function normalizeAddress(rawAddress) {
   if (!rawAddress) return {};
-  if (typeof rawAddress === 'string') {
-    return { fullAddress: rawAddress };
-  }
+  if (typeof rawAddress === 'string') return { fullAddress: rawAddress };
   return {
     label: rawAddress.label || rawAddress.address_type || rawAddress.type || 'ADDRESS',
     personName: rawAddress.personName || rawAddress.name || '',
@@ -116,17 +112,12 @@ function normalizeAddress(rawAddress) {
 function addressToText(address) {
   if (!address) return '';
   if (typeof address === 'string') return address;
-  const parts = [
-    address.fullAddress,
-    address.house,
-    address.building,
-    address.street,
-    address.area,
+  return [
+    address.fullAddress, address.house, address.building, address.street, address.area,
     address.landmark ? `Near ${address.landmark}` : '',
     [address.city, address.state].filter(Boolean).join(', '),
     address.pin ? `PIN ${address.pin}` : ''
-  ].filter(Boolean);
-  return parts.join(', ');
+  ].filter(Boolean).join(', ');
 }
 
 function buildOrder(payload, existing = {}) {
@@ -181,9 +172,7 @@ function buildOrder(payload, existing = {}) {
 }
 
 export default async function handler(request) {
-  if (request.method === 'OPTIONS') {
-    return new Response('', { status: 200, headers: CORS_HEADERS });
-  }
+  if (request.method === 'OPTIONS') return new Response('', { status: 200, headers: CORS_HEADERS });
   let user;
   try { user = await resolveAccountUser(request); }
   catch (error) { return jsonResponse(503, { success: false, error: error.message }); }
@@ -200,23 +189,17 @@ export default async function handler(request) {
       if (admin && !isAdmin) return jsonResponse(403, { success: false, error: 'Administrator access is required.' });
       if (userEmail && userEmail !== cleanEmail(user.email) && !isAdmin) return jsonResponse(403, { success: false, error: 'You can only view your own orders.' });
       const orders = await getCloudOrders();
-
       if (id) {
-        const order = orders.find(o => String(o.id || o.order_id) === String(id));
+        const order = orders.find(item => String(item.id || item.order_id) === String(id));
         if (!order) return jsonResponse(404, { success: false, error: 'Order not found.' });
         if (!isAdmin && cleanEmail(order.email) !== cleanEmail(user.email)) return jsonResponse(403, { success: false, error: 'You can only view your own orders.' });
         return jsonResponse(200, { success: true, order });
       }
-
-      const filtered = isAdmin && !userEmail ? orders : orders.filter(o => cleanEmail(o.email) === (userEmail || cleanEmail(user.email)));
-
-      return jsonResponse(200, {
-        success: true,
-        orders: filtered.sort((a, b) => new Date(b.created_at || b.placed_at || 0) - new Date(a.created_at || a.placed_at || 0))
-      });
-    } catch (err) {
-      console.error('[Orders GET] Error:', err.message);
-      return jsonResponse(500, { success: false, error: err.message });
+      const filtered = isAdmin && !userEmail ? orders : orders.filter(order => cleanEmail(order.email) === (userEmail || cleanEmail(user.email)));
+      return jsonResponse(200, { success: true, orders: filtered.sort((a, b) => new Date(b.created_at || b.placed_at || 0) - new Date(a.created_at || a.placed_at || 0)) });
+    } catch (error) {
+      console.error('[Orders GET] Error:', error.message);
+      return jsonResponse(500, { success: false, error: error.message });
     }
   }
 
@@ -226,9 +209,7 @@ export default async function handler(request) {
       const rawItems = typeof payload.items === 'string' ? JSON.parse(payload.items) : payload.items;
       if (Array.isArray(rawItems) && rawItems.some(item => !Number.isInteger(Number(item.quantity)) || Number(item.quantity) < 1)) return jsonResponse(400, { success: false, error: 'Select a valid quantity.' });
       const items = normalizeItems(payload.items || []);
-      if (!items.length) {
-        return jsonResponse(400, { success: false, error: 'Order must contain at least one item.' });
-      }
+      if (!items.length) return jsonResponse(400, { success: false, error: 'Order must contain at least one item.' });
       const orders = await getCloudOrders();
       const checkoutKey = String(payload.checkoutKey || '').slice(0, 100);
       const previous = checkoutKey ? orders.find(order => order.checkout_key === checkoutKey && cleanEmail(order.email) === cleanEmail(user.email)) : null;
@@ -237,7 +218,7 @@ export default async function handler(request) {
       const rawCatalog = await productStore.get('catalog.json', { type: 'json', consistency: 'strong' });
       const products = Array.isArray(rawCatalog) ? rawCatalog : rawCatalog?.products || [];
       for (const item of items) {
-        const product = products.find(product => String(product.id || product.pid) === String(item.id || item.pid));
+        const product = products.find(candidate => String(candidate.id || candidate.pid) === String(item.id || item.pid));
         if (!product || product.active === false) return jsonResponse(400, { success: false, error: 'A selected product is no longer available.' });
         const sizes = Array.isArray(product.sizes) ? product.sizes : String(product.sizes || '').split(',').map(size => size.trim());
         const stockValue = product.size_stock ?? product.sizeStock ?? {};
@@ -248,7 +229,9 @@ export default async function handler(request) {
         if (stocks[item.size] != null && item.quantity > Number(stocks[item.size])) return jsonResponse(409, { success: false, error: 'The selected quantity is not in stock.' });
         if (product.cod_available === false || product.codAvailable === false) return jsonResponse(400, { success: false, error: 'Cash on delivery is unavailable for a selected product.' });
         if (Number(item.price) !== Number(product.price)) return jsonResponse(409, { success: false, error: 'A product price has changed. Refresh your cart before ordering.' });
-        item.title = product.title; item.brand = product.brand || ''; item.price = Number(product.price);
+        item.title = product.title;
+        item.brand = product.brand || '';
+        item.price = Number(product.price);
         item.hsn = product.hsn || '';
         const imageValue = String(product.image_url || product.imageUrl || '');
         const imageParts = imageValue.split(',');
@@ -261,15 +244,14 @@ export default async function handler(request) {
       const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const taxAmount = Math.round(subtotal * 18 / 100);
       const deliveryCharge = subtotal > 0 ? 150 : 0;
-
       const order = buildOrder({ ...payload, id: undefined, order_id: undefined, created_at: new Date().toISOString(), placed_at: new Date().toISOString(), items, email: user.email, userId: user.id || '', customerName: user.name || payload.customerName || '', subtotal, taxAmount, deliveryCharge, totalAmount: subtotal + taxAmount + deliveryCharge, status: 'Order Placed', paymentMethod: 'cod', paymentStatus: 'COD Pending' });
       order.checkout_key = checkoutKey;
       orders.unshift(order);
       await saveCloudOrders(orders);
       return jsonResponse(201, { success: true, order });
-    } catch (err) {
-      console.error('[Orders POST] Error:', err.message);
-      return jsonResponse(500, { success: false, error: err.message });
+    } catch (error) {
+      console.error('[Orders POST] Error:', error.message);
+      return jsonResponse(500, { success: false, error: error.message });
     }
   }
 
@@ -278,21 +260,18 @@ export default async function handler(request) {
       const payload = await parseJsonBody(request);
       const orderId = payload.id || payload.order_id;
       if (!orderId) return jsonResponse(400, { success: false, error: 'Order ID is required.' });
-
       const orders = await getCloudOrders();
-      const idx = orders.findIndex(o => String(o.id || o.order_id) === String(orderId));
-      if (idx === -1) return jsonResponse(404, { success: false, error: 'Order not found.' });
-
-      orders[idx] = buildOrder(payload, orders[idx]);
-      if (payload.status) orders[idx].status = payload.status;
-      orders[idx].updated_at = new Date().toISOString();
+      const index = orders.findIndex(order => String(order.id || order.order_id) === String(orderId));
+      if (index === -1) return jsonResponse(404, { success: false, error: 'Order not found.' });
+      orders[index] = buildOrder(payload, orders[index]);
+      if (payload.status) orders[index].status = payload.status;
+      orders[index].updated_at = new Date().toISOString();
       await saveCloudOrders(orders);
-      return jsonResponse(200, { success: true, order: orders[idx] });
-    } catch (err) {
-      console.error('[Orders PUT] Error:', err.message);
-      return jsonResponse(500, { success: false, error: err.message });
+      return jsonResponse(200, { success: true, order: orders[index] });
+    } catch (error) {
+      console.error('[Orders PUT] Error:', error.message);
+      return jsonResponse(500, { success: false, error: error.message });
     }
   }
-
   return jsonResponse(405, { success: false, error: 'Method not allowed.' });
 }

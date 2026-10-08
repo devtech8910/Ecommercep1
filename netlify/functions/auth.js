@@ -4,8 +4,7 @@
 // ============================================================
 
 import bcrypt from 'bcryptjs';
-
-const CLOUD_DB_URL = process.env.CLOUD_DB_URL || 'https://jsonblob.com/api/jsonBlob/019f9cba-929a-7931-ad23-922a9b668aa9';
+import { getAccountUsers, saveAccountUsers } from './lib/account-store.mjs';
 
 function getConfiguredAdmins() {
   const rawAdmins = process.env.DEFAULT_ADMIN_USERS || '';
@@ -28,8 +27,6 @@ function getConfiguredAdmins() {
 
 // Admin users must be configured explicitly. No dummy admin/customer accounts are seeded.
 const DEFAULT_ADMINS = getConfiguredAdmins();
-
-let memoryUsersCache = null;
 
 // Failed login attempt tracker (in-memory sliding window)
 const failedLoginAttempts = new Map();
@@ -99,46 +96,20 @@ function createToken() {
 }
 
 async function getCloudUsers() {
-  try {
-    const res = await fetch(CLOUD_DB_URL, {
-      headers: { 'Accept': 'application/json' }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      let users = Array.isArray(data) ? data : [];
-      let updated = false;
-      DEFAULT_ADMINS.forEach(adm => {
-        if (!users.some(u => u && u.email && u.email.toLowerCase() === adm.email.toLowerCase())) {
-          users.push(adm);
-          updated = true;
-        }
-      });
-      if (updated) {
-        saveCloudUsers(users);
-      }
-      memoryUsersCache = users;
-      return users;
+  const users = await getAccountUsers();
+  let updated = false;
+  DEFAULT_ADMINS.forEach(admin => {
+    if (!users.some(user => user && user.email && user.email.toLowerCase() === admin.email.toLowerCase())) {
+      users.push(admin);
+      updated = true;
     }
-  } catch (err) {
-    console.warn('[Netlify Auth] Cloud fetch error, using memory cache:', err.message);
-  }
-  return memoryUsersCache || DEFAULT_ADMINS;
+  });
+  if (updated) await saveAccountUsers(users);
+  return users;
 }
 
 async function saveCloudUsers(users) {
-  memoryUsersCache = users;
-  try {
-    await fetch(CLOUD_DB_URL, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(users)
-    });
-  } catch (err) {
-    console.warn('[Netlify Auth] Cloud save error:', err.message);
-  }
+  await saveAccountUsers(users);
 }
 
 async function sendResetOtpEmail(email, otp, name) {
@@ -563,9 +534,9 @@ export async function handler(event, context) {
   } catch (error) {
     console.error('[Netlify Auth Error]:', error);
     return {
-      statusCode: 500,
+      statusCode: 503,
       headers,
-      body: JSON.stringify({ success: false, errors: ['Server internal error: ' + error.message] })
+      body: JSON.stringify({ success: false, errors: ['The account service is temporarily unavailable. Please try again shortly.'] })
     };
   }
 }

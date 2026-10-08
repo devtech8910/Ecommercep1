@@ -28,7 +28,7 @@ async function main() {
   }));
   assert.equal((await orderCall('GET')).status, 401);
   assert.equal((await orderCall('GET', null, users[0], '?admin=true')).status, 403);
-  const signup = await auth({ httpMethod: 'POST', headers: {}, body: JSON.stringify({ action: 'register', email: 'qa.other@example.test', password, role: 'admin' }) });
+  const signup = await auth({ httpMethod: 'POST', headers: {}, body: JSON.stringify({ action: 'register', name: 'QA Other', email: 'qa.other@example.test', phone: '9000000001', password, role: 'admin' }) });
   assert.equal(JSON.parse(signup.body).user.role, 'customer', 'Public registration cannot create administrators');
 
   const browser = await chromium.launch({ headless: true, channel: 'chrome' });
