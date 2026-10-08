@@ -4,6 +4,8 @@
 // ============================================================
 
 import { getStore } from '@netlify/blobs';
+import catalog from '../../js/catalog-seed-data.js';
+import { resolveAccountUser } from './lib/account-session.mjs';
 
 const PRODUCTS_STORE_NAME = 'devtech-products';
 const PRODUCTS_BLOB_KEY = 'catalog.json';
@@ -67,6 +69,19 @@ function parseProductList(data) {
   return [];
 }
 
+function parseProductImages(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  const parts = String(value || '').split(',');
+  const images = [];
+  for (let index = 0; index < parts.length; index++) {
+    const part = parts[index].trim();
+    if (part.startsWith('data:image/') && part.includes(';base64')) {
+      images.push(part + ',' + String(parts[++index] || '').trim());
+    } else if (part) images.push(part);
+  }
+  return images;
+}
+
 function normaliseCategory(category) {
   const cat = String(category || '').trim().toLowerCase();
   if (cat.includes('women')) return 'womens';
@@ -74,6 +89,14 @@ function normaliseCategory(category) {
   if (cat.includes('kid')) return 'kids';
   if (cat.includes('access')) return 'accessories';
   return cat;
+}
+
+function productCompositeKey(product) {
+  return [
+    normaliseCategory(product.category || ''),
+    String(product.brand || '').trim().toLowerCase(),
+    String(product.title || '').trim().toLowerCase()
+  ].join('::');
 }
 
 async function parseJsonBody(request) {
@@ -115,7 +138,16 @@ async function fetchLegacyProducts() {
 async function getCloudProducts() {
   const store = getProductsStore();
   const data = await store.get(PRODUCTS_BLOB_KEY, { type: 'json', consistency: 'strong' });
-  if (data) return parseProductList(data);
+  if (data) {
+    const products = parseProductList(data);
+    const upgraded = catalog.upgradeSeedCatalog(products);
+    if (upgraded.some((product, index) => product !== products[index])) {
+      const backupKey = `catalog-before-${catalog.revision}.json`;
+      if (!await store.get(backupKey)) await store.setJSON(backupKey, products);
+      await saveCloudProducts(upgraded);
+    }
+    return upgraded;
+  }
 
   const legacyProducts = await fetchLegacyProducts();
   await saveCloudProducts(legacyProducts);
@@ -143,8 +175,21 @@ function normaliseProduct(payload, existing) {
   const couponApplicable = payload.couponApplicable != null
     ? payload.couponApplicable
     : (base.coupon_applicable != null ? base.coupon_applicable : (base.couponApplicable != null ? base.couponApplicable : true));
+  const price = Number(payload.price ?? base.price ?? 0);
+  const mrp = Math.max(price, Number(payload.mrp ?? base.mrp ?? price));
+  const stockValues = typeof sizeStock === 'object' ? Object.values(sizeStock) : String(sizeStock).split(',').map(entry => Number(entry.slice(entry.lastIndexOf(':') + 1)));
+  const stock = stockValues.reduce((total, quantity) => total + Math.max(0, Number(quantity) || 0), 0);
 
   return {
+    ...base,
+    colors: payload.colors ?? base.colors ?? [],
+    productType: payload.productType ?? base.productType ?? '',
+    rating: payload.rating ?? base.rating ?? 0,
+    reviewCount: payload.reviewCount ?? payload.review_count ?? base.reviewCount ?? 0,
+    reviews: payload.reviews ?? base.reviews ?? [],
+    badge: payload.badge ?? base.badge ?? '',
+    catalog_revision: payload.catalog_revision ?? base.catalog_revision,
+    active: payload.active ?? base.active ?? true,
     id: base.id || payload.id || payload.pid,
     pid: base.pid || payload.pid || payload.id,
     title: payload.title || base.title || '',
@@ -152,10 +197,14 @@ function normaliseProduct(payload, existing) {
     category: normaliseCategory(payload.category || base.category || ''),
     title_description: payload.titleDescription || payload.title_description || base.title_description || '',
     titleDescription: payload.titleDescription || payload.title_description || base.titleDescription || '',
-    mrp: parseFloat(payload.mrp != null ? payload.mrp : (base.mrp != null ? base.mrp : 0)),
-    price: parseFloat(payload.price != null ? payload.price : (base.price != null ? base.price : 0)),
+    mrp,
+    price,
+    discount: mrp > 0 ? Math.round((mrp - price) / mrp * 100) : 0,
+    stock,
+    stockStatus: stock > 0 ? 'in-stock' : 'out-of-stock',
     image_url: imgUrl,
     imageUrl: imgUrl,
+    images: parseProductImages(imgUrl),
     sizes: payload.sizes || base.sizes || 'S, M, L',
     replacement_allowed: replacementAllowed,
     replacementAllowed,
@@ -181,6 +230,13 @@ function normaliseProduct(payload, existing) {
 export default async function handler(request) {
   if (request.method === 'OPTIONS') {
     return new Response('', { status: 200, headers: CORS_HEADERS });
+  }
+  if (['POST', 'PUT', 'DELETE'].includes(request.method)) {
+    let user;
+    try { user = await resolveAccountUser(request); }
+    catch (error) { return jsonResponse(503, { success: false, error: error.message }); }
+    if (!user) return jsonResponse(401, { success: false, error: 'Please sign in to manage products.' });
+    if (user.role !== 'admin') return jsonResponse(403, { success: false, error: 'Administrator access is required.' });
   }
 
   if (request.method === 'GET') {
@@ -214,6 +270,60 @@ export default async function handler(request) {
   if (request.method === 'POST') {
     try {
       const payload = await parseJsonBody(request);
+
+      if (payload.action === 'bulk-upsert' && Array.isArray(payload.products)) {
+        const products = await getCloudProducts();
+        const indexByKey = new Map();
+
+        products.forEach((product, index) => {
+          const id = String(product.id || product.pid || '').trim().toLowerCase();
+          const composite = productCompositeKey(product);
+          if (id) indexByKey.set(id, index);
+          if (composite !== '::::') indexByKey.set(composite, index);
+        });
+
+        let inserted = 0;
+        let updated = 0;
+
+        payload.products.forEach(rawProduct => {
+          const incomingId = String(rawProduct.id || rawProduct.pid || '').trim();
+          const incomingKey = incomingId.toLowerCase();
+          const incomingComposite = productCompositeKey(rawProduct);
+          const matchedIndex = indexByKey.has(incomingKey)
+            ? indexByKey.get(incomingKey)
+            : indexByKey.get(incomingComposite);
+
+          if (Number.isInteger(matchedIndex)) {
+            const updatedProduct = normaliseProduct(rawProduct, products[matchedIndex]);
+            updatedProduct.id = products[matchedIndex].id || products[matchedIndex].pid || incomingId;
+            updatedProduct.pid = products[matchedIndex].pid || products[matchedIndex].id || incomingId;
+            products[matchedIndex] = updatedProduct;
+            updated += 1;
+          } else {
+            const newId = incomingId || 'cloud_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+            const newProduct = normaliseProduct(rawProduct, { id: newId, pid: newId });
+            newProduct.id = newId;
+            newProduct.pid = newId;
+            newProduct.created_at = new Date().toISOString();
+            products.push(newProduct);
+            const newIndex = products.length - 1;
+            indexByKey.set(newId.toLowerCase(), newIndex);
+            indexByKey.set(productCompositeKey(newProduct), newIndex);
+            inserted += 1;
+          }
+        });
+
+        await saveCloudProducts(products);
+        console.log(`[Products POST bulk-upsert] Inserted ${inserted}, updated ${updated}. Total: ${products.length}`);
+        return jsonResponse(200, {
+          success: true,
+          inserted,
+          updated,
+          total: products.length,
+          products
+        });
+      }
+
       const { title, price, category } = payload;
       const imgUrl = payload.imageUrl || payload.image_url || payload.image;
 

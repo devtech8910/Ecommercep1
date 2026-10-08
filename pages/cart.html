@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Cart — Fashion Company</title>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    
+
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/animations.css" />
@@ -102,7 +102,7 @@
          MAIN CART SECTION
     ========================================= -->
     <main class="auth-main-container" style="padding-top: 60px !important; padding-bottom: var(--space-12); max-width: 1100px; margin: 0 auto; width: 100%; box-sizing: border-box; padding: 0 20px;">
-      
+
       <div class="auth-card-wrapper fade-in-up" style="max-width: 100%;">
         <div class="cart-glass-card">
           <!-- Header -->
@@ -114,7 +114,7 @@
 
           <!-- Two Column Cart Layout -->
           <div id="cart-columns" style="display: flex; gap: 32px; flex-wrap: wrap; width: 100%;">
-            
+
             <!-- Left Side: Item list -->
             <div id="cart-items-column" style="flex: 2; min-width: 320px; display: flex; flex-direction: column; gap: 16px;">
               <!-- Dynamic items render here -->
@@ -124,7 +124,7 @@
             <div id="cart-summary-column" style="flex: 1; min-width: 290px;">
               <div class="summary-box">
                 <h3 style="font-size: 17px; font-weight: 800; color: #ffffff; margin: 0 0 20px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 14px;">Order Summary</h3>
-                
+
                 <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
                   <div style="display: flex; justify-content: space-between; font-size: 13.5px; color: #cbd5e1;">
                     <span>Price Subtotal</span>
@@ -169,15 +169,15 @@
     <div id="order-confirmed-modal" style="position: fixed; inset: 0; z-index: 99999; display: none; align-items: center; justify-content: center; background-color: rgba(10, 10, 20, 0.85); backdrop-filter: blur(14px); padding: 20px; font-family: 'Inter', -apple-system, sans-serif;">
       <div style="background: #141424; border-radius: 28px; width: 100%; max-width: 420px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.12); overflow: hidden; padding: 36px; text-align: center;">
         <div style="font-size: 60px; margin-bottom: 18px;">🎉</div>
-        <h2 style="margin: 0 0 8px; font-size: 22px; font-weight: 800; color: #ffffff;">Order Scheduled Successfully!</h2>
-        <p style="margin: 0 0 24px; font-size: 13.5px; color: #94a3b8; line-height: 1.6;">Thank you for shopping with Fashion Company. Your order request has been registered and is being processed.</p>
+        <h2 id="order-confirmed-title" style="margin: 0 0 8px; font-size: 22px; font-weight: 800; color: #ffffff;">Order Scheduled Successfully!</h2>
+        <p id="order-confirmed-message" style="margin: 0 0 24px; font-size: 13.5px; color: #94a3b8; line-height: 1.6;">Thank you for shopping with Fashion Company. Your order request has been registered and is being processed.</p>
         <button id="close-confirmed-btn" class="btn-gradient-indigo" style="width: 100%; padding: 14px;">Back to Shopping</button>
       </div>
     </div>
 
     <!-- Custom JavaScript -->
     <script src="../js/utils.js"></script>
-    <script src="../js/utils.js"></script>
+    <script src="../js/catalog-ui.js"></script>
     <script src="../js/script.js"></script>
     <script src="../js/mobile-ui.js"></script>
     <script>
@@ -189,6 +189,8 @@
         const emptyState = document.getElementById('cart-empty');
         const checkoutBtn = document.getElementById('checkout-btn');
         const confirmedModal = document.getElementById('order-confirmed-modal');
+        const urlParams = new URLSearchParams(window.location.search);
+        const isBuyNowCheckout = urlParams.get('checkout') === 'buy-now';
 
         function escapeHtml(str) {
           if (window.escapeHtml) return window.escapeHtml(str);
@@ -199,12 +201,10 @@
         }
 
         function getCartKey() {
-          try {
-            const user = JSON.parse(localStorage.getItem('dtf_user') || 'null');
-            return user && user.email ? 'dtf_cart_' + user.email.toLowerCase() : 'dtf_cart';
-          } catch {
-            return 'dtf_cart';
+          if (isBuyNowCheckout) {
+            return window.getUserStorageKey ? window.getUserStorageKey('dtf_buy_now_checkout') : 'dtf_buy_now_checkout';
           }
+          return window.getUserStorageKey ? window.getUserStorageKey('dtf_cart') : 'dtf_cart';
         }
 
         // Helper to load cart from localStorage
@@ -221,6 +221,14 @@
         function saveCart(items) {
           localStorage.setItem(getCartKey(), JSON.stringify(items));
           window.dispatchEvent(new Event('dtf:cart:updated'));
+        }
+
+        if (isBuyNowCheckout) {
+          const heading = document.querySelector('.cart-glass-card h1');
+          const subtitle = document.querySelector('.cart-glass-card p');
+          if (heading) heading.textContent = 'Buy Now Checkout';
+          if (subtitle) subtitle.textContent = 'Review this selected product and continue with delivery and payment steps.';
+          if (checkoutBtn) checkoutBtn.textContent = 'Continue Checkout';
         }
 
         function calculateTotals(items) {
@@ -259,20 +267,24 @@
           items.forEach((item, index) => {
             const itemRow = document.createElement('div');
             itemRow.className = 'cart-item-row';
+            const imageHtml = item.image
+              ? `<img src="${escapeHtml(item.image)}" style="width: 100%; height: 100%; object-fit: cover;" alt="${escapeHtml(item.title || 'Product')}" />`
+              : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:11px;font-weight:700;text-align:center;padding:8px;">No image</div>';
+            const qty = Math.max(1, parseInt(item.quantity || 1, 10));
 
             itemRow.innerHTML = `
               <div style="width: 80px; height: 96px; border-radius: 14px; overflow: hidden; background: #1e1e30; flex-shrink: 0; position: relative;">
-                <img src="${item.image || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop'}" style="width: 100%; height: 100%; object-fit: cover;" alt="${escapeHtml(item.title || 'Product')}" />
+                ${imageHtml}
               </div>
               <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
-                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #ffffff;">${escapeHtml(item.title || 'Classic Product')}</h4>
+                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #ffffff;">${escapeHtml(item.title || 'Product')}</h4>
                 <p style="margin: 0; font-size: 14px; font-weight: 800; color: #818cf8;">₹${Math.round(parseFloat(item.price || 0)).toLocaleString('en-IN')}</p>
                 ${item.size ? `<span style="font-size: 11.5px; font-weight: 700; color: #cbd5e1; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 3px 8px; width: fit-content;">Size: ${escapeHtml(item.size)}</span>` : ''}
-                
+
                 <!-- Quantity selector -->
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;">
                   <button class="qty-control-btn dec-btn">-</button>
-                  <span style="font-size: 13.5px; font-weight: 700; width: 22px; text-align: center; color: #ffffff;">${item.quantity || 1}</span>
+                  <span style="font-size: 13.5px; font-weight: 700; width: 22px; text-align: center; color: #ffffff;">${qty}</span>
                   <button class="qty-control-btn inc-btn">+</button>
                 </div>
               </div>
@@ -311,112 +323,14 @@
           });
         }
 
-        // Checkout Button logic
-        checkoutBtn.addEventListener('click', async () => {
+        // Checkout Multi-Stage Trigger
+        checkoutBtn.addEventListener('click', () => {
           const rawUser = localStorage.getItem('dtf_user') || localStorage.getItem('user');
-          if (!rawUser) {
-            window.location.href = 'login.html';
-            return;
-          }
-
-          let userData;
-          try {
-            userData = JSON.parse(rawUser);
-          } catch {
-            window.location.href = 'login.html';
-            return;
-          }
-
-          const token = userData.token || '';
+          if (!rawUser) { window.location.href = 'login.html'; return; }
           const items = loadCart();
-
           if (items.length === 0) return;
 
-          let subtotal = 0;
-          items.forEach(item => {
-            const price = Math.round(parseFloat(item.price || 0));
-            const qty = parseInt(item.quantity || 1, 10);
-            subtotal += price * qty;
-          });
-          const tax = Math.round(subtotal * 18 / 100);
-          const delivery = subtotal > 0 ? 150 : 0;
-          const totalAmount = subtotal + tax + delivery;
-
-          checkoutBtn.disabled = true;
-          checkoutBtn.textContent = '⏳ Placing Order...';
-
-          const orderItems = items.map(item => ({
-            id: item.id || item.pid || 1,
-            pid: item.pid || item.id || 1,
-            title: item.title || 'Classic Product',
-            price: item.price,
-            quantity: item.quantity || 1,
-            size: item.size || 'M',
-            image: item.image || ''
-          }));
-
-          let deliveryAddress = '';
-          try {
-            const savedAddr = localStorage.getItem('dtf_shipping_address') || localStorage.getItem('user_address');
-            if (savedAddr) deliveryAddress = savedAddr;
-          } catch {}
-
-          let placedOrder = null;
-          try {
-            const apiUrl = window.dtfApiUrl || ((path) => {
-              const host = window.location.hostname;
-              const base = host && host !== 'localhost' && host !== '127.0.0.1' ? `http://${host}:5000` : 'http://localhost:5000';
-              return `${base}${path}`;
-            });
-            const res = await fetch(apiUrl('/orders'), {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                items: orderItems,
-                totalAmount,
-                deliveryAddress
-              })
-            });
-
-            if (res.ok) {
-              const data = await res.json();
-              if (data.success && data.order) {
-                placedOrder = data.order;
-              }
-            }
-          } catch (err) {
-            console.warn('[Checkout] Remote sync notification:', err.message);
-          }
-
-          // Resilient fallback order generation
-          if (!placedOrder) {
-            const orderNum = Math.floor(100000 + Math.random() * 900000);
-            placedOrder = {
-              id: orderNum,
-              user_id: userData.id || 1,
-              total_amount: totalAmount,
-              status: 'Order Placed',
-              items: orderItems,
-              created_at: new Date().toISOString(),
-              placed_at: new Date().toISOString(),
-              delivery_address: deliveryAddress
-            };
-          }
-
-          const localOrders = JSON.parse(localStorage.getItem('dtf_orders') || '[]');
-          localOrders.unshift(placedOrder);
-          localStorage.setItem('dtf_orders', JSON.stringify(localOrders));
-
-          // Clear cart immediately
-          localStorage.removeItem(getCartKey());
-          window.dispatchEvent(new Event('dtf:cart:updated'));
-
-          checkoutBtn.disabled = false;
-          checkoutBtn.textContent = '🛍️ Place Order Request';
-          confirmedModal.style.display = 'flex';
+          if (window.openCheckoutModal) window.openCheckoutModal();
         });
 
         document.getElementById('close-confirmed-btn').addEventListener('click', () => {
@@ -425,8 +339,332 @@
         });
 
         render();
+        if (isBuyNowCheckout && loadCart().length > 0) {
+          setTimeout(() => {
+            if (window.openCheckoutModal) window.openCheckoutModal();
+          }, 250);
+        }
         window.addEventListener('storage', render);
         window.addEventListener('dtf:cart:updated', render);
+      });
+    </script>
+    <!-- Checkout Multi-Stage Modal -->
+    <style>
+      #checkout-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 99999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+      #checkout-modal-overlay.active { display: flex; opacity: 1; }
+      #checkout-modal-content { background: #111827; border: 1px solid #1f2937; border-radius: 20px; width: 90%; max-width: 420px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset; transform: scale(0.95) translateY(10px); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); color: #fff; font-family: 'Inter', sans-serif;}
+      #checkout-modal-overlay.active #checkout-modal-content { transform: scale(1) translateY(0); }
+
+      .checkout-step { display: none; }
+      .checkout-step.active { display: block; animation: stepFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+      @keyframes stepFadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+      @keyframes stepFadeInBack { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+      .checkout-step.active.back-nav { animation: stepFadeInBack 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+
+      .checkout-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+      .checkout-title { font-size: 18px; font-weight: 800; margin: 0; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+      .checkout-close { background: rgba(255,255,255,0.05); border: none; color: #9ca3af; font-size: 16px; cursor: pointer; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+      .checkout-close:hover { background: rgba(255,255,255,0.1); color: #fff; transform: rotate(90deg); }
+
+      .addr-card { background: rgba(31,41,55,0.5); border: 1px solid rgba(55,65,81,0.5); border-radius: 14px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; display: flex; gap: 14px; align-items: flex-start; }
+      .addr-card:hover { border-color: rgba(99,102,241,0.5); background: rgba(31,41,55,0.8); }
+      .addr-card.selected { border-color: #6366f1; background: rgba(99,102,241,0.1); box-shadow: 0 4px 20px rgba(99,102,241,0.15); }
+
+      .payment-card { background: rgba(31,41,55,0.5); border: 1px solid rgba(55,65,81,0.5); border-radius: 14px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; display: flex; gap: 14px; align-items: center; }
+      .payment-card.selected { border-color: #6366f1; background: rgba(99,102,241,0.1); box-shadow: 0 4px 20px rgba(99,102,241,0.15); }
+
+      .checkout-action-btn { width: 100%; padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; border: none; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); color: #fff; margin-top: 16px; transition: all 0.2s; text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: 0 8px 16px rgba(79,70,229,0.25); }
+      .checkout-action-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 20px rgba(79,70,229,0.3); }
+      .checkout-action-btn:active { transform: translateY(0); }
+      .checkout-action-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+      .add-new-addr-btn { width: 100%; padding: 14px; background: rgba(255,255,255,0.02); border: 1.5px dashed rgba(99,102,241,0.3); color: #a5b4fc; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 12px; transition: all 0.2s; }
+      .add-new-addr-btn:hover { background: rgba(99,102,241,0.05); border-color: rgba(99,102,241,0.6); }
+
+      .stepper-progress { display: flex; gap: 8px; margin-bottom: 24px; }
+      .stepper-dot { flex: 1; height: 4px; border-radius: 2px; background: #374151; transition: all 0.3s; }
+      .stepper-dot.active { background: #6366f1; box-shadow: 0 0 8px #6366f1; }
+
+      .radio-circle { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #4b5563; display: flex; align-items: center; justify-content: center; margin-top: 2px; transition: all 0.2s; flex-shrink: 0; }
+      .selected .radio-circle { border-color: #6366f1; }
+      .selected .radio-circle::after { content: ''; width: 10px; height: 10px; background: #6366f1; border-radius: 50%; display: block; animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+      @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+    </style>
+
+    <div id="checkout-modal-overlay">
+      <div id="checkout-modal-content">
+
+        <!-- STEP 1: Address Selection -->
+        <div id="checkout-step-1" class="checkout-step active">
+          <div class="checkout-header">
+            <h3 class="checkout-title">Delivery Location</h3>
+            <button class="checkout-close" onclick="closeCheckoutModal()">✕</button>
+          </div>
+          <div class="stepper-progress"><div class="stepper-dot active"></div><div class="stepper-dot"></div></div>
+
+          <div id="checkout-addresses-list" style="max-height: 280px; overflow-y: auto; margin-bottom: 16px; padding-right: 4px;">
+            <!-- Render addresses here -->
+          </div>
+
+          <button class="add-new-addr-btn" onclick="openAddNewAddress()">+ Add New Location</button>
+
+          <button id="checkout-next-btn" class="checkout-action-btn" onclick="goToPaymentStep()">Continue to Payment →</button>
+        </div>
+
+        <!-- STEP 2: Payment -->
+        <div id="checkout-step-2" class="checkout-step">
+          <div class="checkout-header">
+            <h3 class="checkout-title">Payment Method</h3>
+            <button class="checkout-close" onclick="closeCheckoutModal()">✕</button>
+          </div>
+          <div class="stepper-progress"><div class="stepper-dot active"></div><div class="stepper-dot active"></div></div>
+
+          <div class="payment-card selected" data-method="cod">
+            <div class="radio-circle"></div>
+            <div style="flex: 1;">
+              <div style="font-weight: 700; font-size: 15px; color: #fff; margin-bottom: 4px;">Cash on Delivery (COD)</div>
+              <div style="font-size: 13px; color: #9ca3af; line-height: 1.4;">Pay in cash or UPI when your order arrives at your door.</div>
+            </div>
+            <span style="font-size: 24px; opacity: 0.8;">💵</span>
+          </div>
+
+          <div class="payment-card" style="opacity: 0.4; cursor: not-allowed;" title="Currently unavailable">
+            <div class="radio-circle" style="border-color: #374151;"></div>
+            <div style="flex: 1;">
+              <div style="font-weight: 700; font-size: 15px; color: #fff; margin-bottom: 4px;">Online Payment</div>
+              <div style="font-size: 13px; color: #9ca3af; line-height: 1.4;">Credit Card, Debit, Netbanking</div>
+              <span style="font-size: 11px; font-weight: 700; color: #ef4444; background: rgba(239,68,68,0.1); padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 6px;">Unavailable</span>
+            </div>
+            <span style="font-size: 24px; opacity: 0.5;">💳</span>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 24px;">
+            <button class="checkout-action-btn" style="background: rgba(255,255,255,0.05); color: #fff; flex: 0.4; box-shadow: none; border: 1px solid rgba(255,255,255,0.1);" onclick="goToAddressStep()">← Back</button>
+            <button id="checkout-final-btn" class="checkout-action-btn" style="flex: 1;" onclick="executeFinalCheckout()">Confirm & Place Order</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+      let selectedCheckoutAddress = null;
+
+      function isBuyNowCheckoutMode() {
+        return new URLSearchParams(window.location.search).get('checkout') === 'buy-now';
+      }
+
+      function getCheckoutCartKey() {
+        if (isBuyNowCheckoutMode()) {
+          return window.getUserStorageKey ? window.getUserStorageKey('dtf_buy_now_checkout') : 'dtf_buy_now_checkout';
+        }
+        return window.getUserStorageKey ? window.getUserStorageKey('dtf_cart') : 'dtf_cart';
+      }
+
+      function getOrdersApiUrl(query = '') {
+        return window.dtfOrdersUrl(query);
+      }
+
+
+
+      window.openCheckoutModal = function() {
+        document.getElementById('checkout-modal-overlay').classList.add('active');
+        goToAddressStep(true);
+        renderCheckoutAddresses();
+      };
+
+      function closeCheckoutModal() {
+        document.getElementById('checkout-modal-overlay').classList.remove('active');
+      }
+
+      function goToAddressStep(isInit = false) {
+        document.getElementById('checkout-step-2').classList.remove('active');
+        const step1 = document.getElementById('checkout-step-1');
+        if (!isInit) step1.classList.add('back-nav');
+        else step1.classList.remove('back-nav');
+        step1.classList.add('active');
+      }
+
+      function goToPaymentStep() {
+        if (!selectedCheckoutAddress) {
+          alert("Please select a delivery location first.");
+          return;
+        }
+        document.getElementById('checkout-step-1').classList.remove('active');
+        document.getElementById('checkout-step-2').classList.remove('back-nav');
+        document.getElementById('checkout-step-2').classList.add('active');
+      }
+
+      function openAddNewAddress() {
+        closeCheckoutModal();
+        if (window.openLocationSheet) {
+          window.openLocationSheet();
+        } else {
+          alert("Address management is currently unavailable.");
+        }
+      }
+
+      function renderCheckoutAddresses() {
+        const listContainer = document.getElementById('checkout-addresses-list');
+        listContainer.innerHTML = '';
+
+        const savedAddresses = JSON.parse(localStorage.getItem('dtf_saved_addresses') || '[]');
+        const currentLoc = JSON.parse(localStorage.getItem('dtf_user_location') || 'null');
+
+        let allAddrs = [...savedAddresses];
+        if (currentLoc && currentLoc.name && !allAddrs.some(a => a.pin === currentLoc.pin && a.name === currentLoc.name)) {
+           allAddrs.unshift(currentLoc); // push to top if distinct
+        }
+
+        if (allAddrs.length === 0) {
+           listContainer.innerHTML = '<div style="text-align:center; padding: 20px 0; color: #9ca3af; font-size: 14px;">No saved addresses found.</div>';
+           selectedCheckoutAddress = null;
+           return;
+        }
+
+        if (!selectedCheckoutAddress) selectedCheckoutAddress = allAddrs[0];
+
+        allAddrs.forEach(addr => {
+          const isSelected = selectedCheckoutAddress && (selectedCheckoutAddress.pin === addr.pin && selectedCheckoutAddress.name === addr.name);
+          const card = document.createElement('div');
+          card.className = 'addr-card' + (isSelected ? ' selected' : '');
+          card.innerHTML = `
+            <div class="radio-circle"></div>
+            <div style="flex:1;">
+              <div style="font-weight: 700; font-size: 14px; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                ${addr.typeIcon || '📍'} ${addr.label || 'ADDRESS'}
+              </div>
+              <div style="font-size: 13px; color: #9ca3af; line-height: 1.4;">
+                <strong style="color: #d1d5db;">${addr.personName || addr.name}</strong><br>
+                ${addr.fullAddress || (addr.name + ', ' + addr.pin)}
+              </div>
+            </div>
+          `;
+          card.onclick = () => {
+            selectedCheckoutAddress = addr;
+            renderCheckoutAddresses();
+          };
+          listContainer.appendChild(card);
+        });
+      }
+
+      async function executeFinalCheckout() {
+        const finalBtn = document.getElementById('checkout-final-btn');
+        if (finalBtn.disabled) return;
+        if (!selectedCheckoutAddress) { alert('Select a delivery address first.'); return; }
+        finalBtn.disabled = true;
+        finalBtn.textContent = '⏳ Processing...';
+
+        const rawUser = localStorage.getItem('dtf_user') || localStorage.getItem('user');
+        const userData = JSON.parse(rawUser || '{}');
+        const token = userData.token || localStorage.getItem('dtf_token') || localStorage.getItem('token') || '';
+
+        const cartKey = getCheckoutCartKey();
+        const items = JSON.parse(localStorage.getItem(cartKey) || '[]');
+        if (!items.length) {
+          finalBtn.disabled = false;
+          finalBtn.textContent = 'Confirm & Place Order';
+          alert('Your cart is empty.');
+          return;
+        }
+
+        let subtotal = 0;
+        items.forEach(item => {
+          subtotal += Math.round(parseFloat(item.price || 0)) * parseInt(item.quantity || 1, 10);
+        });
+        const tax = Math.round(subtotal * 18 / 100);
+        const delivery = subtotal > 0 ? 150 : 0;
+        const totalAmount = subtotal + tax + delivery;
+
+        const orderItems = items.map(item => ({
+          id: item.id || item.pid || 1,
+          pid: item.pid || item.id || 1,
+          title: item.title || 'Product',
+          brand: item.brand || '',
+          price: item.price,
+          quantity: Math.max(1, parseInt(item.quantity || 1, 10)),
+          size: item.size || '',
+          color: item.color || '',
+          image: item.image || ''
+        }));
+
+        const deliveryAddress = selectedCheckoutAddress ? (selectedCheckoutAddress.fullAddress || `${selectedCheckoutAddress.name}, ${selectedCheckoutAddress.pin}`) : '';
+
+        const customerName = [userData.first_name || userData.firstName || '', userData.last_name || userData.lastName || ''].join(' ').trim() || userData.name || '';
+        const orderPayload = {
+          items: orderItems,
+          subtotal,
+          taxAmount: tax,
+          deliveryCharge: delivery,
+          totalAmount,
+          deliveryAddress: selectedCheckoutAddress || deliveryAddress,
+          customerName,
+          email: userData.email || '',
+          phone: userData.phone || userData.mobile || '',
+          userId: userData.id || '',
+          paymentMethod: 'cod',
+          paymentStatus: 'COD Pending'
+        };
+        const requestStateKey = 'dtf_checkout_request_' + cartKey;
+        const signature = JSON.stringify(orderPayload);
+        let requestState = JSON.parse(sessionStorage.getItem(requestStateKey) || 'null');
+        if (!requestState || requestState.signature !== signature) {
+          requestState = { signature, key: window.crypto?.randomUUID?.() || 'checkout_' + Date.now() + '_' + Math.random().toString(36).slice(2) };
+          sessionStorage.setItem(requestStateKey, JSON.stringify(requestState));
+        }
+        orderPayload.checkoutKey = requestState.key;
+
+        let placedOrder = null;
+        let orderError = '';
+        try {
+          const res = await fetch(getOrdersApiUrl(), {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderPayload),
+            signal: AbortSignal.timeout(12000)
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data.success && data.order) {
+            placedOrder = data.order;
+          } else {
+            orderError = data.error || `Production orders API returned ${res.status}`;
+          }
+        } catch (err) {
+          orderError = err.message || 'Production orders API is unavailable';
+        }
+
+
+        if (!placedOrder) {
+          finalBtn.disabled = false;
+          finalBtn.textContent = 'Confirm & Place Order';
+          alert('Could not place the order in the shared billing system. Please try again. ' + orderError);
+          return;
+        }
+
+        const localOrders = JSON.parse(localStorage.getItem('dtf_orders') || '[]');
+        localOrders.unshift(placedOrder);
+        localStorage.setItem('dtf_orders', JSON.stringify(localOrders));
+
+        localStorage.removeItem(cartKey);
+        sessionStorage.removeItem(requestStateKey);
+        window.dispatchEvent(new Event('dtf:cart:updated'));
+
+        closeCheckoutModal();
+        const confirmedModal = document.getElementById('order-confirmed-modal');
+        const confirmedTitle = document.getElementById('order-confirmed-title');
+        const confirmedMessage = document.getElementById('order-confirmed-message');
+        if (confirmedTitle) confirmedTitle.textContent = 'Order Scheduled Successfully!';
+        if (confirmedMessage) confirmedMessage.textContent = 'Thank you for shopping with Fashion Company. Your order request has been registered and is being processed.';
+        if (confirmedModal) confirmedModal.style.display = 'flex';
+      }
+
+      // Update when location changes externally
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'dtf_saved_addresses' || e.key === 'dtf_user_location') {
+           if (document.getElementById('checkout-modal-overlay').classList.contains('active')) {
+             renderCheckoutAddresses();
+           }
+        }
       });
     </script>
   </body>

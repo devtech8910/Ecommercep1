@@ -61,24 +61,27 @@
           const price = buyBtn.getAttribute('data-price');
           const image = buyBtn.getAttribute('data-image');
 
-          const cartKey = getUserStorageKey('dtf_cart');
-          const cart = JSON.parse(localStorage.getItem(cartKey)) || [];
-          const existing = cart.findIndex(c => c.title === title);
-
-          if (existing > -1) {
-            cart[existing].quantity = (cart[existing].quantity || 1) + 1;
-          } else {
-            cart.push({
-              title: title,
-              price: price,
-              image: image,
-              quantity: 1
-            });
+          const rawUser = localStorage.getItem('dtf_user') || localStorage.getItem('user');
+          if (!rawUser) {
+            window.location.href = 'login.html';
+            return;
           }
 
-          localStorage.setItem(cartKey, JSON.stringify(cart));
+          const product = buyBtn.closest('a, article, .product-card-wow, .shop-carousel-card')?._product || {};
+          const buyNowKey = getUserStorageKey('dtf_buy_now_checkout');
+          localStorage.setItem(buyNowKey, JSON.stringify([{
+            id: product.id || product.pid || buyBtn.getAttribute('data-id') || title,
+            pid: product.pid || product.id || buyBtn.getAttribute('data-id') || title,
+            title: title || product.title || 'Product',
+            brand: product.brand || '',
+            price: price || product.price || 0,
+            image: image || product.image || '',
+            size: product.size || 'M',
+            quantity: 1,
+            source: 'buy-now'
+          }]));
           window.dispatchEvent(new Event('dtf:cart:updated'));
-          window.location.href = 'cart.html';
+          window.location.href = 'cart.html?checkout=buy-now';
         }
       });
     }

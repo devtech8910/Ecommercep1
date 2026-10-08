@@ -1,0 +1,10 @@
+{
+  "brand": "Fashion Company",
+  "updated": "08 October 2026",
+  "supportEmail": "support@fashioncompany.example",
+  "supportPhone": "+91 XXXXX XXXXX",
+  "businessAddress": "Your business address, City, State, PIN",
+  "supportHours": "Monday to Saturday, 9:00 AM to 8:00 PM IST",
+  "placeholderContacts": true,
+  "website": "https://fashion-company.netlify.app"
+}

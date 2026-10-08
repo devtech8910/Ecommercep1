@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="css/animations.css" />
     <link rel="stylesheet" href="css/responsive.css" />
     <link rel="stylesheet" href="css/mobile.css" />
+    <link rel="stylesheet" href="css/store-campaigns.css" />
 
     <!-- Force Dark Mode -->
     <script>document.documentElement.setAttribute('data-theme', 'dark');</script>
@@ -34,6 +35,7 @@
     <!-- Leaflet OpenStreetMap -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+      <link rel="stylesheet" href="css/catalog.css" />
   </head>
   <body>
     <!-- ========================================
@@ -187,26 +189,24 @@
     <main id="main-content">
       <section class="ad-carousel-section" id="ad-carousel" aria-label="Promotions">
         <!-- Carousel Container -->
-        <div class="ad-carousel-wrapper">
+        <div class="ad-carousel-wrapper" role="group" aria-roledescription="carousel" aria-label="Store promotions" tabindex="0">
           <div class="ad-carousel-track" id="ad-carousel-track">
-            <!-- Default fallback slide (shown while loading or if no banners) -->
-            <div class="ad-slide ad-slide--active" data-link="pages/shop.html">
-              <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1920&q=90&auto=format&fit=crop" alt="Summer Collection 2026" class="ad-slide-img" loading="eager" fetchpriority="high" />
+            <!-- Neutral loader: real admin banners are rendered only after cloud data loads -->
+            <div class="ad-slide ad-slide--active ad-slide-loading" data-link="#">
               <div class="ad-slide-overlay"></div>
               <div class="ad-slide-content">
-                <span class="ad-slide-badge">✦ Limited Time Offer</span>
-                <h2 class="ad-slide-title">Summer Collection 2026</h2>
-                <p class="ad-slide-desc">Up to 40% off on premium fashion for Men, Women & Kids</p>
-                <a href="pages/shop.html" class="ad-slide-cta">Shop Now →</a>
+                <span class="ad-slide-badge">Loading</span>
+                <h2 class="ad-slide-title">Preparing latest offers</h2>
+                <p class="ad-slide-desc">Please wait while we sync the current store banners.</p>
               </div>
             </div>
           </div>
 
           <!-- Navigation Arrows -->
-          <button class="ad-nav-btn ad-nav-prev" id="ad-prev-btn" aria-label="Previous slide">
+          <button type="button" class="ad-nav-btn ad-nav-prev" id="ad-prev-btn" aria-label="Previous slide" title="Previous promotion" disabled>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
-          <button class="ad-nav-btn ad-nav-next" id="ad-next-btn" aria-label="Next slide">
+          <button type="button" class="ad-nav-btn ad-nav-next" id="ad-next-btn" aria-label="Next slide" title="Next promotion" disabled>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
 
@@ -255,26 +255,49 @@
             }
           }
           .ad-carousel-track {
-            display: flex;
-            flex-wrap: nowrap;
+            display: grid;
             width: 100%;
             height: 100%;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            will-change: transform;
           }
           .ad-slide {
+            grid-area: 1 / 1;
             position: relative;
             width: 100%;
             min-width: 100%;
             max-width: 100%;
             height: 100%;
             cursor: pointer;
-            flex: 0 0 100%;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.6s ease, visibility 0s 0.6s;
+          }
+          .ad-slide--active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition: opacity 0.6s ease;
+          }
+          .ad-slide picture {
+            display: block;
+            width: 100%;
+            height: 100%;
+          }
+          .ad-slide-loading {
+            cursor: default;
+            background:
+              radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.18), transparent 32%),
+              linear-gradient(135deg, #0b1020 0%, #111427 54%, #070914 100%);
+          }
+          .ad-slide-loading .ad-slide-content {
+            top: 0;
+            justify-content: center;
+            background: transparent;
           }
           .ad-slide-img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             object-position: center;
           }
           .ad-slide-overlay {
@@ -297,13 +320,12 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+            background: transparent;
           }
           @media (min-width: 768px) {
             .ad-slide-content {
               padding: 40px 60px 56px;
               gap: 12px;
-              max-width: 700px;
             }
           }
           .ad-slide-badge {
@@ -317,7 +339,7 @@
             font-size: 11px;
             font-weight: 700;
             color: #e0e7ff;
-            letter-spacing: 0.04em;
+            letter-spacing: 0;
           }
           .ad-slide-title {
             font-size: 28px;
@@ -422,6 +444,9 @@
             border-radius: 99px;
             box-shadow: 0 0 8px rgba(99,102,241,0.6);
           }
+          @media (prefers-reduced-motion: reduce) {
+            .ad-slide { transition: none; }
+          }
 
         </style>
       </section>
@@ -465,10 +490,13 @@
                 <!-- Full photo -->
                 <div class="cat-photo-wrap">
                   <img
-                    src="https://images.unsplash.com/photo-1617137968427-85924c800a22?w=700&q=85&auto=format&fit=crop&crop=top"
-                    alt="Men's luxury fashion — tailored suits and premium casuals"
+                    src="assets/banners/category-mens.webp"
+                    alt="Navy Oxford shirt, charcoal blazer, navy trousers and ivory cable-knit sweater on a studio rail"
                     class="cat-photo"
+                    width="1000"
+                    height="1400"
                     loading="lazy"
+                    decoding="async"
                   />
                   <!-- Gradient overlay -->
                   <div class="cat-overlay" aria-hidden="true"></div>
@@ -497,10 +525,13 @@
 
                 <div class="cat-photo-wrap">
                   <img
-                    src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=700&q=85&auto=format&fit=crop&crop=top"
-                    alt="Women's luxury fashion — elegant dresses and premium womenswear"
+                    src="assets/banners/category-womens.webp"
+                    alt="Ivory wrap dress, sage tiered dress and rose cardigan arranged on a studio rail"
                     class="cat-photo"
+                    width="1000"
+                    height="1400"
                     loading="lazy"
+                    decoding="async"
                   />
                   <div class="cat-overlay" aria-hidden="true"></div>
                   <span class="cat-badge cat-badge--gold" aria-hidden="true">★ Featured</span>
@@ -525,10 +556,13 @@
 
                 <div class="cat-photo-wrap">
                   <img
-                    src="https://images.unsplash.com/photo-1503919545889-aef636e10ad4?w=700&q=85&auto=format&fit=crop&crop=faces,center"
-                    alt="Kids' fashion — playful and stylish children's clothing"
+                    src="assets/banners/category-kids.webp"
+                    alt="Child-sized sky-blue shirt, gingham dress and sage cardigan on a studio rail"
                     class="cat-photo cat-photo--kids"
+                    width="1000"
+                    height="1400"
                     loading="lazy"
+                    decoding="async"
                   />
                   <div class="cat-overlay" aria-hidden="true"></div>
                   <span class="cat-badge" aria-hidden="true">Trending</span>
@@ -545,6 +579,19 @@
                 </div>
 
               </a>
+            </article>
+
+            <article class="accessories-collection" id="accessories-collection" role="listitem" aria-labelledby="accessories-collection-title">
+              <picture>
+                <source media="(max-width: 767px)" srcset="assets/banners/editorial-accessories.webp" />
+                <img src="assets/banners/accessories-wide.webp" alt="Tan leather tote, brown loafers, a leather-strap watch and black sunglasses" width="1800" height="600" loading="lazy" decoding="async" />
+              </picture>
+              <div class="accessories-collection-overlay" aria-hidden="true"></div>
+              <div class="accessories-collection-content">
+                <h3 id="accessories-collection-title">Accessories</h3>
+                <p>Bags, watches, eyewear and considered finishing touches.</p>
+                <a href="pages/shop.html#accessories-section" class="btn cat-cta-btn">Explore Accessories</a>
+              </div>
             </article>
 
           </div>
@@ -565,11 +612,15 @@
                 <p style="font-size: 13px; color: #a1a1aa; margin: 4px 0 0;">Top picks everyone is loving</p>
               </div>
             </div>
-            <div id="trending-products-grid" class="horizontal-scroll-grid">
-              <div style="width: 100%; text-align: center; padding: 40px 20px; color: #a1a1aa; grid-column: 1/-1;">
-                <div class="home-spinner"></div>
-                <p style="font-size: 14px; font-weight: 600;">Syncing Trending...</p>
+            <div class="home-product-carousel">
+              <button type="button" class="home-product-arrow" data-direction="-1" aria-controls="trending-products-grid" aria-label="Previous Trending Now products" title="Previous products" disabled><span aria-hidden="true">&#8249;</span></button>
+              <div id="trending-products-grid" class="horizontal-scroll-grid" role="region" aria-label="Trending Now products" tabindex="0">
+                <div style="width: 100%; text-align: center; padding: 40px 20px; color: #a1a1aa; grid-column: 1/-1;">
+                  <div class="home-spinner"></div>
+                  <p style="font-size: 14px; font-weight: 600;">Syncing Trending...</p>
+                </div>
               </div>
+              <button type="button" class="home-product-arrow" data-direction="1" aria-controls="trending-products-grid" aria-label="Next Trending Now products" title="Next products" disabled><span aria-hidden="true">&#8250;</span></button>
             </div>
           </div>
 
@@ -581,11 +632,15 @@
                 <p style="font-size: 13px; color: #a1a1aa; margin: 4px 0 0;">Fresh drops added today</p>
               </div>
             </div>
-            <div id="new-arrivals-products-grid" class="horizontal-scroll-grid">
-              <div style="width: 100%; text-align: center; padding: 40px 20px; color: #a1a1aa; grid-column: 1/-1;">
-                <div class="home-spinner"></div>
-                <p style="font-size: 14px; font-weight: 600;">Syncing New Arrivals...</p>
+            <div class="home-product-carousel">
+              <button type="button" class="home-product-arrow" data-direction="-1" aria-controls="new-arrivals-products-grid" aria-label="Previous New Arrivals products" title="Previous products" disabled><span aria-hidden="true">&#8249;</span></button>
+              <div id="new-arrivals-products-grid" class="horizontal-scroll-grid" role="region" aria-label="New Arrivals products" tabindex="0">
+                <div style="width: 100%; text-align: center; padding: 40px 20px; color: #a1a1aa; grid-column: 1/-1;">
+                  <div class="home-spinner"></div>
+                  <p style="font-size: 14px; font-weight: 600;">Syncing New Arrivals...</p>
+                </div>
               </div>
+              <button type="button" class="home-product-arrow" data-direction="1" aria-controls="new-arrivals-products-grid" aria-label="Next New Arrivals products" title="Next products" disabled><span aria-hidden="true">&#8250;</span></button>
             </div>
           </div>
 
@@ -595,33 +650,6 @@
             }
             @keyframes homeSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-            /* Horizontal scroll on mobile, wrap on desktop */
-            .horizontal-scroll-grid {
-              display: grid;
-              gap: 16px;
-              grid-auto-flow: column;
-              grid-auto-columns: 160px; /* Fixed width to prevent 1fr taking full screen width */
-              overflow-x: auto;
-              overscroll-behavior-inline: contain;
-              scroll-snap-type: inline mandatory;
-              padding-bottom: 16px;
-              scrollbar-width: none; /* Hide scrollbar for cleaner look */
-            }
-            .horizontal-scroll-grid::-webkit-scrollbar {
-              display: none;
-            }
-            .horizontal-scroll-grid > * {
-              scroll-snap-align: start;
-            }
-
-            @media (min-width: 768px) {
-              .horizontal-scroll-grid {
-                grid-auto-flow: row;
-                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-                overflow-x: visible;
-                padding-bottom: 0;
-              }
-            }
           </style>
         </div>
       </section>
@@ -629,22 +657,23 @@
       <!-- ========================================
            FEATURED EDITORIAL SECTION
       ========================================= -->
-      <section class="editorial-section" aria-label="Featured Editorial">
+      <section class="editorial-section" id="editorial" aria-label="Featured Collections">
         <div class="editorial-grid">
           <!-- Large Editorial Block -->
           <div class="editorial-main" id="editorial-main">
             <img
-              src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=900&q=85&auto=format&fit=crop"
-              alt="Editorial fashion lookbook spread"
+              src="assets/banners/editorial-womens.webp"
+              alt="Sage midi dress and tan leather tote from the women's collection"
               class="editorial-img"
+              width="1122" height="1402" decoding="async"
               loading="lazy"
             />
             <div class="editorial-overlay glass-overlay" aria-hidden="true"></div>
             <div class="editorial-content">
-              <span class="editorial-tag">Editorial</span>
-              <h2 class="editorial-title">The Summer<br />Lookbook 2026</h2>
-              <p class="editorial-desc">Where luxury meets the season's finest light.</p>
-              <a href="pages/shop.html" class="btn btn-glass btn-sm" id="editorial-btn">View Lookbook</a>
+              <span class="editorial-tag">Women's Collection</span>
+              <h2 class="editorial-title">Signature Pieces</h2>
+              <p class="editorial-desc">Considered silhouettes. Refined everyday style.</p>
+              <a href="pages/womens-wear.html" class="btn cat-cta-btn" id="editorial-btn">Explore Women</a>
             </div>
           </div>
 
@@ -652,30 +681,32 @@
           <div class="editorial-side">
             <div class="editorial-small" id="editorial-small-1">
               <img
-                src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=500&q=85&auto=format&fit=crop"
+                src="assets/banners/editorial-accessories.webp"
                 alt="Premium accessories collection"
                 class="editorial-img"
+                width="1536" height="1024" decoding="async"
                 loading="lazy"
               />
               <div class="editorial-overlay glass-overlay" aria-hidden="true"></div>
               <div class="editorial-content editorial-content-sm">
                 <span class="editorial-tag">Accessories</span>
-                <h3 class="editorial-title-sm">The Detail<br />Collection</h3>
-                <a href="pages/shop.html" class="btn btn-glass btn-xs" id="editorial-acc-btn">Discover</a>
+                <h3 class="editorial-title-sm">The Detail Collection</h3>
+                <a href="pages/shop.html#accessories-section" class="btn cat-cta-btn" id="editorial-acc-btn">Explore Accessories</a>
               </div>
             </div>
             <div class="editorial-small" id="editorial-small-2">
               <img
-                src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=500&q=85&auto=format&fit=crop"
-                alt="Luxury lifestyle fashion"
+                src="assets/banners/editorial-kids.webp"
+                alt="Blue shirt, gingham dress and sage cardigan from the kids collection"
                 class="editorial-img"
+                width="1536" height="1024" decoding="async"
                 loading="lazy"
               />
               <div class="editorial-overlay glass-overlay" aria-hidden="true"></div>
               <div class="editorial-content editorial-content-sm">
-                <span class="editorial-tag">Lifestyle</span>
-                <h3 class="editorial-title-sm">Dressed for<br />Every Moment</h3>
-                <a href="pages/shop.html" class="btn btn-glass btn-xs" id="editorial-life-btn">Explore</a>
+                <span class="editorial-tag">Kids Collection</span>
+                <h3 class="editorial-title-sm">Little Essentials</h3>
+                <a href="pages/kids-wear.html" class="btn cat-cta-btn" id="editorial-life-btn">Explore Kids</a>
               </div>
             </div>
           </div>
@@ -831,10 +862,6 @@
 
             <!-- Brand Column -->
             <div class="footer-col footer-brand">
-              <a href="index.html" class="nav-logo footer-logo" aria-label="Fashion Company Home">
-                <span class="logo-mark" aria-hidden="true">DT</span>
-                <span class="logo-text">Fashion Company <em>Fashion</em></span>
-              </a>
               <p class="footer-tagline">Luxury fashion, thoughtfully curated for the modern connoisseur.</p>
               <div class="social-links" aria-label="Social Media Links">
                 <a href="#" class="social-btn" aria-label="Follow us on Instagram" id="social-instagram">
@@ -868,11 +895,11 @@
             <div class="footer-col">
               <h4 class="footer-heading">Help & Support</h4>
               <ul class="footer-links" role="list">
-                <li><a href="#" class="footer-link">Shipping Policy</a></li>
-                <li><a href="pages/returns-exchanges.html" target="_blank" class="footer-link">Returns & Exchanges</a></li>
-                <li><a href="pages/size-guide.html" target="_blank" class="footer-link">Size Guide</a></li>
-                <li><a href="pages/track-order.html" target="_blank" class="footer-link">Track My Order</a></li>
-                <li><a href="pages/contact-us.html" target="_blank" class="footer-link">Contact Us</a></li>
+                <li><a href="assets/pdf/shipping_policy.pdf" target="_blank" rel="noopener" class="footer-link">Shipping Policy</a></li>
+                <li><a href="assets/pdf/returns_exchanges.pdf" target="_blank" class="footer-link">Returns & Exchanges</a></li>
+                <li><a href="assets/pdf/size_guide.pdf" target="_blank" class="footer-link">Size Guide</a></li>
+                <li><a href="assets/pdf/track_my_order.pdf" target="_blank" class="footer-link">Track My Order</a></li>
+                <li><a href="assets/pdf/contact_us.pdf" target="_blank" class="footer-link">Contact Us</a></li>
               </ul>
             </div>
 
@@ -963,6 +990,9 @@
 
     <!-- Scripts -->
     <script src="js/utils.js"></script>
+    <script src="js/catalog-ui.js"></script>
+    <script src="js/banner-defaults.js"></script>
+    <script src="js/store-campaigns.js" defer></script>
     <script src="js/utils.js"></script>
     <script src="js/script.js"></script>
     <script src="js/mobile-ui.js"></script>
@@ -975,9 +1005,11 @@
         if (!trendingGridEl && !newArrivalsGridEl) return;
 
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const cloudUrl = isLocalhost
-          ? 'https://fashion-company.netlify.app/.netlify/functions/products'
-          : '/.netlify/functions/products';
+        const cloudUrl = window.dtfProductsUrl();
+
+        const productsLoadingHtml = '<div style="grid-column: 1/-1; width: 100%; text-align: center; padding: 40px 20px; color: #a1a1aa;"><div style="display: inline-block; width: 32px; height: 32px; border: 3px solid rgba(99,102,241,0.2); border-top-color: #6366f1; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;"></div><p style="margin:0;font-size:13px;font-weight:700;">Loading latest products...</p></div><style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>';
+        if (trendingGridEl) trendingGridEl.innerHTML = productsLoadingHtml;
+        if (newArrivalsGridEl) newArrivalsGridEl.innerHTML = productsLoadingHtml;
 
         async function fetchProductsWithRetry(maxAttempts) {
           for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -1053,7 +1085,7 @@
             card.innerHTML = `
               <div class="product-card-img-wrap" style="position: relative; width: 100%; aspect-ratio: 3 / 4; overflow: hidden; background: #0d0e1a; border-radius: 18px 18px 0 0;">
                 <a href="${detailsUrl}" onclick="window.saveHomeProductSelection('${pEncoded}')" style="position: absolute; inset: 0; display: block; width: 100%; height: 100%;">
-                  <img src="${imgSrc}" class="product-card-img" style="width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; transition: transform 0.4s ease;" alt="${p.title ? p.title.replace(/"/g, '&quot;') : 'Product'}" />
+                  <img loading="lazy" decoding="async" src="${window.escapeHtml(imgSrc.replace(/(\/assets\/catalog\/seed_[^/]+)\.webp$/, '$1-thumb.webp'))}" class="product-card-img" style="width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; transition: transform 0.4s ease;" alt="${p.title ? p.title.replace(/"/g, '&quot;') : 'Product'}" />
                 </a>
                 <span style="position: absolute; top: 10px; left: 10px; background: rgba(10,10,20,0.7); backdrop-filter: blur(8px); color: #9ca3af; border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1);">
                   ${badgeText || p.category || 'NEW'}
@@ -1083,255 +1115,6 @@
       })();
     </script>
 
-    <!-- Ad Banner Carousel Controller -->
-    <script>
-      (function initAdCarousel() {
-        const track = document.getElementById('ad-carousel-track');
-        const dotsContainer = document.getElementById('ad-dots');
-        const prevBtn = document.getElementById('ad-prev-btn');
-        const nextBtn = document.getElementById('ad-next-btn');
-        if (!track) return;
-
-        let currentSlide = 0;
-        let slideCount = 1;
-        let autoTimer = null;
-        const AUTO_INTERVAL = 5000;
-
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const bannersUrl = isLocalhost
-          ? 'https://fashion-company.netlify.app/.netlify/functions/banners?active=true'
-          : '/.netlify/functions/banners?active=true';
-
-        // Default fallback banners if API has none
-        const defaultBanners = [
-          {
-            title: 'Summer Collection 2026',
-            description: 'Up to 40% off on premium fashion for Men, Women & Kids',
-            imageUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1920&q=90&auto=format&fit=crop',
-            linkUrl: 'pages/shop.html',
-            badge: '✦ Limited Time Offer'
-          },
-          {
-            title: "Men's Premium Wear",
-            description: 'Crafted suits, casuals & luxury essentials — new arrivals daily',
-            imageUrl: 'https://images.unsplash.com/photo-1617137968427-85924c800a22?w=1920&q=90&auto=format&fit=crop',
-            linkUrl: 'pages/mens-wear.html',
-            badge: '✦ New Arrivals'
-          },
-          {
-            title: "Women's Elegance",
-            description: 'Timeless dresses, modern silhouettes — 380+ styles to explore',
-            imageUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=1920&q=90&auto=format&fit=crop',
-            linkUrl: 'pages/womens-wear.html',
-            badge: '★ Featured Collection'
-          }
-        ];
-
-        function buildSlides(banners) {
-          track.innerHTML = '';
-          banners.forEach((b, i) => {
-            const slide = document.createElement('div');
-            slide.className = 'ad-slide' + (i === 0 ? ' ad-slide--active' : '');
-            slide.dataset.link = b.linkUrl || '#';
-            slide.innerHTML = `
-              <img src="${b.imageUrl}" alt="${b.title || 'Promotion'}" class="ad-slide-img" loading="${i === 0 ? 'eager' : 'lazy'}" />
-              <div class="ad-slide-overlay"></div>
-              <div class="ad-slide-content">
-                <span class="ad-slide-badge">${b.badge || '✦ Promotion'}</span>
-                <h2 class="ad-slide-title">${b.title || ''}</h2>
-                ${b.description ? `<p class="ad-slide-desc">${b.description}</p>` : ''}
-                <a href="${b.buttonLink || b.linkUrl || '#'}" class="ad-slide-cta">${b.buttonText || 'Shop Now →'}</a>
-              </div>
-            `;
-            slide.addEventListener('click', function(e) {
-              if (e.target.closest('.ad-slide-cta')) return;
-              const link = this.dataset.link;
-              if (link && link !== '#') window.location.href = link;
-            });
-            track.appendChild(slide);
-          });
-          slideCount = banners.length;
-          buildDots();
-          goToSlide(0);
-        }
-
-        function buildDots() {
-          dotsContainer.innerHTML = '';
-          for (let i = 0; i < slideCount; i++) {
-            const dot = document.createElement('button');
-            dot.className = 'ad-dot' + (i === 0 ? ' active' : '');
-            dot.ariaLabel = 'Go to slide ' + (i + 1);
-            dot.addEventListener('click', () => { goToSlide(i); resetAuto(); });
-            dotsContainer.appendChild(dot);
-          }
-        }
-
-        function goToSlide(idx) {
-          currentSlide = ((idx % slideCount) + slideCount) % slideCount;
-          track.style.transform = `translateX(-${currentSlide * 100}%)`;
-          dotsContainer.querySelectorAll('.ad-dot').forEach((d, i) => {
-            d.classList.toggle('active', i === currentSlide);
-          });
-          // Extract dominant color from current slide image and apply to header
-          extractHeaderColor(currentSlide);
-        }
-
-        function nextSlide() { goToSlide(currentSlide + 1); }
-        function prevSlide() { goToSlide(currentSlide - 1); }
-
-        function startAuto() {
-          stopAuto();
-          autoTimer = setInterval(nextSlide, AUTO_INTERVAL);
-        }
-        function stopAuto() { clearInterval(autoTimer); }
-        function resetAuto() { startAuto(); }
-
-        if (prevBtn) prevBtn.addEventListener('click', () => { prevSlide(); resetAuto(); });
-        if (nextBtn) nextBtn.addEventListener('click', () => { nextSlide(); resetAuto(); });
-
-        // Touch swipe support for mobile
-        let touchStartX = 0;
-        track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; stopAuto(); }, { passive: true });
-        track.addEventListener('touchend', e => {
-          const diff = touchStartX - e.changedTouches[0].clientX;
-          if (Math.abs(diff) > 50) {
-            diff > 0 ? nextSlide() : prevSlide();
-          }
-          startAuto();
-        }, { passive: true });
-
-        // Fetch banners from cloud
-        async function loadBanners() {
-          try {
-            const res = await fetch(bannersUrl + '&t=' + Date.now(), {
-              headers: { 'Accept': 'application/json' },
-              signal: AbortSignal.timeout(10000)
-            });
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            const data = await res.json();
-            if (data && data.success && Array.isArray(data.banners) && data.banners.length > 0) {
-              const banners = data.banners.map(b => ({
-                title: b.title || '',
-                description: b.description || '',
-                imageUrl: b.imageUrl || b.image_url || '',
-                linkUrl: b.linkUrl || b.link_url || '#',
-                badge: b.badge || '✦ Promotion',
-                buttonText: b.buttonText || b.button_text || '',
-                buttonLink: b.buttonLink || b.button_link || ''
-              })).filter(b => b.imageUrl);
-              if (banners.length > 0) {
-                buildSlides(banners);
-                startAuto();
-                return;
-              }
-            }
-          } catch (err) {
-            console.warn('[AdCarousel] Cloud fetch failed:', err.message);
-          }
-          // Try localStorage fallback
-          try {
-            const localData = JSON.parse(localStorage.getItem('dtf_admin_banners') || '[]');
-            const localActive = localData.filter(b => b.active !== false && (b.isActive !== false));
-            if (localActive.length > 0) {
-              const localBanners = localActive.sort((a,b) => (a.display_order || a.order || 0) - (b.display_order || b.order || 0)).map(b => ({
-                title: b.title || '',
-                description: b.description || '',
-                imageUrl: b.imageUrl || b.image_url || '',
-                linkUrl: b.linkUrl || b.link_url || '#',
-                badge: b.badge || '✦ Promotion',
-                buttonText: b.buttonText || b.button_text || '',
-                buttonLink: b.buttonLink || b.button_link || ''
-              })).filter(b => b.imageUrl);
-              if (localBanners.length > 0) {
-                buildSlides(localBanners);
-                startAuto();
-                console.log('[AdCarousel] Loaded ' + localBanners.length + ' banners from localStorage');
-                return;
-              }
-            }
-          } catch(localErr) {
-            console.warn('[AdCarousel] localStorage fallback failed:', localErr.message);
-          }
-          // Fallback to defaults
-          buildSlides(defaultBanners);
-          startAuto();
-        }
-
-        loadBanners();
-
-        // ── Dynamic Header Background Color Extraction ──
-        function extractHeaderColor(slideIndex) {
-          const slides = track.querySelectorAll('.ad-slide');
-          if (!slides[slideIndex]) return;
-          const img = slides[slideIndex].querySelector('.ad-slide-img');
-          if (!img) return;
-
-          function applyColor(imgEl) {
-            try {
-              const canvas = document.createElement('canvas');
-              const ctx = canvas.getContext('2d');
-              canvas.width = 80;
-              canvas.height = 40;
-              ctx.drawImage(imgEl, 0, 0, 80, 40);
-              // Sample top strip of the image (header region)
-              const data = ctx.getImageData(0, 0, 80, 12).data;
-              let r = 0, g = 0, b = 0, count = 0;
-              for (let i = 0; i < data.length; i += 16) {
-                r += data[i];
-                g += data[i + 1];
-                b += data[i + 2];
-                count++;
-              }
-              r = Math.round(r / count);
-              g = Math.round(g / count);
-              b = Math.round(b / count);
-
-              // Darken slightly for readability
-              const dr = Math.round(r * 0.55);
-              const dg = Math.round(g * 0.55);
-              const db = Math.round(b * 0.55);
-
-              const navContainer = document.querySelector('.nav-container');
-              const subbar = document.querySelector('.location-subbar');
-              const headerBg = `rgba(${dr}, ${dg}, ${db}, 0.88)`;
-              const headerBorder = `rgba(${Math.min(255, dr + 40)}, ${Math.min(255, dg + 40)}, ${Math.min(255, db + 40)}, 0.35)`;
-
-              if (navContainer) {
-                navContainer.style.transition = 'background 0.8s ease, border-color 0.8s ease, box-shadow 0.8s ease';
-                navContainer.style.background = headerBg;
-                navContainer.style.backdropFilter = 'saturate(180%) blur(28px)';
-                navContainer.style.borderColor = headerBorder;
-                navContainer.style.boxShadow = `0 8px 32px rgba(${dr}, ${dg}, ${db}, 0.3), 0 2px 8px rgba(0,0,0,0.1)`;
-                // Make nav text white for contrast on dark tinted bg
-                navContainer.querySelectorAll('.nav-link, .dropdown-trigger').forEach(el => {
-                  el.style.color = '#ffffff';
-                });
-              }
-            } catch (e) {
-              console.warn('[HeaderColor] Could not extract color:', e.message);
-            }
-          }
-
-          if (img.complete && img.naturalWidth > 0) {
-            // Use a proxy if cross-origin
-            const proxyImg = new Image();
-            proxyImg.crossOrigin = 'anonymous';
-            proxyImg.onload = function() { applyColor(proxyImg); };
-            proxyImg.onerror = function() {
-              console.warn('[HeaderColor] Cross-origin image load failed, using fallback tint.');
-            };
-            proxyImg.src = img.src;
-          } else {
-            img.addEventListener('load', function onLoad() {
-              img.removeEventListener('load', onLoad);
-              const proxyImg = new Image();
-              proxyImg.crossOrigin = 'anonymous';
-              proxyImg.onload = function() { applyColor(proxyImg); };
-              proxyImg.src = img.src;
-            });
-          }
-        }
-      })();
-    </script>
+    <script src="js/banner-carousel.js" defer></script>
   </body>
 </html>

@@ -1,0 +1,28 @@
+{
+  "updated": "2026-10-08",
+  "mode": "built-in image_gen edits",
+  "reason": "Remove the hard vertical studio-wall divisions confirmed in the existing banner images.",
+  "backupDirectory": "C:/Users/Purna/.codex/artifacts/banners-before-seam-fix",
+  "edits": [
+    {
+      "asset": "assets/banners/signature.webp",
+      "source": "C:\\Users\\Purna\\.codex\\generated_images\\019f99a0-1ec4-7e30-b4e0-8dff84af5235\\exec-59490957-2f71-42a1-8765-055964fcafb2.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied wide landscape fashion banner photograph. Fix ONLY the studio backdrop: remove the sharp straight vertical division between the charcoal left wall and the light grey right wall, including the rectangular hard bottom boundary on that dark wall. Make it one continuous subtly textured grey studio wall with a broad natural gradual shadow-to-light transition, no panel boundary, stripe, seam or dark rectangle. Preserve all clothing, accessories, hanging rail, hangers, plinths, their exact positions, colors, materials, scale and product shapes. Preserve the floor, realistic shadows, camera angle, negative space and full uncropped merchandise. Do not add, remove, move, enlarge or crop any products. Keep 5:2 wide framing (1600x640) and the empty left area for website text. The result is the same product photograph with a seamless photographic backdrop, not a redesigned banner. No text, logo, watermark or UI."
+    },
+    {
+      "asset": "assets/banners/signature-mobile.webp",
+      "source": "C:\\Users\\Purna\\.codex\\generated_images\\019f99a0-1ec4-7e30-b4e0-8dff84af5235\\exec-e9be6c7f-e983-47af-821d-a021b8b7824b.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied portrait fashion banner photograph. Fix ONLY the studio backdrop: remove the sharp straight vertical division between the charcoal left wall and the light grey right wall, including the rectangular hard bottom boundary on that dark wall. Make it one continuous subtly textured grey studio wall with a broad natural gradual shadow-to-light transition, no panel boundary, stripe, seam or dark rectangle. Preserve all clothing, accessories, hanging rail, hangers, plinths, their exact positions, colors, materials, scale and product shapes. Preserve the floor, realistic shadows, camera angle, negative space and full uncropped merchandise. Do not add, remove, move, enlarge or crop any products. Keep 4:5 portrait framing (900x1125) and the large empty floor area below the products. The result is the same product photograph with a seamless photographic backdrop, not a redesigned banner. No text, logo, watermark or UI."
+    },
+    {
+      "asset": "assets/banners/womens.webp",
+      "source": "C:\\Users\\Purna\\.codex\\generated_images\\019f99a0-1ec4-7e30-b4e0-8dff84af5235\\exec-efb620fc-58d9-44e3-ad16-955a56dedb7e.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied wide landscape fashion banner photograph. Fix ONLY the studio backdrop: remove the sharp straight vertical division between the charcoal left wall and the light grey right wall, including the rectangular hard bottom boundary on that dark wall. Make it one continuous subtly textured grey studio wall with a broad natural gradual shadow-to-light transition, no panel boundary, stripe, seam or dark rectangle. Preserve all clothing, accessories, hanging rail, hangers, plinths, their exact positions, colors, materials, scale and product shapes. Preserve the floor, realistic shadows, camera angle, negative space and full uncropped merchandise. Do not add, remove, move, enlarge or crop any products. Keep 5:2 wide framing (1600x640) and the empty left area for website text. The result is the same product photograph with a seamless photographic backdrop, not a redesigned banner. No text, logo, watermark or UI."
+    },
+    {
+      "asset": "assets/banners/womens-mobile.webp",
+      "source": "C:\\Users\\Purna\\.codex\\generated_images\\019f99a0-1ec4-7e30-b4e0-8dff84af5235\\exec-9810460b-2283-49c9-9585-3d017abe4ec2.png",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied portrait fashion banner photograph. Fix ONLY the studio backdrop: remove the sharp straight vertical division between the charcoal left wall and the light grey right wall, including the rectangular hard bottom boundary on that dark wall. Make it one continuous subtly textured grey studio wall with a broad natural gradual shadow-to-light transition, no panel boundary, stripe, seam or dark rectangle. Preserve all clothing, accessories, hanging rail, hangers, plinths, their exact positions, colors, materials, scale and product shapes. Preserve the floor, realistic shadows, camera angle, negative space and full uncropped merchandise. Do not add, remove, move, enlarge or crop any products. Keep 4:5 portrait framing (900x1125) and the large empty floor area below the products. The result is the same product photograph with a seamless photographic backdrop, not a redesigned banner. No text, logo, watermark or UI."
+    }
+  ]
+}

@@ -46,10 +46,10 @@ async function resetAllData() {
       }
     }
 
-    // Keep admin account in users table if users exists
+    // Keep configured admin-role accounts in users table if users exists.
     if (tableNames.includes('users')) {
       try {
-        await query(`DELETE FROM users WHERE role != 'admin' AND email != 'admin@fashioncompany.com';`);
+        await query(`DELETE FROM users WHERE role != 'admin';`);
         console.log(`✅ Cleaned non-admin customer records from 'users' table.`);
       } catch (e) {
         console.warn(`⚠️ Could not clean users table:`, e.message);

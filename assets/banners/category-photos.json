@@ -1,0 +1,38 @@
+{
+  "created": "2026-10-08",
+  "styleReference": "assets/banners/accessories-wide.webp",
+  "format": "Original AI-generated photorealistic product photography, optimized to 1000x1400 WebP",
+  "images": [
+    {
+      "path": "assets/banners/category-mens.webp",
+      "generatedSource": "C:/Users/Purna/.codex/generated_images/019f99a0-1ec4-7e30-b4e0-8dff84af5235/exec-808fbef5-feb7-4483-a8af-80a97bb059f0.png",
+      "catalogReferences": [
+        "assets/catalog/seed_mens_001.webp",
+        "assets/catalog/seed_mens_017.webp",
+        "assets/catalog/seed_mens_032.webp",
+        "assets/catalog/seed_mens_036.webp"
+      ],
+      "products": "Navy Oxford shirt, navy tailored chinos, charcoal blazer, and ivory cable-knit crewneck"
+    },
+    {
+      "path": "assets/banners/category-womens.webp",
+      "generatedSource": "C:/Users/Purna/.codex/generated_images/019f99a0-1ec4-7e30-b4e0-8dff84af5235/exec-55c26315-aeaf-4573-adbd-116872c58ee1.png",
+      "catalogReferences": [
+        "assets/catalog/seed_womens_002.webp",
+        "assets/catalog/seed_womens_003.webp",
+        "assets/catalog/seed_womens_038.webp"
+      ],
+      "products": "Ivory wrap midi dress, sage tiered midi dress, and rose cardigan"
+    },
+    {
+      "path": "assets/banners/category-kids.webp",
+      "generatedSource": "C:/Users/Purna/.codex/generated_images/019f99a0-1ec4-7e30-b4e0-8dff84af5235/exec-90b78d9c-739b-44df-8791-398847959052.png",
+      "catalogReferences": [
+        "assets/catalog/seed_kids_001.webp",
+        "assets/catalog/seed_kids_026.webp",
+        "assets/catalog/seed_kids_033.webp"
+      ],
+      "products": "Child-sized sky-blue shirt, blue gingham dress, and sage cardigan"
+    }
+  ]
+}

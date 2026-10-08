@@ -1,8 +1,9 @@
 import { getStore } from '@netlify/blobs';
+import campaign from '../../js/banner-defaults.js';
+import { resolveAccountUser } from './lib/account-session.mjs';
 
 const BANNERS_STORE_NAME = 'fashioncompany-banners';
 const BANNERS_BLOB_KEY = 'banners.json';
-const CLOUD_AUTH_USERS_URL = process.env.CLOUD_DB_URL || 'https://jsonblob.com/api/jsonBlob/019f9cba-929a-7931-ad23-922a9b668aa9';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -70,7 +71,16 @@ function parseBannerList(data) {
 async function getCloudBanners() {
   const store = getBannersStore();
   const data = await store.get(BANNERS_BLOB_KEY, { type: 'json', consistency: 'strong' });
-  return parseBannerList(data);
+  const banners = parseBannerList(data);
+  const marker = `defaults-${campaign.revision}.json`;
+  if (!await store.get(marker, { type: 'json' })) {
+    const upgraded = campaign.upgradeDefaults(banners).map(banner => normaliseBanner(banner, banner));
+    await store.setJSON(`banners-before-${campaign.revision}.json`, banners);
+    await saveCloudBanners(upgraded);
+    await store.setJSON(marker, { revision: campaign.revision });
+    return upgraded;
+  }
+  return banners;
 }
 
 async function saveCloudBanners(banners) {
@@ -82,6 +92,7 @@ async function saveCloudBanners(banners) {
 function normaliseBanner(payload, existing) {
   const base = existing || {};
   const imageUrl = payload.imageUrl || payload.image_url || base.imageUrl || base.image_url || '';
+  const mobileImageUrl = payload.mobileImageUrl ?? payload.mobile_image_url ?? (imageUrl !== (base.imageUrl || base.image_url || '') ? '' : (base.mobileImageUrl || base.mobile_image_url || ''));
   const linkUrl = payload.linkUrl !== undefined
     ? payload.linkUrl
     : (payload.link_url !== undefined ? payload.link_url : (base.linkUrl || base.link_url || ''));
@@ -97,6 +108,10 @@ function normaliseBanner(payload, existing) {
 
   return {
     id: base.id || payload.id,
+    campaign_revision: payload.campaign_revision ?? base.campaign_revision,
+    isDefault: payload.isDefault ?? base.isDefault ?? false,
+    mobileImageUrl,
+    mobile_image_url: mobileImageUrl,
     title: payload.title || base.title || '',
     description: payload.description !== undefined ? payload.description : (base.description || ''),
     badge: payload.badge !== undefined ? payload.badge : (base.badge || ''),
@@ -120,29 +135,8 @@ function normaliseBanner(payload, existing) {
 }
 
 async function requireAdmin(request) {
-  const auth = request.headers.get('Authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (!token) return false;
-
-  try {
-    const res = await fetch(CLOUD_AUTH_USERS_URL, {
-      headers: { Accept: 'application/json' }
-    });
-    if (!res.ok) return false;
-
-    const users = await res.json();
-    if (!Array.isArray(users)) return false;
-
-    return users.some(user =>
-      user &&
-      user.role === 'admin' &&
-      user.token &&
-      String(user.token) === String(token)
-    );
-  } catch (err) {
-    console.error('[Banners Auth] Admin token verification failed:', err.message);
-    return false;
-  }
+  try { return (await resolveAccountUser(request))?.role === 'admin'; }
+  catch (error) { console.warn('[Banners Auth]', error.message); return false; }
 }
 
 export default async function handler(request) {
@@ -167,7 +161,7 @@ export default async function handler(request) {
         return orderA - orderB;
       });
 
-      return jsonResponse(200, { success: true, banners });
+      return jsonResponse(200, { success: true, banners, campaignRevision: campaign.revision });
     } catch (err) {
       console.error('[Banners GET] Error:', err.message);
       return jsonResponse(500, { success: false, error: err.message });

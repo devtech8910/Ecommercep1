@@ -324,6 +324,11 @@
     margin-bottom: 24px !important;
   }
 
+  #categories .section-header,
+  #why-us .section-header {
+    text-align: center !important;
+  }
+
   .section-title {
     font-size: clamp(1.55rem, 8vw, 2.25rem) !important;
     line-height: 1.08 !important;
@@ -372,6 +377,10 @@
   .cat-photo-wrap {
     aspect-ratio: 4 / 5 !important;
     border-radius: 20px !important;
+  }
+
+  #womens-card .cat-photo {
+    object-position: center 80%;
   }
 
   .editorial-grid,

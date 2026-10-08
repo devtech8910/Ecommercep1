@@ -1,0 +1,56 @@
+[
+  {
+    "id": "signature",
+    "path": "C:/Users/Purna/.codex/generated_images/019f99a0-1ec4-7e30-b4e0-8dff84af5235/exec-4713f35e-c375-408b-a0cf-03df23c596a9.png",
+    "prompt": "Use case: ads-marketing. Create an original photorealistic luxury fashion website banner. Reference images define actual catalog products: the navy men's button-down Oxford shirt, sage sleeveless tiered midi dress, sky blue child-sized button-down shirt and tan structured leather tote shown in the reference photos, faithfully match their colors, fabric textures and shapes. Setting: luxury boutique product campaign, garments arranged on a slender brushed-metal clothing rail with the tan tote on a low pale stone plinth, elegant cool-grey architectural studio, subtle daylight. Landscape panorama approximately 2.5:1. Arrange the clearly visible products in the right 60% of frame; leave a calm dark charcoal-grey area on the left 35% for website copy. Show complete products with margins; no cropped hems, handles or shoes. Soft directional studio light, restrained silver, navy, sage and ivory palette, tactile fabric and leather detail, natural realistic shadows. Premium commercial photography, sophisticated and believable. No people, mannequins, props unrelated to fashion, text, logos, watermarks or brand marks.",
+    "name": "signature"
+  },
+  {
+    "id": "tailored",
+    "path": "C:/Users/Purna/.codex/generated_images/019f99a0-1ec4-7e30-b4e0-8dff84af5235/exec-aa4f119e-4681-4403-9a0f-aa27e0ea753f.png",
+    "prompt": "Use case: ads-marketing. Create an original photorealistic luxury fashion website banner. Reference images define actual catalog products: the referenced navy Oxford shirt, paired with a full ivory cable-knit crewneck sweater, charcoal single-breasted blazer and brown penny loafers, realistic fine tailoring. Setting: luxury menswear product campaign in a refined silver-grey studio, shirt and blazer on an understated rail, folded knit and a pair of loafers on a smooth light stone bench, full garments visible. Landscape panorama approximately 2.5:1. Arrange the clearly visible products in the right 60% of frame; leave a calm dark charcoal-grey area on the left 35% for website copy. Show complete products with margins; no cropped hems, handles or shoes. Soft directional studio light, restrained silver, navy, sage and ivory palette, tactile fabric and leather detail, natural realistic shadows. Premium commercial photography, sophisticated and believable. No people, mannequins, props unrelated to fashion, text, logos, watermarks or brand marks.",
+    "name": "tailored"
+  },
+  {
+    "id": "womens",
+    "path": "C:/Users/Purna/.codex/generated_images/019f99a0-1ec4-7e30-b4e0-8dff84af5235/exec-303b46b6-67bd-4087-8efc-21f2c765f161.png",
+    "prompt": "Use case: ads-marketing. Create an original photorealistic luxury fashion website banner. Reference images define actual catalog products: the exact referenced sage tiered sleeveless midi dress and tan leather tote, paired with an ivory wrap midi dress and rose cropped knit cardigan. Setting: luxury womenswear campaign, garments gracefully arranged on a slim polished clothing rail with tote on a pale stone display, cool soft-grey studio and clean elegant architectural lines. Landscape panorama approximately 2.5:1. Arrange the clearly visible products in the right 60% of frame; leave a calm dark charcoal-grey area on the left 35% for website copy. Show complete products with margins; no cropped hems, handles or shoes. Soft directional studio light, restrained silver, navy, sage and ivory palette, tactile fabric and leather detail, natural realistic shadows. Premium commercial photography, sophisticated and believable. No people, mannequins, props unrelated to fashion, text, logos, watermarks or brand marks.",
+    "name": "womens"
+  },
+  {
+    "id": "signature",
+    "path": "C:/Users/Purna/.codex/generated_images/019f99a0-1ec4-7e30-b4e0-8dff84af5235/exec-332ca6d2-10ca-4209-aec6-622ba7974a4b.png",
+    "prompt": "Use case: ads-marketing. Recompose this exact luxury fashion campaign as a portrait 4:5 mobile website banner. Preserve the same garments, colors, shapes, textures, tote/shoes and studio style. Keep each fashion product fully visible, arranged compactly within the upper 65% of the portrait. Leave the lower 30% as a clean dark charcoal-grey studio floor for website text overlay, with no products in that area. No text, logos, brands, watermarks, people or unrelated props. Premium crisp commercial photography with soft directional light; no cut-off hems, handles or shoes.",
+    "name": "signature-mobile"
+  },
+  {
+    "id": "tailored",
+    "path": "C:/Users/Purna/.codex/generated_images/019f99a0-1ec4-7e30-b4e0-8dff84af5235/exec-f89d9df0-7d6e-48b2-a7f3-d0bd26f2e83b.png",
+    "prompt": "Use case: ads-marketing. Recompose this exact luxury fashion campaign as a portrait 4:5 mobile website banner. Preserve the same garments, colors, shapes, textures, tote/shoes and studio style. Keep each fashion product fully visible, arranged compactly within the upper 65% of the portrait. Leave the lower 30% as a clean dark charcoal-grey studio floor for website text overlay, with no products in that area. No text, logos, brands, watermarks, people or unrelated props. Premium crisp commercial photography with soft directional light; no cut-off hems, handles or shoes.",
+    "name": "tailored-mobile"
+  },
+  {
+    "id": "womens",
+    "path": "C:/Users/Purna/.codex/generated_images/019f99a0-1ec4-7e30-b4e0-8dff84af5235/exec-3832dfe6-a821-4049-908c-6d423be108f4.png",
+    "prompt": "Use case: ads-marketing. Recompose this exact luxury fashion campaign as a portrait 4:5 mobile website banner. Preserve the same garments, colors, shapes, textures, tote/shoes and studio style. Keep each fashion product fully visible, arranged compactly within the upper 65% of the portrait. Leave the lower 30% as a clean dark charcoal-grey studio floor for website text overlay, with no products in that area. No text, logos, brands, watermarks, people or unrelated props. Premium crisp commercial photography with soft directional light; no cut-off hems, handles or shoes.",
+    "name": "womens-mobile"
+  },
+  {
+    "id": "editorial-womens",
+    "path": "C:/Users/Purna/.codex/generated_images/019f99a0-1ec4-7e30-b4e0-8dff84af5235/exec-61f91b58-2427-47d1-a22c-ddb210fe603a.png",
+    "prompt": "Use case: ads-marketing. Original luxury fashion editorial product photograph for the Fashion Company website. Reference images define the merchandise: the exact sage sleeveless tiered midi dress and tan structured leather tote from the reference images, on a refined slim clothing rail and one cool-grey stone pedestal. portrait 4:5 composition; full dress and bag centered in the upper 70% of frame, clear dark grey negative space along the lower 25% for a short editorial headline. Soft directional studio lighting, fine tactile fabric and leather detail, sophisticated neutral silver-grey setting, realistic subtle shadows. Refined premium commercial photography, products clearly inspectable. No people or mannequins, no text, no logos, no watermarks, no random lifestyle props, no fake clothing silhouettes.",
+    "name": "editorial-womens"
+  },
+  {
+    "id": "editorial-accessories",
+    "path": "C:/Users/Purna/.codex/generated_images/019f99a0-1ec4-7e30-b4e0-8dff84af5235/exec-8a83751f-281d-48b7-b7b7-ca024f7e9714.png",
+    "prompt": "Use case: ads-marketing. Original luxury fashion editorial product photograph for the Fashion Company website. Reference images define the merchandise: the exact referenced tan leather tote, pair of brown penny loafers, silver analog watch with brown leather strap and black rectangular sunglasses, composed as a premium accessories still life on graduated slate-grey stone plinths. landscape 3:2 composition; all objects fully visible in the upper and right 75% of frame, clean charcoal space at bottom left for a short headline. Soft directional studio lighting, fine tactile fabric and leather detail, sophisticated neutral silver-grey setting, realistic subtle shadows. Refined premium commercial photography, products clearly inspectable. No people or mannequins, no text, no logos, no watermarks, no random lifestyle props, no fake clothing silhouettes.",
+    "name": "editorial-accessories"
+  },
+  {
+    "id": "editorial-kids",
+    "path": "C:/Users/Purna/.codex/generated_images/019f99a0-1ec4-7e30-b4e0-8dff84af5235/exec-606c2980-d8d7-476b-ab25-d8b00a259a0c.png",
+    "prompt": "Use case: ads-marketing. Original luxury fashion editorial product photograph for the Fashion Company website. Reference images define the merchandise: the exact referenced child-sized sky-blue button-down shirt, blue gingham collared dress and sage button-front cardigan, carefully arranged on a low brushed-metal rail in a light cool-grey studio. landscape 3:2 composition; all three garments fully visible and distinct in the upper 75% of frame, clean dark-grey space at lower left for a short headline. Soft directional studio lighting, fine tactile fabric and leather detail, sophisticated neutral silver-grey setting, realistic subtle shadows. Refined premium commercial photography, products clearly inspectable. No people or mannequins, no text, no logos, no watermarks, no random lifestyle props, no fake clothing silhouettes.",
+    "name": "editorial-kids"
+  }
+]

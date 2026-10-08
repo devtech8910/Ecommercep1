@@ -153,7 +153,7 @@
         width: 100%;
         aspect-ratio: 4 / 5;
         padding-top: 0;
-        background: #0d0f1d;
+        background: #eeeeec;
         border-radius: 12px;
         overflow: hidden;
         border: 1px solid rgba(148, 163, 184, 0.16);
@@ -183,7 +183,7 @@
       #image-carousel-container img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
         object-position: center center;
         display: block;
       }
@@ -956,6 +956,7 @@
         transform: translateY(-2px);
       }
     </style>
+      <link rel="stylesheet" href="../css/catalog.css" />
   </head>
   <body class="auth-page">
     <!-- Noise overlay -->
@@ -983,7 +984,9 @@
                 
                 <!-- Media Carousel Images -->
                 <div id="image-carousel-container">
-                  <!-- Imgs populate dynamically -->
+                  <div class="gallery-slide">
+                    <div style="color:#94a3b8;font-weight:700;">Loading product image...</div>
+                  </div>
                 </div>
 
                 <!-- Carousel Controls -->
@@ -996,7 +999,7 @@
 
                 <!-- Bottom-Left Rating Overlay -->
                 <button id="rating-scroll-btn" class="overlay-btn">
-                  <span id="rating-badge-val">4.2</span>
+                  <span id="rating-badge-val"></span>
                   <span style="color: #fbbf24;">★</span>
                 </button>
 
@@ -1029,10 +1032,10 @@
             
             <!-- Brand & Title -->
             <div>
-              <span id="product-brand">DEVTECH LUXURY</span>
+              <span id="product-brand">Loading product</span>
               <h1 id="product-title">Loading...</h1>
               <div class="product-meta-row">
-                <span id="product-category-pill" class="mini-pill">Category</span>
+                <span id="product-category-pill" class="mini-pill">Loading</span>
                 <span class="mini-pill">🛡️ Assured</span>
               </div>
               
@@ -1044,9 +1047,9 @@
             <!-- Pricing, Savings & Urgency -->
             <div class="price-card">
               <div class="price-row">
-                <span id="product-price">--</span>
-                <span id="product-mrp">--</span>
-                <span id="product-discount">--</span>
+                <span id="product-price"></span>
+                <span id="product-mrp"></span>
+                <span id="product-discount"></span>
               </div>
               
               <!-- Savings Tracker -->
@@ -1062,6 +1065,7 @@
               </div>
             </div>
 
+            <div id="product-colors" class="catalog-colors" aria-label="Available colors" hidden></div>
             <!-- Size Selector -->
             <div>
               <label class="section-label">Select size</label>
@@ -1176,88 +1180,12 @@
            FULL WIDTH SECONDARY CONTENT (BELOW SPLIT LAYOUT)
       ========================================= -->
       
-      <!-- Social Proof & Feedback (Ratings & Reviews) - Full Width -->
-      <div class="fade-in-up" style="animation-delay: 0.4s;">
+      <!-- Customer reviews from the selected product -->
+      <div class="fade-in-up">
         <div id="ratings-reviews-section" class="dark-glass-card">
           <h2 class="section-title">Customer Reviews</h2>
-          
-          <div class="reviews-grid">
-            
-            <!-- Rating Breakdown progress bars -->
-            <div class="rating-overview">
-              <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px;">
-                <div style="font-size: 56px; font-weight: 800; color: var(--text-primary); font-family: 'Outfit', sans-serif;">4.2</div>
-                <div>
-                  <div style="font-size: 20px; color: #fbbf24; margin-bottom: 4px;">★★★★☆</div>
-                  <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Based on 142 reviews</span>
-                </div>
-              </div>
-
-              <!-- Star Rating Progress Bars -->
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <div class="progress-bar-row">
-                  <span style="width: 12px; font-weight: 700;">5</span>
-                  <div class="progress-track">
-                    <div class="progress-fill" style="width: 65%; background: var(--accent-green);"></div>
-                  </div>
-                  <span style="width: 32px; text-align: right; color: var(--text-muted); font-weight: 600;">65%</span>
-                </div>
-                <div class="progress-bar-row">
-                  <span style="width: 12px; font-weight: 700;">4</span>
-                  <div class="progress-track">
-                    <div class="progress-fill" style="width: 20%; background: var(--accent-green);"></div>
-                  </div>
-                  <span style="width: 32px; text-align: right; color: var(--text-muted); font-weight: 600;">20%</span>
-                </div>
-                <div class="progress-bar-row">
-                  <span style="width: 12px; font-weight: 700;">3</span>
-                  <div class="progress-track">
-                    <div class="progress-fill" style="width: 10%; background: #fbbf24;"></div>
-                  </div>
-                  <span style="width: 32px; text-align: right; color: var(--text-muted); font-weight: 600;">10%</span>
-                </div>
-                <div class="progress-bar-row">
-                  <span style="width: 12px; font-weight: 700;">2</span>
-                  <div class="progress-track">
-                    <div class="progress-fill" style="width: 3%; background: #f59e0b;"></div>
-                  </div>
-                  <span style="width: 32px; text-align: right; color: var(--text-muted); font-weight: 600;">3%</span>
-                </div>
-                <div class="progress-bar-row">
-                  <span style="width: 12px; font-weight: 700;">1</span>
-                  <div class="progress-track">
-                    <div class="progress-fill" style="width: 2%; background: #ef4444;"></div>
-                  </div>
-                  <span style="width: 32px; text-align: right; color: var(--text-muted); font-weight: 600;">2%</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Review Items list -->
-            <div class="reviews-list">
-              
-              <!-- Review 1 -->
-              <div class="review-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                  <span style="font-size: 14px; color: #fbbf24;">★★★★★</span>
-                  <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Purna C. — 2 days ago</span>
-                </div>
-                <h4 style="margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--text-primary);">Absolutely Perfect Fit!</h4>
-                <p style="margin: 0; font-size: 14px; color: var(--text-secondary); line-height: 1.6;">The fabric quality is outstanding and details look very premium. True value for money.</p>
-              </div>
-
-              <!-- Review 2 -->
-              <div class="review-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                  <span style="font-size: 14px; color: #fbbf24;">★★★★☆</span>
-                  <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Aditya K. — 1 week ago</span>
-                </div>
-                <h4 style="margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--text-primary);">Premium Materials</h4>
-                <p style="margin: 0; font-size: 14px; color: var(--text-secondary); line-height: 1.6;">Great product. Fits exactly as expected. Fast shipping and replacement logistics were reliable.</p>
-              </div>
-
-            </div>
-          </div>
+          <p id="product-rating-summary" style="color:var(--text-secondary)">Loading reviews...</p>
+          <div id="product-reviews-list" class="reviews-list"></div>
         </div>
       </div>
 
@@ -1272,6 +1200,7 @@
       </div>
 
     <!-- Custom JavaScript -->
+    <script src="../js/catalog-ui.js"></script>
     <script src="../js/script.js"></script>
     <script src="../js/mobile-ui.js"></script>
     <script>
@@ -1331,14 +1260,38 @@
           if (el) el.addEventListener(event, fn);
         }
 
-        setTxt('product-title', 'Loading...');
-        setTxt('product-brand', '');
-        setHTML('product-snippets', '');
+        function showProductLoadingState() {
+          setTxt('product-title', 'Loading...');
+          setTxt('product-brand', 'Loading product');
+          setTxt('product-price', '');
+          setTxt('product-mrp', '');
+          setTxt('product-discount', '');
+          setTxt('savings-tracker', '');
+          setHTML('product-snippets', '');
+          setTxt('spec-fabric', '');
+          setTxt('spec-fit', '');
+          setTxt('spec-pattern', '');
+          setTxt('spec-suitable', '');
+          setTxt('product-description-text', '');
+          const categoryPill = document.getElementById('product-category-pill');
+          if (categoryPill) categoryPill.textContent = 'Loading';
+          const sizeContainer = document.querySelector('.size-selector');
+          if (sizeContainer) sizeContainer.innerHTML = '';
+          const imgContainer = document.getElementById('image-carousel-container');
+          if (imgContainer) imgContainer.innerHTML = '<div class="gallery-slide"><div style="color:#94a3b8;font-weight:700;">Loading product image...</div></div>';
+          const dotsContainer = document.getElementById('carousel-dots');
+          if (dotsContainer) dotsContainer.innerHTML = '';
+          const thumbnailStrip = document.getElementById('thumbnail-strip');
+          if (thumbnailStrip) thumbnailStrip.innerHTML = '';
+        }
+
+        showProductLoadingState();
 
         async function initProductDetails() {
           let liveProduct = null;
           let hasRenderedProduct = false;
-          const rawId = idParam ? String(idParam).trim() : '';
+          const rememberedSelection = !idParam && !titleParam ? getRememberedProduct() : null;
+          const rawId = idParam ? String(idParam).trim() : String(rememberedSelection?.id || rememberedSelection?.pid || '');
           const cleanId = (rawId && rawId.toLowerCase() !== 'undefined' && rawId.toLowerCase() !== 'null') ? rawId : '';
           let cleanTitle = '';
           if (titleParam) {
@@ -1349,70 +1302,11 @@
             }
           }
 
-          const defaultCatalog = [
-            { id: 'm1', title: 'Midnight Blue Tuxedo', price: 24999, mrp: 29999, category: "Men", brand: "Fashion Company Luxury", sizes: "M, L, XL", image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80&fit=crop', description: "Impeccably tailored tuxedo in rich midnight blue.", fabric: "Pure Wool", fit: "Tailored Fit", pattern: "Solid", suitable_for: "Formal" },
-            { id: 'm2', title: 'Oxford Classic Shirt', price: 3499, mrp: 4499, category: "Men", brand: "Fashion Company Casuals", sizes: "S, M, L", image: 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop', description: "Breathable cotton Oxford shirt for daily elegance.", fabric: "100% Cotton", fit: "Regular Fit", pattern: "Solid", suitable_for: "Casual" },
-            { id: 'm3', title: 'Premium Leather Jacket', price: 12999, mrp: 15999, category: "Men", brand: "Fashion Company Luxury", sizes: "L, XL", image: 'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&q=80&fit=crop', description: "Genuine top-grain leather jacket with quilted lining.", fabric: "Genuine Leather", fit: "Slim Fit", pattern: "Solid", suitable_for: "Winter / Casual" },
-            { id: 'm4', title: 'Chronograph Luxury Watch', price: 8999, mrp: 11999, category: "Men", brand: "Fashion Company Accessories", sizes: "One Size", image: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&q=80&fit=crop', description: "Precision quartz movement with stainless steel case.", fabric: "Stainless Steel", fit: "Standard", pattern: "Metallic", suitable_for: "Formal / Casual" },
-            { id: 'm5', title: 'Slim Fit Italian Blazer', price: 16499, mrp: 19999, category: "Men", brand: "Fashion Company Luxury", sizes: "M, L", image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&q=80&fit=crop', description: "Italian cut blazer featuring soft shoulders and lightweight lining.", fabric: "Wool Blend", fit: "Slim Fit", pattern: "Solid", suitable_for: "Smart Casual" },
-            { id: 'm6', title: 'Tailored Chino Trousers', price: 4299, mrp: 5299, category: "Men", brand: "Fashion Company Casuals", sizes: "S, M, L, XL", image: 'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=600&q=80&fit=crop', description: "Comfort-stretch cotton chinos tailored for a modern silhouette.", fabric: "Cotton Stretch", fit: "Regular Fit", pattern: "Solid", suitable_for: "Daily Wear" },
-            { id: 'w1', title: 'Silk Evening Gown', price: 18499, mrp: 21999, category: "Women", brand: "Fashion Company Haute Couture", sizes: "S, M, L", image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600&q=80&fit=crop', description: "Elegant silk evening gown with graceful drape.", fabric: "Pure Silk", fit: "Regular Fit", pattern: "Solid", suitable_for: "Party / Evening" },
-            { id: 'w2', title: 'Floral Wrap Blouse', price: 4299, mrp: 5299, category: "Women", brand: "Fashion Company Casuals", sizes: "S, M", image: 'https://images.unsplash.com/photo-1550614000-4b95d466f913?w=600&q=80&fit=crop', description: "Vibrant floral wrap blouse for effortless chic.", fabric: "Chiffon", fit: "Regular Fit", pattern: "Floral", suitable_for: "Casual" },
-            { id: 'w3', title: 'Classic Leather Tote', price: 14999, mrp: 17999, category: "Women", brand: "Fashion Company Accessories", sizes: "One Size", image: 'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&q=80&fit=crop', description: "Spacious classic leather tote bag for everyday essentials.", fabric: "Genuine Leather", fit: "Standard", pattern: "Solid", suitable_for: "Daily / Work" },
-            { id: 'w4', title: 'Stiletto Designer Heels', price: 9999, mrp: 12999, category: "Women", brand: "Fashion Company Footwear", sizes: "36, 37, 38", image: 'https://images.unsplash.com/photo-1532453288672-3a27e9be9efd?w=600&q=80&fit=crop', description: "High-fashion designer heels crafted for supreme comfort and poise.", fabric: "Patent Leather", fit: "Standard", pattern: "Solid", suitable_for: "Party / Formal" },
-            { id: 'w5', title: 'Cashmere Winter Trenchcoat', price: 21999, mrp: 25999, category: "Women", brand: "Fashion Company Haute Couture", sizes: "M, L, XL", image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&q=80&fit=crop', description: "Luxurious cashmere winter coat providing warmth without weight.", fabric: "Cashmere Wool", fit: "Regular Fit", pattern: "Solid", suitable_for: "Winter / Formal" },
-            { id: 'w6', title: 'Pleated Designer Skirt', price: 6499, mrp: 7999, category: "Women", brand: "Fashion Company Casuals", sizes: "S, M, L", image: 'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=600&q=80&fit=crop', description: "Accordion pleated skirt featuring fluid movement and high waist.", fabric: "Polyester Blend", fit: "Regular Fit", pattern: "Solid", suitable_for: "Casual / Smart" },
-            { id: 'k1', title: 'Organic Cotton Party Dress', price: 3499, mrp: 4299, category: "Kids", brand: "Fashion Company Juniors", sizes: "2-3Y, 4-5Y", image: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=600&q=80&fit=crop', description: "Soft organic cotton dress designed for playful celebrations.", fabric: "Organic Cotton", fit: "Comfort Fit", pattern: "Printed", suitable_for: "Party" },
-            { id: 'k2', title: 'Denim Adventure Overalls', price: 2899, mrp: 3499, category: "Kids", brand: "Fashion Company Juniors", sizes: "4-5Y, 6-7Y", image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&q=80&fit=crop', description: "Sturdy and comfortable denim overalls built for everyday adventures.", fabric: "Denim", fit: "Regular Fit", pattern: "Solid", suitable_for: "Casual / Play" },
-            { id: 'k3', title: 'Cozy Knit Winter Sweater', price: 2499, mrp: 2999, category: "Kids", brand: "Fashion Company Juniors", sizes: "2-3Y, 4-5Y, 6-7Y", image: 'https://images.unsplash.com/photo-1503944563220-79d8926ad5e2?w=600&q=80&fit=crop', description: "Ultra-soft knitted sweater keeping juniors cozy in chilly weather.", fabric: "Cotton Knit", fit: "Comfort Fit", pattern: "Solid", suitable_for: "Winter" },
-            { id: 'k4', title: 'Junior Explorer Sneakers', price: 3999, mrp: 4999, category: "Kids", brand: "Fashion Company Footwear", sizes: "11, 12, 13", image: 'https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=600&q=80&fit=crop', description: "Lightweight and non-slip sneakers for active young explorers.", fabric: "Mesh / Rubber", fit: "Standard", pattern: "Sporty", suitable_for: "Casual / Sports" }
-          ];
-
           function matchProduct(pool, idToMatch, titleToMatch) {
-            if (!Array.isArray(pool) || pool.length === 0) return null;
-
-            // 1. Exact ID match (case-insensitive)
-            if (idToMatch) {
-              const byId = pool.find(p => p && String(p.id || p.pid || '').trim().toLowerCase() === idToMatch.toLowerCase());
-              if (byId) return byId;
-            }
-
-            // 2. Exact Title match (case-insensitive)
-            if (titleToMatch) {
-              const byExactTitle = pool.find(p => p && p.title && String(p.title).trim().toLowerCase() === titleToMatch.toLowerCase());
-              if (byExactTitle) return byExactTitle;
-            }
-
-            // 3. Substring Title match
-            if (titleToMatch && titleToMatch.length >= 3) {
-              const normTitle = titleToMatch.toLowerCase();
-              const bySubTitle = pool.find(p => {
-                if (!p || !p.title) return false;
-                const pt = String(p.title).trim().toLowerCase();
-                return pt.includes(normTitle) || normTitle.includes(pt);
-              });
-              if (bySubTitle) return bySubTitle;
-            }
-
-            // 4. Token / word overlap match
-            if (titleToMatch && titleToMatch.length >= 3) {
-              const words = titleToMatch.toLowerCase().split(/\s+/).filter(w => w.length >= 2);
-              if (words.length > 0) {
-                let bestMatch = null;
-                let maxMatchedWords = 0;
-                pool.forEach(p => {
-                  if (!p || !p.title) return;
-                  const pWords = String(p.title).toLowerCase().split(/\s+/);
-                  const matchedCount = words.filter(w => pWords.some(pw => pw.includes(w) || w.includes(pw))).length;
-                  if (matchedCount > maxMatchedWords && matchedCount >= Math.min(2, words.length)) {
-                    maxMatchedWords = matchedCount;
-                    bestMatch = p;
-                  }
-                });
-                if (bestMatch) return bestMatch;
-              }
-            }
-
+            if (!Array.isArray(pool)) return null;
+            const active = pool.filter(product => product && product.active !== false);
+            if (idToMatch) return active.find(product => String(product.id || product.pid || '').toLowerCase() === idToMatch.toLowerCase()) || null;
+            if (titleToMatch) return active.find(product => String(product.title || '').trim().toLowerCase() === titleToMatch.toLowerCase()) || null;
             return null;
           }
 
@@ -1461,6 +1355,10 @@
               price: parseFloat(pData.price || pData.special_price || pData.specialPrice || pData.offer_price || pData.offerPrice || 0),
               mrp: parseFloat(pData.mrp || pData.strikethrough_price || pData.strikethroughPrice || pData.original_price || pData.originalPrice || 0),
               category: String(pData.category || '').trim(),
+              colors: pData.colors || [],
+              rating: Number(pData.rating) || 0,
+              reviewCount: Number(pData.reviewCount || pData.review_count) || 0,
+              reviews: Array.isArray(pData.reviews) ? pData.reviews : [],
               images: imagesArray,
               snippets: snippetsArray,
               specifications: {
@@ -1483,6 +1381,11 @@
             if (!pData) {
               setTxt('product-title', 'Product Not Found');
               setTxt('product-brand', 'The product you are looking for is unavailable.');
+              setTxt('rating-badge-val', '');
+              setTxt('product-rating-summary', 'No product available');
+              document.getElementById('product-reviews-list').replaceChildren();
+              window.dtfRenderProductColors([], document.getElementById('product-colors'));
+              ['add-to-cart-cta', 'buy-now-cta'].forEach(id => { const button = document.getElementById(id); if (button) { button.disabled = true; button.onclick = null; } });
               setTxt('product-price', '');
               setTxt('product-mrp', '');
               setTxt('product-discount', '');
@@ -1545,6 +1448,22 @@
 
             setTxt('product-brand', product.brand || 'Fashion Company');
             setTxt('product-title', product.title);
+            document.title = product.title + ' - Fashion Company';
+            window.dtfRenderProductColors(product.colors, document.getElementById('product-colors'));
+            const reviewCount = product.reviewCount || product.reviews.length;
+            setTxt('rating-badge-val', reviewCount && product.rating ? product.rating.toFixed(1) : '');
+            document.getElementById('rating-scroll-btn').style.display = reviewCount && product.rating ? '' : 'none';
+            setTxt('product-rating-summary', reviewCount && product.rating ? product.rating.toFixed(1) + ' / 5 from ' + reviewCount + ' reviews' : 'No reviews yet');
+            const reviewList = document.getElementById('product-reviews-list');
+            if (reviewList) {
+              reviewList.replaceChildren();
+              product.reviews.forEach(review => {
+                const item = document.createElement('article'); item.className = 'review-card';
+                const name = document.createElement('h4'); name.textContent = review.title || review.author || 'Customer review';
+                const body = document.createElement('p'); body.textContent = review.comment || review.text || '';
+                item.append(name, body); reviewList.appendChild(item);
+              });
+            }
             try {
               const categoryPill = document.getElementById('product-category-pill');
               if (categoryPill) {
@@ -1630,9 +1549,9 @@
                   imgContainer.innerHTML = '<div class="gallery-slide"><div style="color:#94a3b8;font-weight:700;">No product image added</div></div>';
                 }
                 galleryImages.forEach((imgSrc, idx) => {
-                  const slide = document.createElement('div'); slide.className = 'gallery-slide'; slide.innerHTML = `<img src="${imgSrc}" alt="${product.title} image ${idx + 1}" style="cursor: zoom-in;" />`;
+                  const slide = document.createElement('div'); slide.className = 'gallery-slide'; slide.innerHTML = `<img decoding="async" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(product.title)} image ${idx + 1}" style="cursor: zoom-in;" />`;
                   slide.querySelector('img').onclick = () => openLightbox(imgSrc); imgContainer.appendChild(slide);
-                  if (thumbnailStrip) { const thumb = document.createElement('button'); thumb.type = 'button'; thumb.className = `thumb-btn${idx === 0 ? ' active' : ''}`; thumb.innerHTML = `<img src="${imgSrc}" alt="${product.title} thumbnail ${idx + 1}" />`; thumb.onclick = () => gotoSlide(idx); thumbnailStrip.appendChild(thumb); }
+                  if (thumbnailStrip) { const thumb = document.createElement('button'); thumb.type = 'button'; thumb.className = `thumb-btn${idx === 0 ? ' active' : ''}`; thumb.innerHTML = `<img loading="lazy" decoding="async" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(product.title)} thumbnail ${idx + 1}" />`; thumb.onclick = () => gotoSlide(idx); thumbnailStrip.appendChild(thumb); }
                   if (dotsContainer) { const dot = document.createElement('span'); dot.style.width = '8px'; dot.style.height = '8px'; dot.style.borderRadius = '50%'; dot.style.background = idx === 0 ? '#6366f1' : '#d1d5db'; dot.style.cursor = 'pointer'; dot.onclick = () => gotoSlide(idx); dotsContainer.appendChild(dot); }
                 });
               }
@@ -1663,7 +1582,7 @@
                 const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'size-btn'; btn.textContent = s;
                 if (stock <= 0) { btn.disabled = true; btn.style.opacity = '0.4'; btn.innerHTML = `${s}<span style="position: absolute; top: 50%; left: 0; right: 0; height: 1.5px; background: #ef4444; transform: rotate(-45deg);"></span>`; }
                 else {
-                  if (selectedSize === null) { selectedSize = s; if (urgencyBadge) { urgencyBadge.textContent = stock <= 3 ? `⚠️ Only ${stock} left!` : '✨ Special Price Active'; urgencyBadge.style.color = stock <= 3 ? '#f97316' : '#10b981'; urgencyBadge.style.background = stock <= 3 ? 'rgba(249,115,22,0.1)' : 'rgba(16,185,129,0.1)'; } btn.classList.add('active'); }
+                  if (selectedSize === null) { selectedSize = s; if (urgencyBadge) { urgencyBadge.textContent = stock <= 3 ? `⚠️ Only ${stock} left!` : (product.mrp > product.price ? 'Special price' : 'In stock'); urgencyBadge.style.color = stock <= 3 ? '#f97316' : '#10b981'; urgencyBadge.style.background = stock <= 3 ? 'rgba(249,115,22,0.1)' : 'rgba(16,185,129,0.1)'; } btn.classList.add('active'); }
                   btn.onclick = () => { selectedSize = s; sizeContainer.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); if (urgencyBadge && stock <= 3) { urgencyBadge.textContent = `⚠️ Only ${stock} left!`; urgencyBadge.style.color = '#f97316'; } };
                 }
                 sizeContainer.appendChild(btn);
@@ -1677,9 +1596,10 @@
               if (!selectedSize) { return false; }
               const cartKey = getUserStorageKey('dtf_cart');
               const cart = JSON.parse(localStorage.getItem(cartKey)) || [];
-              const existing = cart.findIndex(c => c && String(c.id || c.title) === String(product.id) && String(c.size) === String(selectedSize));
+              const color = document.getElementById('product-colors').dataset.selectedColor || '';
+              const existing = cart.findIndex(c => c && String(c.id || c.title) === String(product.id) && String(c.size) === String(selectedSize) && (c.color || '') === color);
               if (existing > -1) cart[existing].quantity = (cart[existing].quantity || 1) + 1;
-              else cart.push({ id: product.id, pid: product.pid || product.id, title: product.title, price: product.price, image: product.images[0] || '', size: selectedSize, quantity: 1 });
+              else cart.push({ id: product.id, pid: product.pid || product.id, title: product.title, brand: product.brand, price: product.price, image: product.images[0] || '', size: selectedSize, color, quantity: 1 });
               localStorage.setItem(cartKey, JSON.stringify(cart)); window.dispatchEvent(new Event('dtf:cart:updated')); return true;
             }
             const addCartCta = document.getElementById('add-to-cart-cta');
@@ -1691,130 +1611,38 @@
                   alert("Please select a size first.");
                   return;
                 }
-                const loc = JSON.parse(localStorage.getItem('dtf_user_location') || 'null');
-                if (!loc || !loc.pin || !loc.name) {
-                  alert("Please select a delivery location first!");
-                  const subbar = document.getElementById('react-address-picker-root');
-                  if (subbar) subbar.scrollIntoView({behavior: 'smooth', block: 'center'});
+
+                const rawUser = localStorage.getItem('dtf_user') || localStorage.getItem('user');
+                if (!rawUser) {
+                  window.location.href = 'login.html';
                   return;
                 }
-                
-                const addressStr = `${loc.name} - ${loc.pin}`;
-                
-                // Show Custom Modal
-                const overlay = document.getElementById('buy-now-modal-overlay');
-                const addrText = document.getElementById('buy-now-addr-text');
-                if (overlay && addrText) {
-                  addrText.textContent = addressStr;
-                  overlay.classList.add('active');
-                }
-              };
-            }
-            
-            const buyNowOverlay = document.getElementById('buy-now-modal-overlay');
-            const buyNowCancel = document.getElementById('buy-now-cancel');
-            const buyNowConfirm = document.getElementById('buy-now-confirm');
-            const buyNowChange = document.getElementById('buy-now-change-btn');
-            
-            if (buyNowCancel) {
-              buyNowCancel.onclick = () => { buyNowOverlay.classList.remove('active'); };
-            }
-            if (buyNowChange) {
-              buyNowChange.onclick = () => {
-                buyNowOverlay.classList.remove('active');
-                if (window.openLocationSheet) window.openLocationSheet();
-              };
-            }
-            if (buyNowConfirm) {
-              buyNowConfirm.onclick = () => {
-                buyNowOverlay.classList.remove('active');
-                
-                const loc = JSON.parse(localStorage.getItem('dtf_user_location') || 'null');
-                const addressStr = loc ? `${loc.name} - ${loc.pin}` : 'No Address';
-                
-                // 1. Create Order
-                const price = Math.round(parseFloat(product.price || 0));
-                const tax = Math.round(price * 0.18);
-                const total = price + tax;
-                
-                const newOrder = {
-                  id: 'ORD' + Date.now(),
-                  customer: 'Guest User',
-                  address: addressStr,
-                  date: new Date().toISOString().split('T')[0],
-                  status: 'Order Placed',
-                  total_amount: total,
-                  items: [{
-                    id: product.id,
-                    title: product.title,
-                    price: price,
-                    quantity: 1,
-                    size: selectedSize,
-                    image: product.images && product.images.length ? product.images[0] : ''
-                  }]
-                };
-                
-                const existingOrders = JSON.parse(localStorage.getItem('dtf_orders') || '[]');
-                existingOrders.unshift(newOrder);
-                localStorage.setItem('dtf_orders', JSON.stringify(existingOrders));
-                window.dispatchEvent(new Event('dtf:orders:updated'));
-                
-                // 2. Generate Bill HTML
-                const invoiceHtml = `
-                 <!DOCTYPE html>
-                 <html>
-                 <head>
-                   <title>Invoice - ${newOrder.id}</title>
-                   <style>
-                     body { font-family: 'Inter', sans-serif; color: #000; padding: 40px; }
-                     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-                     th { background: #f3f4f6; }
-                     .header { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 20px; }
-                   </style>
-                 </head>
-                 <body>
-                   <div class="header">
-                     <div>
-                       <h1 style="margin:0;">FASHION COMPANY</h1>
-                       <p>Retail Pvt. Ltd.<br>Invoice # ${newOrder.id}</p>
-                     </div>
-                     <div style="text-align:right;">
-                       <h3 style="margin:0;">BILL TO</h3>
-                       <p>${addressStr.replace(/&/g, '&amp;').replace(/</g, '&lt;')}<br>Date: ${newOrder.date}</p>
-                     </div>
-                   </div>
-                   <table>
-                     <tr><th>Item</th><th>Size</th><th>Qty</th><th>Price</th><th>Total</th></tr>
-                     <tr>
-                       <td>${product.title.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</td>
-                       <td>${selectedSize}</td>
-                       <td>1</td>
-                       <td>Rs. ${price}</td>
-                       <td>Rs. ${price}</td>
-                     </tr>
-                   </table>
-                   <div style="margin-top:20px; text-align:right; font-size:18px;">
-                     <p>Tax (18%): Rs. ${tax}</p>
-                     <p><strong>Grand Total: Rs. ${total}</strong></p>
-                   </div>
-                   <div style="margin-top: 50px; text-align: center; border-top: 1px dashed #ccc; padding-top: 20px;">
-                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('Order:' + newOrder.id + '|Total:' + total + '|Loc:' + addressStr)}" alt="QR Code" style="width: 100px; height: 100px; margin-bottom: 10px;">
-                     <p style="font-size: 12px;">Scan QR for Order Details</p>
-                   </div>
-                   <script>
-                     window.onload = () => { setTimeout(() => window.print(), 500); };
-                   <\/script>
-                 </body>
-                 </html>
-                `;
-                
-                const blob = new Blob([invoiceHtml], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                window.open(url, '_blank');
-              };
-            }
 
+                const buyNowKey = getUserStorageKey('dtf_buy_now_checkout');
+                const buyNowItem = {
+                  id: product.id,
+                  pid: product.pid || product.id,
+                  title: product.title,
+                  brand: product.brand,
+                  price: product.price,
+                  image: product.images && product.images.length ? product.images[0] : '',
+                  size: selectedSize,
+                  color: document.getElementById('product-colors').dataset.selectedColor || '',
+                  quantity: 1,
+                  source: 'buy-now'
+                };
+
+                try {
+                  localStorage.setItem(buyNowKey, JSON.stringify([buyNowItem]));
+                  sessionStorage.setItem('dtf_selected_product', JSON.stringify(product));
+                } catch (err) {
+                  alert('Could not prepare checkout. Please try again.');
+                  return;
+                }
+
+                window.location.href = 'cart.html?checkout=buy-now';
+              };
+            }
             // Wishlist
             const wishlistBtn = document.getElementById('wishlist-toggle-btn');
             function checkWishlistState() {
@@ -1859,7 +1687,7 @@
                 let alts = localAlternates.filter(p => String(p.id) !== String(product.id)).sort((a,b) => (catKey(a.category) === currentCat ? 0 : 1) - (catKey(b.category) === currentCat ? 0 : 1)).slice(0, 8);
                 alts.forEach(p => {
                   const item = document.createElement('div'); item.className = 'similar-product-card';
-                  item.innerHTML = `<div class="similar-product-image"><img src="${p.images[0] || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop'}" /></div><div class="similar-product-info"><span>${escapeHtml(p.brand)}</span><h4>${escapeHtml(p.title)}</h4><p><strong>₹${Math.round(p.price).toLocaleString('en-IN')}</strong></p></div>`;
+                  item.innerHTML = `<div class="similar-product-image"><img loading="lazy" decoding="async" src="${escapeHtml(p.images[0] || '')}" alt="${escapeHtml(p.title)}" /></div><div class="similar-product-info"><span>${escapeHtml(p.brand)}</span><h4>${escapeHtml(p.title)}</h4><p><strong>₹${Math.round(p.price).toLocaleString('en-IN')}</strong></p></div>`;
                   item.onclick = () => {
                     rememberProductForDetails(p);
                     window.location.href = `product-details.html?id=${encodeURIComponent(p.id)}&title=${encodeURIComponent(p.title)}`;
@@ -1870,7 +1698,9 @@
             } catch (e) { console.warn('Recommender error:', e); }
           }
 
-          // Step 1: Immediate local search (admin dashboard products and the last clicked card)
+          showProductLoadingState();
+
+          // Step 1: Prepare local cache only as a last fallback after loading finishes.
           try {
             const rememberedProduct = getRememberedProduct();
             liveProduct = matchProduct([rememberedProduct].filter(Boolean), cleanId, cleanTitle);
@@ -1893,22 +1723,15 @@
             } catch {}
           }
 
-          // RENDER IMMEDIATELY so the user sees the exact product details without any waiting!
-          if (liveProduct) {
-            renderProductDetails(liveProduct);
-            hasRenderedProduct = true;
-          }
-
-          // Step 2: Background Authoritative Sync (non-blocking)
-          (async function syncWithApis() {
+          // Step 2: Authoritative sync. Product details render only after this finishes.
+          await (async function syncWithApis() {
             try {
               const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-              const cloudUrl = isLocalhost
-                ? 'https://fashion-company.netlify.app/.netlify/functions/products'
-                : '/.netlify/functions/products';
+              const cloudUrl = window.dtfProductsUrl();
 
               let cloudProducts = [];
               let localProducts = [];
+              let authoritativeRead = false;
 
               const directCloudFetch = cleanId
                 ? fetch(cloudUrl + '?id=' + encodeURIComponent(cleanId) + '&t=' + Date.now(), { signal: AbortSignal.timeout(6000) })
@@ -1926,43 +1749,15 @@
                 .then(data => {
                   if (data && data.success && Array.isArray(data.products)) {
                     cloudProducts = [...cloudProducts, ...data.products];
+                    authoritativeRead = true;
                   }
                 })
                 .catch(() => null);
 
               const fetchPromises = [directCloudFetch, cloudFetch];
-              if (isLocalhost) {
-                if (cleanId) {
-                  const directLocalFetch = fetch(apiUrl('/products/' + encodeURIComponent(cleanId)), { signal: AbortSignal.timeout(4000) })
-                    .then(res => res.ok ? res.json() : null)
-                    .then(data => {
-                      if (data && data.success && data.product) {
-                        localProducts.unshift(data.product);
-                      }
-                    })
-                    .catch(() => null);
-                  fetchPromises.push(directLocalFetch);
-                }
-                const localFetch = fetch(apiUrl('/products'), { signal: AbortSignal.timeout(4000) })
-                  .then(res => res.ok ? res.json() : null)
-                  .then(data => {
-                    if (data && data.success && Array.isArray(data.products)) {
-                      localProducts = data.products;
-                    }
-                  })
-                  .catch(() => null);
-                fetchPromises.push(localFetch);
-              }
-
               await Promise.all(fetchPromises);
 
-              const mergedApiProducts = [...cloudProducts];
-              localProducts.forEach(lp => {
-                const lpId = String(lp.id || lp.pid || lp.title || '').toLowerCase();
-                if (!mergedApiProducts.some(cp => String(cp.id || cp.pid || cp.title || '').toLowerCase() === lpId)) {
-                  mergedApiProducts.push(lp);
-                }
-              });
+              const mergedApiProducts = cloudProducts;
 
               if (cloudProducts.length > 0) {
                 try { localStorage.setItem('dtf_admin_products', JSON.stringify(cloudProducts)); } catch {}
@@ -1974,12 +1769,24 @@
                 rememberProductForDetails(liveProduct);
                 renderProductDetails(liveProduct);
                 hasRenderedProduct = true;
+              } else if (authoritativeRead) {
+                liveProduct = null;
+                renderProductDetails(null);
+                hasRenderedProduct = true;
+              } else if (liveProduct && !hasRenderedProduct) {
+                renderProductDetails(liveProduct);
+                hasRenderedProduct = true;
               } else if (!liveProduct && !hasRenderedProduct && (cleanId || cleanTitle)) {
                 renderProductDetails(null);
               }
             } catch (e) {
               console.log('[Fashion Company Details] Background sync notice:', e.message);
-              if (!liveProduct && !hasRenderedProduct && (cleanId || cleanTitle)) renderProductDetails(null);
+              if (liveProduct && !hasRenderedProduct) {
+                renderProductDetails(liveProduct);
+                hasRenderedProduct = true;
+              } else if (!liveProduct && !hasRenderedProduct && (cleanId || cleanTitle)) {
+                renderProductDetails(null);
+              }
             }
           })();
 
@@ -2012,38 +1819,5 @@
       <button id="lightbox-close" aria-label="Close image inspect modal">✕</button>
       <img id="lightbox-img" src="" alt="HD Deep View Product Image" />
     </div>
-    <!-- Buy Now Custom Modal -->
-    <style>
-      #buy-now-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
-      #buy-now-modal-overlay.active { display: flex; opacity: 1; }
-      #buy-now-modal-content { background: #111827; border: 1px solid #1f2937; border-radius: 16px; width: 90%; max-width: 400px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); transform: scale(0.95); transition: transform 0.2s ease; }
-      #buy-now-modal-overlay.active #buy-now-modal-content { transform: scale(1); }
-      #buy-now-modal-title { font-size: 18px; font-weight: 700; color: #fff; margin: 0 0 8px 0; }
-      #buy-now-modal-desc { font-size: 13px; color: #9ca3af; margin: 0 0 20px 0; line-height: 1.4; }
-      .buy-now-addr-box { background: rgba(31,41,55,0.5); border: 1px solid rgba(55,65,81,0.5); border-radius: 12px; padding: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; }
-      .buy-now-addr-text { font-size: 13px; color: #d1d5db; line-height: 1.5; padding-right: 12px; }
-      .buy-now-change-btn { background: none; border: none; color: #818cf8; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; padding: 4px; letter-spacing: 0.5px; }
-      .buy-now-actions { display: flex; gap: 12px; }
-      .buy-now-action-btn { flex: 1; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; }
-      .buy-now-cancel { background: #1f2937; color: #fff; }
-      .buy-now-confirm { background: #4f46e5; color: #fff; box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
-      .buy-now-cancel:hover { background: #374151; }
-      .buy-now-confirm:hover { background: #4338ca; }
-    </style>
-    <div id="buy-now-modal-overlay">
-      <div id="buy-now-modal-content">
-        <h3 id="buy-now-modal-title">Confirm Delivery Details</h3>
-        <p id="buy-now-modal-desc">Please verify your location before generating the bill.</p>
-        <div class="buy-now-addr-box">
-          <div id="buy-now-addr-text" class="buy-now-addr-text"></div>
-          <button type="button" id="buy-now-change-btn" class="buy-now-change-btn">Change</button>
-        </div>
-        <div class="buy-now-actions">
-          <button type="button" id="buy-now-cancel" class="buy-now-action-btn buy-now-cancel">Cancel</button>
-          <button type="button" id="buy-now-confirm" class="buy-now-action-btn buy-now-confirm">Confirm & Bill</button>
-        </div>
-      </div>
-    </div>
-    
   </body>
 </html>

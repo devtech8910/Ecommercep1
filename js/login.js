@@ -137,7 +137,8 @@ function initLoginModule() {
 
     const cleanEmail = email.toLowerCase();
 
-    // 0. Primary: Local Express Node API Server Authentication
+    // Local Express authentication is available only in the backend development setup.
+    if (['localhost', '127.0.0.1'].includes(location.hostname) && !window.__dtfCatalogPreview) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 2500);
@@ -189,6 +190,7 @@ function initLoginModule() {
     } catch (err) {
       console.log('[Fashion Company Auth] Express backend server not reachable locally, trying cloud fallback:', err.message);
     }
+    }
 
     // 1. Attempt Netlify Serverless Cloud Auth API (Works 24/7 across Mobile & Desktop globally)
     let cloudUser = null;
@@ -196,7 +198,7 @@ function initLoginModule() {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
       const response = await fetch('/.netlify/functions/auth?action=login', {
         method: 'POST',
@@ -256,20 +258,6 @@ function initLoginModule() {
         window.location.href = sessionObj.role === 'admin' ? 'admin.html' : '../index.html';
       }, 600);
       return;
-    }
-
-    // Offline fallback: only resume an already authenticated session.
-    try {
-      const currentUser = JSON.parse(localStorage.getItem('dtf_user') || 'null');
-      if (currentUser && currentUser.email && currentUser.email.toLowerCase() === cleanEmail) {
-        if (submitTextSpan) submitTextSpan.textContent = 'Session found. Redirecting...';
-        setTimeout(() => {
-          window.location.href = currentUser.role === 'admin' ? 'admin.html' : '../index.html';
-        }, 600);
-        return;
-      }
-    } catch (err) {
-      console.warn('Existing session lookup error:', err);
     }
 
     submitBtn.disabled = false;

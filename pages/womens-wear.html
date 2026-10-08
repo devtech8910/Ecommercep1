@@ -93,6 +93,7 @@
         border-color: rgba(239, 68, 68, 0.4);
       }
     </style>
+      <link rel="stylesheet" href="../css/catalog.css" />
   </head>
   <body>
     <!-- Header -->
@@ -347,6 +348,7 @@
 
     <!-- Custom JavaScript -->
     <script src="../js/utils.js"></script>
+    <script src="../js/catalog-ui.js"></script>
     <script src="../js/script.js"></script>
     <script src="../js/mobile-ui.js"></script>
     <script src="../js/filter-drawer.js"></script>
@@ -399,6 +401,7 @@
         }
 
         function populateBrandsFilter() {
+          window.dtfPopulateProductFilters(allProducts);
           const brandContainer = document.getElementById('brands-checkbox-container');
           if (!brandContainer) return;
           const brandsSet = new Set(allProducts.map(p => p.brand).filter(Boolean));
@@ -407,7 +410,7 @@
           brandsSet.forEach(brand => {
             const label = document.createElement('label');
             label.className = 'filter-checkbox-item';
-            label.innerHTML = `<input type="checkbox" value="${brand}" class="brand-cb" /> ${brand}`;
+            label.innerHTML = `<input type="checkbox" value="${escapeHtml(brand)}" class="brand-cb" /> ${escapeHtml(brand)}`;
             brandContainer.appendChild(label);
           });
         }
@@ -432,9 +435,7 @@
           // 2. Fetch fresh data from authoritative sources
           const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
           
-          const cloudUrl = isLocalhost
-            ? 'https://fashion-company.netlify.app/.netlify/functions/products'
-            : '/.netlify/functions/products';
+          const cloudUrl = window.dtfProductsUrl();
 
           async function fetchCloudWithRetry(maxAttempts) {
             for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -493,8 +494,11 @@
         let filterMinPrice = null;
         let filterMaxPrice = null;
         let selectedSizes = [];
+        let selectedFabrics = [];
+        let selectedFits = [];
         let selectedBrands = [];
         let activeSort = 'featured';
+        let selectedRatings = [];
         let searchQuery = '';
 
         const grid = document.getElementById('category-products-grid');
@@ -518,7 +522,10 @@
           let count = 0;
           if (filterMinPrice !== null || filterMaxPrice !== null) count++;
           if (selectedSizes.length > 0) count++;
+          if (selectedFabrics.length > 0) count++;
+          if (selectedFits.length > 0) count++;
           if (selectedBrands.length > 0) count++;
+          if (selectedRatings.length > 0) count++;
 
           if (count > 0) {
             activeBadge.textContent = count;
@@ -534,7 +541,7 @@
           let filtered = [...allProducts];
 
           if (searchQuery) {
-            filtered = filtered.filter(p => p.title.toLowerCase().includes(searchQuery));
+            filtered = filtered.filter(p => [p.title, p.brand, p.productType, p.category].filter(Boolean).join(' ').toLowerCase().includes(searchQuery));
           }
 
           if (filterMinPrice !== null) {
@@ -556,6 +563,9 @@
             filtered = filtered.filter(p => selectedBrands.includes(p.brand));
           }
 
+          if (selectedFabrics.length) filtered = filtered.filter(p => selectedFabrics.includes(p.fabric));
+          if (selectedFits.length) filtered = filtered.filter(p => selectedFits.includes(p.fit));
+          if (selectedRatings.length) filtered = filtered.filter(p => Number(p.rating) >= Math.min(...selectedRatings) && Number(p.reviewCount || p.review_count) > 0);
           if (activeSort === 'price-low') {
             filtered.sort((a, b) => a.price - b.price);
           } else if (activeSort === 'price-high') {
@@ -588,15 +598,14 @@
             const detailsUrl = `product-details.html?id=${encodeURIComponent(prodId)}&title=${encodeURIComponent(p.title || '')}`;
 
             const priceVal = parseFloat(p.price) || 0;
-            const mrpVal = parseFloat(p.mrp) || Math.round(priceVal * 1.35);
+            const mrpVal = parseFloat(p.mrp) || priceVal;
             const discPercent = mrpVal > priceVal ? Math.round(((mrpVal - priceVal) / mrpVal) * 100) : 0;
-            const offerPay = Math.max(1, Math.round(priceVal * 0.95));
 
             const wishlistKey = (window.getUserStorageKey ? window.getUserStorageKey('dtf_wishlist') : 'dtf_wishlist');
             const wishlist = JSON.parse(localStorage.getItem(wishlistKey) || '[]');
             const isWishlisted = wishlist.some(item => item.title === p.title);
 
-            const imgSrc = p.image || 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&q=80&fit=crop';
+            const imgSrc = p.image || '';
             card.addEventListener('click', (event) => {
               if (event.target.closest('a[href*="product-details.html"]')) {
                 try { sessionStorage.setItem('dtf_selected_product', JSON.stringify(p)); } catch {}
@@ -605,11 +614,11 @@
             card.innerHTML = `
               <div class="product-card-img-wrap" style="position: relative; width: 100%; aspect-ratio: 3 / 4; overflow: hidden; background: #0d0e1a; border-radius: 18px 18px 0 0;">
                 <a href="${detailsUrl}" style="position: absolute; inset: 0; display: block; width: 100%; height: 100%;">
-                  <img src="${imgSrc}" style="width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; transition: transform 0.4s ease;" alt="${p.title}" class="product-card-img" />
+                  <img loading="lazy" decoding="async" width="400" height="400" src="${escapeHtml(imgSrc.replace(/(\/assets\/catalog\/seed_[^/]+)\.webp$/, '$1-thumb.webp'))}" style="width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; transition: transform 0.4s ease;" alt="${escapeHtml(p.title)}" class="product-card-img" />
                 </a>
                 
-                <span style="position: absolute; top: 10px; left: 10px; background: rgba(10,10,20,0.7); backdrop-filter: blur(8px); color: #9ca3af; border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; pointer-events: none; border: 1px solid rgba(255,255,255,0.1);">
-                  ${p.bestSeller ? '🔥 Top Sold' : 'Sponsored'}
+                <span style="position: absolute; top: 10px; left: 10px; background: rgba(10,10,20,0.7); backdrop-filter: blur(8px); color: #9ca3af; display: ${p.badge ? 'block' : 'none'}; border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; pointer-events: none; border: 1px solid rgba(255,255,255,0.1);">
+                  ${escapeHtml(p.badge || '')}
                 </span>
 
                 <button type="button" class="btn-add-wishlist" style="position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; background: rgba(10, 10, 20, 0.7); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.15); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; font-size: 14px;" title="Add to Wishlist">
@@ -618,14 +627,14 @@
               </div>
 
               <div style="padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 4px; flex-grow: 1; font-family: 'Inter', sans-serif;">
-                <span style="font-size: 12.5px; font-weight: 800; text-transform: uppercase; color: #f0f0f5; letter-spacing: 0.04em;">${p.brand || 'Fashion Company'}</span>
+                <span style="font-size: 12.5px; font-weight: 800; text-transform: uppercase; color: #f0f0f5; letter-spacing: 0.04em;">${escapeHtml(p.brand || 'Fashion Company')}</span>
                 
                 <a href="${detailsUrl}" style="text-decoration: none; color: inherit;">
-                  <h3 style="margin: 0; font-size: 13.5px; font-weight: 600; color: #a1a1aa; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.35; min-height: 36px;">${p.title}</h3>
+                  <h3 style="margin: 0; font-size: 13.5px; font-weight: 600; color: #a1a1aa; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.35; min-height: 36px;">${escapeHtml(p.title)}</h3>
                 </a>
 
                 <div style="font-size: 11px; color: #71717a; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                  Women's Wear, Elegant
+                  ${escapeHtml(window.dtfCatalogSubtitle(p))}
                 </div>
 
                 <div style="margin-top: 2px;">
@@ -643,7 +652,7 @@
                 </div>
 
                 <div style="font-size: 11px; font-weight: 600; color: #fbbf24; display: flex; align-items: center; gap: 4px; margin-top: 2px;">
-                  <span>Or Pay ₹${offerPay.toLocaleString('en-IN')} + ⚡ 50</span>
+                  <span class="catalog-card-meta">${escapeHtml(window.dtfCatalogRating(p))}</span>
                 </div>
 
                 <div style="margin-top: auto; padding-top: 10px;">
@@ -655,16 +664,7 @@
             `;
 
             card.querySelector('.btn-add-cart').addEventListener('click', () => {
-              const cartKey = (window.getUserStorageKey ? window.getUserStorageKey('dtf_cart') : 'dtf_cart');
-              const cart = JSON.parse(localStorage.getItem(cartKey) || '[]');
-              const existingIdx = cart.findIndex(item => item.title === p.title);
-              if (existingIdx > -1) {
-                cart[existingIdx].quantity = (cart[existingIdx].quantity || 1) + 1;
-              } else {
-                cart.push({ id: p.id || p.pid || 1, pid: p.pid || p.id || 1, title: p.title, price: p.price, image: p.image, size: 'M', quantity: 1 });
-              }
-              localStorage.setItem(cartKey, JSON.stringify(cart));
-              window.dispatchEvent(new Event('dtf:cart:updated'));
+              window.dtfAddCatalogToCart(p);
             });
 
             card.querySelector('.btn-add-wishlist').addEventListener('click', (e) => {
@@ -694,7 +694,10 @@
           filterMaxPrice = maxVal ? parseFloat(maxVal) : null;
 
           selectedSizes = Array.from(document.querySelectorAll('.size-cb:checked')).map(cb => cb.value);
+          selectedFabrics = Array.from(document.querySelectorAll('.fabric-cb:checked')).map(cb => cb.value);
+          selectedFits = Array.from(document.querySelectorAll('.fit-cb:checked')).map(cb => cb.value);
           selectedBrands = Array.from(document.querySelectorAll('.brand-cb:checked')).map(cb => cb.value);
+          selectedRatings = Array.from(document.querySelectorAll('.rating-cb:checked')).map(cb => Number(cb.value));
 
           if (window.closeFilterDrawer) window.closeFilterDrawer();
           filterAndSortProducts();
@@ -709,7 +712,11 @@
           filterMinPrice = null;
           filterMaxPrice = null;
           selectedSizes = [];
+          selectedFabrics = []; selectedFits = [];
+          document.querySelectorAll('.fabric-cb, .fit-cb').forEach(cb => cb.checked = false);
           selectedBrands = [];
+          selectedRatings = [];
+          document.querySelectorAll('.rating-cb').forEach(cb => cb.checked = false);
           
           filterAndSortProducts();
         }

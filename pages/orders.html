@@ -533,7 +533,7 @@
         <div style="padding: 16px; background: #111827; color: #fff; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 20;">
           <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 18px;">🖨️</span>
-            <h3 style="font-weight: 700; font-size: 14px; margin: 0; color: #fff;">Amazon / Flipkart Style Tax Invoice & Shipping Slip</h3>
+            <h3 style="font-weight: 700; font-size: 14px; margin: 0; color: #fff;">Order Bill</h3>
           </div>
           <div style="display: flex; align-items: center; gap: 12px;">
             <button id="trigger-print-btn" style="padding: 8px 16px; background: #f59e0b; color: #000; font-weight: 700; font-size: 12px; border-radius: 8px; border: none; cursor: pointer;">
@@ -550,12 +550,12 @@
           <div style="border: 2px solid #000; padding: 16px; border-radius: 12px; margin-bottom: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 12px;">
               <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="background: #000; color: #fff; padding: 4px 12px; font-weight: 900; font-size: 14px; border-radius: 4px;">ATS EXPRESS</div>
+                <div style="background: #000; color: #fff; padding: 4px 12px; font-weight: 900; font-size: 14px; border-radius: 4px;">STANDARD DELIVERY</div>
                 <span style="font-size: 10px; font-weight: 700; border: 1px solid #000; padding: 2px 8px; border-radius: 4px;">STANDARD DELIVERY</span>
               </div>
               <div style="text-align: right; font-size: 12px; font-weight: 700;">
-                <div>SORT CODE: <span id="invoice-sort-code" style="font-family: monospace;">MYL / 521230-E</span></div>
-                <div style="font-size: 10px; color: #4b5563;">Routing Hub: AP-KR-DEL-01</div>
+                <div>SORT CODE: <span id="invoice-sort-code" style="font-family: monospace;">PIN / N/A</span></div>
+                <div style="font-size: 10px; color: #4b5563;">Routing Hub: Not configured</div>
               </div>
             </div>
 
@@ -570,12 +570,11 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 12px;">
               <div style="border-right: 1px solid #000; padding-right: 12px;">
                 <div style="font-weight: 700; text-transform: uppercase; font-size: 10px; color: #374151; margin-bottom: 4px;">SHIP FROM (SELLER):</div>
-                <div style="font-weight: 700; font-size: 13px;">Fashion Company Retail Pvt. Ltd.</div>
+                <div style="font-weight: 700; font-size: 13px;">Fashion Company</div>
                 <div style="color: #374151; margin-top: 4px; line-height: 1.5; font-size: 11px;">
-                  Plot 42, Fashion Company Logistics Hub, Main Road,<br>
-                  Mylavaram, NTR District, AP - 521230<br>
-                  <strong>GSTIN:</strong> 37AAAAA0000A1Z5<br>
-                  <strong>Phone:</strong> +91 98765 43210
+                  Seller address not configured<br>
+                  <strong>GSTIN:</strong> Not configured<br>
+                  <strong>Phone:</strong> Not configured
                 </div>
               </div>
 
@@ -600,7 +599,7 @@
               <div style="text-align: right; font-size: 12px;">
                 <div><strong>Order ID:</strong> <span id="inv-order-id" style="font-family: monospace;">#1076</span></div>
                 <div><strong>Order Date:</strong> <span id="inv-date">23 Jul 2026</span></div>
-                <div><strong>Payment Status:</strong> <span id="inv-pay-mode" style="font-weight: 700; color: #047857;">PAID (ONLINE)</span></div>
+                <div><strong>Payment Status:</strong> <span id="inv-pay-mode" style="font-weight: 700; color: #047857;">Not configured</span></div>
               </div>
             </div>
 
@@ -614,7 +613,7 @@
                   <th style="padding: 10px 8px; text-align: center;">Qty</th>
                   <th style="padding: 10px 12px; text-align: right;">Gross Price</th>
                   <th style="padding: 10px 12px; text-align: right;">Taxable Base</th>
-                  <th style="padding: 10px 12px; text-align: right;">GST (18%)</th>
+                  <th style="padding: 10px 12px; text-align: right;">Tax</th>
                   <th style="padding: 10px 12px; text-align: right;">Total (₹)</th>
                 </tr>
               </thead>
@@ -685,6 +684,9 @@
 
     <!-- Custom JavaScript -->
     <script src="../js/utils.js"></script>
+    <script src="../js/catalog-ui.js"></script>
+    <script src="../js/billing.js"></script>
+    <script src="../js/vendor/JsBarcode.code128.min.js"></script>
     <script src="../js/script.js"></script>
     <script src="../js/mobile-ui.js"></script>
     <script>
@@ -718,49 +720,30 @@
 
         const token = userData.token || '';
 
+        function getOrdersApiUrl(query = '') {
+          return window.dtfOrdersUrl(query);
+        }
+
         // Fetch orders
         fetchOrders();
 
         async function fetchOrders() {
           try {
-            const res = await fetch('http://localhost:5000/orders', {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              }
+            const res = await fetch(getOrdersApiUrl(`?userEmail=${encodeURIComponent(userData.email || '')}&t=${Date.now()}`), {
+              headers: { Authorization: `Bearer ${token}` },
+              signal: AbortSignal.timeout(12000)
             });
-
             const data = await res.json();
-
-            if (data.success && data.orders) {
-              allOrders = data.orders;
-            } else {
-              allOrders = [];
-            }
-          } catch (err) {
-            console.error('Failed to fetch orders:', err);
-            allOrders = [];
+            if (!res.ok || !data.success || !Array.isArray(data.orders)) throw new Error(data.error || 'Could not load shared orders.');
+            allOrders = data.orders.sort((a, b) => new Date(b.created_at || b.placed_at) - new Date(a.created_at || a.placed_at));
+            loadingEl.style.display = 'none';
+            renderOrders();
+          } catch (error) {
+            loadingEl.style.display = 'none';
+            emptyEl.style.display = 'none';
+            listEl.style.display = 'block';
+            listEl.textContent = error.message;
           }
-
-          // Also load locally saved orders
-          try {
-            const localOrders = JSON.parse(localStorage.getItem('dtf_orders') || '[]');
-            if (localOrders.length > 0) {
-              // Merge local orders that aren't already in the API response
-              const existingIds = new Set(allOrders.map(o => o.id));
-              localOrders.forEach(lo => {
-                if (!existingIds.has(lo.id)) {
-                  allOrders.push(lo);
-                }
-              });
-            }
-          } catch {}
-
-          // Sort newest first
-          allOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-          loadingEl.style.display = 'none';
-          renderOrders();
         }
 
         function renderOrders() {
@@ -908,7 +891,7 @@
             if (n < 100) return b[Math.floor(n / 10)] + (digit ? ' ' + a[digit] : '');
             if (n < 1000) return a[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' and ' + inWords(n % 100) : '');
             if (n < 100000) return inWords(Math.floor(n / 1000)) + ' Thousand' + (n % 1000 ? ' ' + inWords(n % 1000) : '');
-            if (n < 10000000) return inWords(Math.floor(n / 100000)) + ' Lakh' + (n % 100000 ? ' ' + inWords(n % 1000) : '');
+            if (n < 10000000) return inWords(Math.floor(n / 100000)) + ' Lakh' + (n % 100000 ? ' ' + inWords(n % 100000) : '');
             return inWords(Math.floor(n / 10000000)) + ' Crore' + (n % 10000000 ? ' ' + inWords(n % 10000000) : '');
           }
 
@@ -919,64 +902,54 @@
         function buildCommercialInvoiceHTML(o) {
           o = o || {};
           const orderId = o.id || '1001';
-          const awbNo = `AWB${orderId}984710IN`;
-          const sortCode = `MYL / ${(o.addr_pincode || '521230')}-E`;
-          const custName = o.addr_name || (userData ? ((userData.first_name || '') + ' ' + (userData.last_name || '')).trim() : '') || 'Valued Customer';
-          const addressFormatted = escapeHtml(o.delivery_address || 'Plot 104, Green Valley Enclave, Mylavaram, Andhra Pradesh - 521230');
-          const phone = escapeHtml(o.addr_mobile || '+91 98765 43210');
-          const email = escapeHtml(userData && userData.email ? userData.email : 'customer@fashioncompany.com');
+          const awbNo = o.awb_number || o.tracking_number || orderId;
+          const barcodeLabel = o.awb_number || o.tracking_number ? 'AWB TRACKING BARCODE' : 'ORDER REFERENCE BARCODE';
+          const sortCode = o.addr_pincode ? `PIN / ${o.addr_pincode}` : 'PIN / N/A';
+          const custName = o.addr_name || o.customer_name || (userData ? ((userData.first_name || '') + ' ' + (userData.last_name || '')).trim() : '') || userData.name || 'Valued Customer';
+          const addressFormatted = escapeHtml(o.delivery_address || 'Customer address not available');
+          const phone = escapeHtml(o.addr_mobile || o.phone || '');
+          const email = escapeHtml(o.email || (userData && userData.email ? userData.email : ''));
           const invNo = `INV-FC-2026-${orderId}`;
           const invDate = new Date(o.created_at || o.placed_at || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-          const payStatus = 'PAID (ONLINE)';
-          const barcodeSvg = generateBarcodeSvg(awbNo);
+          const payStatus = String(o.payment_status || o.paymentStatus || (o.payment_method === 'cod' ? 'COD Pending' : 'Paid')).toUpperCase();
+          const barcodeSvg = window.dtfBillBarcode(awbNo);
 
           let itemsArray = parseItems(o.items);
           if (!Array.isArray(itemsArray) || itemsArray.length === 0) {
             itemsArray = [
-              { pid: 102, title: 'Oxford Classic Button-Down Shirt', brand: 'Fashion Company Casuals', price: o.total_amount || 3499, hsn: '6205', size: 'M', quantity: 1 }
+              { pid: '', title: 'Missing item details', brand: 'Fashion Company', price: o.subtotal || o.total_amount || 0, hsn: '', size: '', quantity: 1 }
             ];
           }
 
-          let totalCalculated = 0;
+          const bill = window.dtfBuildBill(o, itemsArray);
           let rowsHtml = '';
 
           itemsArray.forEach((item, idx) => {
-            const price = Math.round(parseFloat(item.price) || 0);
-            const qty = parseInt(item.quantity) || 1;
-            const lineTotal = price * qty;
-            totalCalculated += lineTotal;
-
-            const taxableLine = Math.round(lineTotal * 100 / 118);
-            const gstLine = lineTotal - taxableLine;
-            const cgstLine = Math.round(gstLine / 2);
-            const sgstLine = gstLine - cgstLine;
-            const sizeText = item.size || 'M';
+            const { price, quantity: qty, base: lineTotal, tax: gstLine } = bill.lines[idx];
+            const taxableLine = lineTotal;
+            const sizeText = item.size || '';
             const brandText = item.brand || 'Fashion Company';
-            const hsnText = item.hsn || '6203';
+            const hsnText = item.hsn || '';
             const pidText = item.pid ? `PID: #${item.pid}` : '';
 
             rowsHtml += `
               <tr style="border-bottom: 1px solid #e5e7eb;">
                 <td style="padding: 8px 10px; font-family: monospace; font-weight: 700; text-align: center;">${idx + 1}</td>
                 <td style="padding: 8px 10px;">
-                  <div style="font-weight: 700; color: #000; font-size: 11px;">${escapeHtml(item.title || 'Apparel Item')}</div>
+                  <div style="font-weight: 700; color: #000; font-size: 11px;">${escapeHtml(item.title || 'Missing item details')}</div>
                   <div style="font-size: 9.5px; color: #4b5563; font-family: monospace; margin-top: 1px;">Brand: ${escapeHtml(brandText)} • Size: ${escapeHtml(sizeText)} ${pidText ? `• ${escapeHtml(pidText)}` : ''}</div>
                 </td>
                 <td style="padding: 8px 8px; text-align: center; font-family: monospace; font-size: 10px; color: #374151; font-weight: 600;">${escapeHtml(hsnText)}</td>
                 <td style="padding: 8px 8px; text-align: center; font-family: monospace; font-weight: 700; color: #000;">${qty}</td>
                 <td style="padding: 8px 10px; text-align: right; font-family: monospace;">₹${price.toLocaleString('en-IN')}</td>
                 <td style="padding: 8px 10px; text-align: right; font-family: monospace; color: #374151;">₹${taxableLine.toLocaleString('en-IN')}</td>
-                <td style="padding: 8px 10px; text-align: right; font-family: monospace; color: #374151;">₹${gstLine.toLocaleString('en-IN')}<span style="display:block;font-size:7.5px;color:#6b7280;">(CGST 9% + SGST 9%)</span></td>
-                <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: 700; color: #000;">₹${lineTotal.toLocaleString('en-IN')}</td>
+                <td style="padding: 8px 10px; text-align: right; font-family: monospace; color: #374151;">₹${gstLine.toLocaleString('en-IN')}</td>
+                <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: 700; color: #000;">₹${(lineTotal + gstLine).toLocaleString('en-IN')}</td>
               </tr>
             `;
           });
 
-          const grandTotal = totalCalculated > 0 ? totalCalculated : (Math.round(parseFloat(o.total_amount) || 0));
-          const taxableVal = Math.round(grandTotal * 100 / 118);
-          const totalGst = grandTotal - taxableVal;
-          const cgst = Math.round(totalGst / 2);
-          const sgst = totalGst - cgst;
+          const { subtotal: taxableVal, tax: totalGst, delivery: deliveryCharge, total: grandTotal } = bill;
           const amountWords = numberToWordsINR(grandTotal);
 
           return `
@@ -986,17 +959,17 @@
               <div style="border: 2px solid #000; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #fff;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 8px;">
                   <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="background: #000; color: #fff; padding: 3px 10px; font-weight: 900; font-size: 13px; letter-spacing: 1px; border-radius: 3px;">ATS EXPRESS</span>
+                    <span style="background: #000; color: #fff; padding: 3px 10px; font-weight: 900; font-size: 13px; letter-spacing: 1px; border-radius: 3px;">STANDARD DELIVERY</span>
                     <span style="border: 1px solid #000; padding: 2px 6px; font-size: 9px; font-weight: 700; border-radius: 3px; text-transform: uppercase;">Standard Surface Delivery</span>
                   </div>
                   <div style="text-align: right;">
                     <div style="font-weight: 700; font-size: 11px;">SORT CODE: <span style="font-family: monospace;">${sortCode}</span></div>
-                    <div style="font-size: 9px; color: #4b5563;">Routing Hub: AP-KR-DEL-01 • Dispatch Bag #42</div>
+                    <div style="font-size: 9px; color: #4b5563;">Routing Hub: Not configured</div>
                   </div>
                 </div>
 
                 <div style="text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 10px;">
-                  <div style="font-size: 8.5px; font-family: monospace; letter-spacing: 2px; color: #6b7280; margin-bottom: 2px;">AWB TRACKING BARCODE (ATS LOGISTICS)</div>
+                  <div style="font-size: 8.5px; font-family: monospace; letter-spacing: 2px; color: #6b7280; margin-bottom: 2px;">${barcodeLabel}</div>
                   <div style="display: flex; justify-content: center;">${barcodeSvg}</div>
                   <div style="font-family: monospace; font-size: 11px; font-weight: 700; letter-spacing: 2px; margin-top: 2px;">${awbNo}</div>
                 </div>
@@ -1004,13 +977,12 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                   <div style="border-right: 1px solid #000; padding-right: 12px;">
                     <div style="font-size: 9px; font-weight: 700; text-transform: uppercase; color: #4b5563; margin-bottom: 3px; letter-spacing: 0.5px;">SOLD BY / DISPATCH FROM (SELLER):</div>
-                    <div style="font-weight: 800; font-size: 12px; color: #000;">Fashion Company Retail Pvt. Ltd.</div>
+                    <div style="font-weight: 800; font-size: 12px; color: #000;">Fashion Company</div>
                     <div style="font-size: 10px; color: #374151; margin-top: 3px; line-height: 1.45;">
-                      Central Fulfillment Hub, Plot 42-A, Main Industrial Corridor,<br>
-                      Mylavaram, NTR District, Andhra Pradesh, India - 521230<br>
-                      <strong>GSTIN:</strong> 37AAAAA0000A1Z5 | <strong>PAN:</strong> AAACF1234F<br>
-                      <strong>CIN:</strong> U51909AP2024PTC184920 | <strong>State:</strong> 37 - Andhra Pradesh<br>
-                      <strong>Helpline:</strong> +91 1800-420-9999 | <strong>Email:</strong> orders@fashioncompany.com
+                      Seller address not configured<br>
+                      <strong>GSTIN:</strong> Not configured | <strong>PAN:</strong> Not configured<br>
+                      <strong>CIN:</strong> Not configured | <strong>State:</strong> Not configured<br>
+                      <strong>Helpline:</strong> Not configured | <strong>Email:</strong> Not configured
                     </div>
                   </div>
 
@@ -1024,7 +996,7 @@
                       Phone: ${phone} &bull; Email: ${email}
                     </div>
                     <div style="font-size: 9px; color: #4b5563; margin-top: 2px;">
-                      Place of Supply: Andhra Pradesh (Code: 37) &bull; Delivery Code: STD-PREPAID
+                      Place of Supply: ${escapeHtml(o.addr_state || 'Not configured')} &bull; Delivery Code: Standard
                     </div>
                   </div>
                 </div>
@@ -1034,8 +1006,7 @@
               <div style="border: 2px solid #000; border-radius: 8px; padding: 12px; background: #fff;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 8px;">
                   <div>
-                    <h2 style="font-size: 13px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; margin: 0; color: #000;">TAX INVOICE / BILL OF SUPPLY</h2>
-                    <div style="font-size: 9px; color: #4b5563; margin-top: 1px;">(Issued under Section 31 of Central Goods and Services Tax Act, 2017)</div>
+                    <h2 style="font-size: 13px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; margin: 0; color: #000;">ORDER BILL</h2>
                     <div style="font-family: monospace; font-weight: 700; font-size: 11px; margin-top: 3px; color: #000;">Invoice No: ${invNo}</div>
                   </div>
                   <div style="text-align: right; font-size: 10.5px;">
@@ -1055,7 +1026,7 @@
                       <th style="padding: 6px 6px; width: 40px; text-align: center;">Qty</th>
                       <th style="padding: 6px 8px; width: 75px; text-align: right;">Gross Price</th>
                       <th style="padding: 6px 8px; width: 80px; text-align: right;">Taxable Base</th>
-                      <th style="padding: 6px 8px; width: 85px; text-align: right;">GST (18%)</th>
+                      <th style="padding: 6px 8px; width: 85px; text-align: right;">Tax</th>
                       <th style="padding: 6px 8px; width: 80px; text-align: right;">Total (₹)</th>
                     </tr>
                   </thead>
@@ -1073,7 +1044,7 @@
                       &bull; Certified that the particulars given in this tax invoice are true and correct.
                     </div>
                     <div style="margin-top: 8px; border-top: 1px dashed #d1d5db; padding-top: 4px; font-size: 8.5px; color: #4b5563;">
-                      <strong>Authorised Signatory:</strong> Fashion Company Retail Pvt. Ltd. (Digitally Signed & Certified)
+                      <strong>Authorised Signatory:</strong> Fashion Company
                     </div>
                   </div>
 
@@ -1083,16 +1054,12 @@
                       <span style="font-family: monospace;">₹${taxableVal.toLocaleString('en-IN')}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; color: #4b5563;">
-                      <span>CGST (9.00%):</span>
-                      <span style="font-family: monospace;">₹${cgst.toLocaleString('en-IN')}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; color: #4b5563;">
-                      <span>SGST (9.00%):</span>
-                      <span style="font-family: monospace;">₹${sgst.toLocaleString('en-IN')}</span>
+                      <span>Tax Amount:</span>
+                      <span style="font-family: monospace;">₹${totalGst.toLocaleString('en-IN')}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; color: #4b5563;">
                       <span>Shipping & Packaging:</span>
-                      <span style="font-weight: 700; color: #047857;">FREE</span>
+                      <span style="font-family: monospace;">₹${deliveryCharge.toLocaleString('en-IN')}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 13px; color: #000; border-top: 1.5px solid #000; padding-top: 4px; margin-top: 4px;">
                       <span>Grand Total:</span>
@@ -1103,7 +1070,7 @@
               </div>
 
               <div style="text-align: center; font-size: 8.5px; color: #6b7280; margin-top: 8px;">
-                This is a computer generated tax invoice in accordance with Rule 46 of the CGST Rules, 2017. No physical signature is required.
+                Computer-generated order bill.
               </div>
             </div>
           `;
@@ -1137,7 +1104,7 @@
             <!DOCTYPE html>
             <html>
             <head>
-              <title>Tax Invoice & Shipping Bill</title>
+              <title>Order Bill</title>
               <meta charset="utf-8" />
               <style>
                 @page { size: A4 portrait; margin: 8mm 12mm; }

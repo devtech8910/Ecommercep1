@@ -601,13 +601,6 @@ document.addEventListener('DOMContentLoaded', updateAuthUI);
     el.classList.add('reveal');
   });
 
-  // Editorial blocks
-  $('#editorial-main')?.classList.add('reveal-left');
-  $$('.editorial-small').forEach((el, i) => {
-    el.classList.add('reveal-right');
-    el.style.transitionDelay = `${i * 0.15}s`;
-  });
-
   // Newsletter
   $('.newsletter-glass')?.classList.add('reveal-scale');
 
@@ -958,7 +951,13 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
   // Fetch Database Addresses Sync
   async function fetchDatabaseAddresses() {
     try {
-      const res = await fetch('http://localhost:5000/address');
+      const account = JSON.parse(localStorage.getItem('dtf_user') || localStorage.getItem('user') || 'null');
+      const token = account?.token || localStorage.getItem('dtf_token') || localStorage.getItem('token');
+      if (!token) return;
+      const res = await fetch('http://localhost:5000/address', {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include'
+      });
       const data = await res.json();
       if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
         savedAddresses = data.data.map(item => ({
@@ -1923,94 +1922,155 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
    LEGAL PDF VIEWER MODAL
    ============================================================ */
 (function initLegalPdfViewer() {
-  const getBasePath = () => {
-    return window.location.pathname.includes('/pages/') ? '../' : './';
-  };
-
   const pdfMap = {
     'privacy-policy.html': 'assets/pdf/privacy_policy.pdf',
     'terms-of-service.html': 'assets/pdf/terms_of_service.pdf',
-    'cookie-policy.html': 'assets/pdf/cookie_policy.pdf'
+    'cookie-policy.html': 'assets/pdf/cookie_policy.pdf',
+    'shipping-policy.html': 'assets/pdf/shipping_policy.pdf',
+    'returns-exchanges.html': 'assets/pdf/returns_exchanges.pdf',
+    'size-guide.html': 'assets/pdf/size_guide.pdf',
+    'track-order.html': 'assets/pdf/track_my_order.pdf',
+    'contact-us.html': 'assets/pdf/contact_us.pdf'
   };
-
-  document.addEventListener('click', function(e) {
-    const link = e.target.closest('a.footer-legal-link, a[href*="privacy-policy.html"], a[href*="terms-of-service.html"], a[href*="cookie-policy.html"]');
-    if (link) {
-      const href = link.getAttribute('href');
-      if (!href) return;
-      let pdfPath = null;
-      
-      for (const [key, value] of Object.entries(pdfMap)) {
-        if (href.includes(key)) {
-          pdfPath = getBasePath() + value;
-          break;
-        }
-      }
-      
-      if (pdfPath) {
-        e.preventDefault();
-        openPdfModal(pdfPath, link.textContent.trim() || 'Document');
-      }
+  const labelMap = { 'Shipping Policy': 'shipping-policy.html', 'Returns & Exchanges': 'returns-exchanges.html', 'Size Guide': 'size-guide.html', 'Track My Order': 'track-order.html', 'Contact Us': 'contact-us.html' };
+  let closeTimer, previousFocus, previousOverflow;
+  let pdfLibraryPromise, pdfTask, pdfDocument, resizeTimer, renderVersion = 0, zoom = 1;
+  const rootUrl = new URL(location.pathname.includes('/pages/') ? '../' : './', location.href);
+  function loadPdfLibrary() {
+    if (!pdfLibraryPromise) pdfLibraryPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = new URL('js/vendor/pdf.min.js', rootUrl).href;
+      script.onload = () => {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('js/vendor/pdf.worker.min.js', rootUrl).href;
+        resolve(window.pdfjsLib);
+      };
+      script.onerror = () => { pdfLibraryPromise = null; reject(new Error('Document viewer is unavailable.')); };
+      document.head.appendChild(script);
+    });
+    return pdfLibraryPromise;
+  }
+  async function paintDocument(version) {
+    const container = document.getElementById('legal-pdf-document');
+    const doc = pdfDocument;
+    if (!doc) return;
+    container.replaceChildren();
+    container.dataset.ready = 'false';
+    document.getElementById('legal-pdf-zoom').textContent = Math.round(zoom * 100) + '%';
+    for (let number = 1; number <= doc.numPages; number++) {
+      const page = await doc.getPage(number);
+      if (version !== renderVersion) return;
+      const original = page.getViewport({ scale: 1 });
+      const scale = Math.max(180, container.clientWidth - 28) / original.width * zoom;
+      const viewport = page.getViewport({ scale });
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.ceil(viewport.width * ratio); canvas.height = Math.ceil(viewport.height * ratio);
+      canvas.style.cssText = `display:block;flex:none;width:${viewport.width}px;height:${viewport.height}px;max-width:none;margin:0 auto 14px;background:#fff;`;
+      canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', 'Document page ' + number + ' of ' + doc.numPages);
+      container.appendChild(canvas);
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport, transform: [ratio, 0, 0, ratio, 0, 0] }).promise;
+      if (version !== renderVersion) return;
     }
+    container.dataset.ready = 'true';
+  }
+  async function renderPdf(pdfUrl) {
+    const version = ++renderVersion;
+    pdfDocument = null;
+    const container = document.getElementById('legal-pdf-document');
+    container.dataset.pdfUrl = pdfUrl; container.dataset.ready = 'false'; container.textContent = 'Loading document...';
+    try {
+      await pdfTask?.destroy();
+      const library = await loadPdfLibrary();
+      if (version !== renderVersion) return;
+      pdfTask = library.getDocument({ url: pdfUrl, isEvalSupported: false });
+      const doc = await pdfTask.promise;
+      if (version !== renderVersion) return;
+      pdfDocument = doc; zoom = 1;
+      await paintDocument(version);
+    } catch (error) {
+      if (version === renderVersion) container.textContent = 'Could not display this document. Use Open PDF or Download PDF.';
+    }
+  }
+  document.addEventListener('click', event => {
+    const link = event.target.closest('a.footer-link, a.footer-legal-link, a[data-policy-pdf], a[href*="privacy-policy.html"], a[href*="terms-of-service.html"], a[href*="cookie-policy.html"]');
+    if (!link) return;
+    const href = link.getAttribute('href') || '';
+    const key = Object.keys(pdfMap).find(key => href.includes(key)) || labelMap[link.textContent.trim()];
+    const direct = Object.values(pdfMap).find(value => href.endsWith(value));
+    const path = direct || pdfMap[key];
+    if (!path) return;
+    event.preventDefault();
+    const base = location.pathname.includes('/pages/') ? '../' : './';
+    open(new URL(base + path, location.href).href, link.textContent.trim());
   });
-
-  function openPdfModal(pdfUrl, title) {
+  function open(pdfUrl, title) {
+    clearTimeout(closeTimer);
     let modal = document.getElementById('legal-pdf-modal');
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'legal-pdf-modal';
-      modal.style.cssText = `
-        position: fixed;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0, 0, 0, 0.75);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        z-index: 999999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.3s ease, visibility 0.3s ease;
-      `;
-
-      modal.innerHTML = `
-        <div style="background: var(--bg-card, #ffffff); width: 90%; max-width: 900px; height: 90vh; border-radius: 16px; border: 1px solid var(--border, rgba(255,255,255,0.1)); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
-          <div style="padding: 16px 24px; border-bottom: 1px solid var(--border, rgba(0,0,0,0.1)); display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface, #f8fafc);">
-            <h3 id="legal-pdf-title" style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-primary, #0f172a);">Document</h3>
-            <button id="legal-pdf-close" style="background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-secondary, #64748b); line-height: 1; padding: 0 4px; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.color='var(--accent-red, #ef4444)';" onmouseout="this.style.color='var(--text-secondary, #64748b)';">&times;</button>
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      modal.setAttribute('aria-labelledby', 'legal-pdf-title');
+      modal.style.cssText = 'position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);visibility:hidden;opacity:0;transition:opacity .2s ease;';
+      modal.innerHTML = `<div style="display:flex;flex-direction:column;width:94%;max-width:900px;height:90vh;height:90dvh;max-height:960px;background:#14141f;border:1px solid #454553;border-radius:8px;overflow:hidden;">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid #454553;flex-shrink:0;">
+          <h3 id="legal-pdf-title" style="flex:1;min-width:0;font-size:16px;line-height:1.35;color:#f4f4f5;margin:0;overflow-wrap:anywhere;"></h3>
+          <button id="legal-pdf-close" type="button" title="Close document" aria-label="Close document" style="width:32px;height:32px;background:transparent;border:0;color:#f4f4f5;font-size:26px;cursor:pointer;">&times;</button>
+          <div style="display:flex;align-items:center;gap:10px;width:100%;">
+          <button id="legal-pdf-minus" type="button" title="Zoom out" aria-label="Zoom out" style="width:32px;height:32px;background:transparent;border:1px solid #454553;color:#f4f4f5;font-size:23px;cursor:pointer;">&#8722;</button>
+          <span id="legal-pdf-zoom" style="min-width:48px;text-align:center;color:#d5d6ff;font-size:13px;">100%</span>
+          <button id="legal-pdf-plus" type="button" title="Zoom in" aria-label="Zoom in" style="width:32px;height:32px;background:transparent;border:1px solid #454553;color:#f4f4f5;font-size:23px;cursor:pointer;">+</button>
+          <a id="legal-pdf-open" target="_blank" rel="noopener" title="Open PDF in a new tab" aria-label="Open PDF in a new tab" style="width:32px;height:32px;display:grid;place-items:center;color:#d5d6ff;font-size:23px;text-decoration:none;">&#8599;</a>
+          <a id="legal-pdf-download" download title="Download PDF" aria-label="Download PDF" style="width:32px;height:32px;display:grid;place-items:center;color:#d5d6ff;font-size:23px;text-decoration:none;">&#8595;</a>
           </div>
-          <iframe id="legal-pdf-iframe" style="flex: 1; width: 100%; border: none; background: #e2e8f0;" src=""></iframe>
         </div>
-      `;
-
+        <div id="legal-pdf-document" tabindex="0" aria-label="PDF document pages" style="flex:1;min-height:0;overflow:auto;padding:14px;background:#e2e8f0;color:#263238;"></div>
+      </div>`;
       document.body.appendChild(modal);
-
-      modal.querySelector('#legal-pdf-close').addEventListener('click', () => {
-        closeModal(modal);
+      modal.querySelector('#legal-pdf-close').addEventListener('click', close);
+      for (const [id, delta] of [['legal-pdf-plus', .25], ['legal-pdf-minus', -.25]]) modal.querySelector('#' + id).addEventListener('click', () => {
+        if (!pdfDocument) return;
+        zoom = Math.max(.5, Math.min(2, zoom + delta));
+        paintDocument(++renderVersion).catch(() => {});
       });
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal(modal);
-      });
+      modal.addEventListener('click', event => { if (event.target === modal) close(); });
     }
-
-    modal.querySelector('#legal-pdf-title').textContent = title;
-    modal.querySelector('#legal-pdf-iframe').src = pdfUrl + '#toolbar=0&navpanes=0';
-    
-    // Animate in
-    modal.style.visibility = 'visible';
-    modal.style.opacity = '1';
-    modal.querySelector('div').style.transform = 'translateY(0)';
+    previousFocus = document.activeElement;
+    previousOverflow = document.body.style.overflow;
+    modal.querySelector('#legal-pdf-title').textContent = title || 'Document';
+    renderPdf(pdfUrl);
+    modal.querySelector('#legal-pdf-open').href = pdfUrl;
+    modal.querySelector('#legal-pdf-download').href = pdfUrl;
+    modal.setAttribute('aria-hidden', 'false');
+    modal.style.visibility = 'visible'; modal.style.opacity = '1';
     document.body.style.overflow = 'hidden';
+    modal.querySelector('#legal-pdf-close').focus();
   }
-
-  function closeModal(modal) {
-    modal.style.opacity = '0';
-    modal.querySelector('div').style.transform = 'translateY(20px)';
-    setTimeout(() => {
-      modal.style.visibility = 'hidden';
-      modal.querySelector('#legal-pdf-iframe').src = '';
-      document.body.style.overflow = '';
-    }, 300);
+  function close() {
+    const modal = document.getElementById('legal-pdf-modal');
+    if (!modal) return;
+    modal.setAttribute('aria-hidden', 'true'); modal.style.opacity = '0';
+    renderVersion++; pdfDocument = null; pdfTask?.destroy().catch(() => {}); pdfTask = null;
+    document.body.style.overflow = previousOverflow || '';
+    previousFocus?.focus();
+    closeTimer = setTimeout(() => { modal.style.visibility = 'hidden'; modal.querySelector('#legal-pdf-document').replaceChildren(); }, 200);
   }
+  document.addEventListener('keydown', event => {
+    const modal = document.getElementById('legal-pdf-modal');
+    if (!modal || modal.getAttribute('aria-hidden') !== 'false') return;
+    if (event.key === 'Escape') { event.preventDefault(); close(); }
+    if (event.key === 'Tab') {
+      const items = modal.querySelectorAll('button, a[href], [tabindex="0"]');
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+  });
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (pdfDocument) paintDocument(++renderVersion).catch(() => {});
+    }, 150);
+  });
 })();

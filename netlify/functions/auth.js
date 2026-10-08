@@ -7,13 +7,27 @@ import bcrypt from 'bcryptjs';
 
 const CLOUD_DB_URL = process.env.CLOUD_DB_URL || 'https://jsonblob.com/api/jsonBlob/019f9cba-929a-7931-ad23-922a9b668aa9';
 
-const adminPasswordHash = process.env.DEFAULT_ADMIN_PASSWORD_HASH || '';
+function getConfiguredAdmins() {
+  const rawAdmins = process.env.DEFAULT_ADMIN_USERS || '';
+  if (!rawAdmins.trim()) return [];
+  try {
+    const admins = JSON.parse(rawAdmins);
+    if (!Array.isArray(admins)) return [];
+    return admins
+      .filter(user => user && user.email && user.password)
+      .map((user, index) => ({
+        ...user,
+        role: 'admin',
+        token: user.token || createToken()
+      }));
+  } catch (err) {
+    console.warn('[Netlify Auth] DEFAULT_ADMIN_USERS is not valid JSON:', err.message);
+    return [];
+  }
+}
 
-// Default Admin users seeded automatically across Netlify & Cloud DB
-const DEFAULT_ADMINS = [
-  { name: 'Fashion Company Administrator', email: 'admin@fashioncompany.com', phone: '9999999999', dob: '1990-01-01', password: adminPasswordHash, role: 'admin', token: 'dtf_token_admin_1' },
-  { name: 'Fashion Company Administrator', email: 'fashioncompanyadmin@gmail.com', phone: '9999999999', dob: '1990-01-01', password: adminPasswordHash, role: 'admin', token: 'dtf_token_admin_2' }
-].filter(user => user.password);
+// Admin users must be configured explicitly. No dummy admin/customer accounts are seeded.
+const DEFAULT_ADMINS = getConfiguredAdmins();
 
 let memoryUsersCache = null;
 
@@ -227,7 +241,7 @@ export async function handler(event, context) {
         phone: phone || '',
         dob: dob || '',
         password: await bcrypt.hash(password, 10),
-        role: body.role || 'customer',
+        role: 'customer',
         token: createToken(),
         createdAt: new Date().toISOString()
       };
@@ -295,7 +309,7 @@ export async function handler(event, context) {
       clearFailedAttempts(clientIp);
       clearFailedAttempts(cleanEmail);
 
-      if (!foundUser.token) {
+      if (!foundUser.token || /^dtf_token_admin_\d+$/.test(foundUser.token)) {
         foundUser.token = createToken();
         passwordUpgraded = true;
       }
@@ -541,8 +555,7 @@ export async function handler(event, context) {
 
     // === 8. SEND VERIFICATION OTP ===
     if (action === 'send-verification-otp') {
-      // Stub: return a static dev OTP for testing without sending real emails/SMS
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, devOtp: '123456' }) };
+      return { statusCode: 501, headers, body: JSON.stringify({ success: false, errors: ['Verification OTP delivery is not configured yet.'] }) };
     }
 
     return { statusCode: 400, headers, body: JSON.stringify({ success: false, errors: ['Invalid API action.'] }) };
