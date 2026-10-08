@@ -4,6 +4,29 @@
 // ============================================================
 
 import bcrypt from 'bcryptjs';
+import { getStore } from '@netlify/blobs';
+
+const ACCOUNT_STORE_NAME = 'fashion-company-accounts';
+const ACCOUNT_USERS_KEY = 'users.json';
+
+function getAccountStore() {
+  const siteID = process.env.NETLIFY_BLOBS_SITE_ID || process.env.NETLIFY_SITE_ID || process.env.SITE_ID;
+  const token = process.env.NETLIFY_BLOBS_TOKEN || process.env.NETLIFY_AUTH_TOKEN;
+  if (siteID && token) return getStore({ name: ACCOUNT_STORE_NAME, siteID, token, consistency: 'strong' });
+  return getStore({ name: ACCOUNT_STORE_NAME, consistency: 'strong' });
+}
+
+async function getAccountUsers() {
+  const data = await getAccountStore().get(ACCOUNT_USERS_KEY, { type: 'json', consistency: 'strong' });
+  if (data == null) return [];
+  if (!Array.isArray(data)) throw new Error('Account storage contains invalid user data.');
+  return data;
+}
+
+async function saveAccountUsers(users) {
+  if (!Array.isArray(users)) throw new TypeError('Account users must be an array.');
+  await getAccountStore().setJSON(ACCOUNT_USERS_KEY, users);
+}
 
 function getConfiguredAdmins() {
   const rawAdmins = process.env.DEFAULT_ADMIN_USERS || '';
@@ -95,7 +118,6 @@ function createToken() {
 }
 
 async function getCloudUsers() {
-  const { getAccountUsers, saveAccountUsers } = await import('./lib/account-store.mjs');
   const users = await getAccountUsers();
   let updated = false;
   DEFAULT_ADMINS.forEach(admin => {
@@ -109,7 +131,6 @@ async function getCloudUsers() {
 }
 
 async function saveCloudUsers(users) {
-  const { saveAccountUsers } = await import('./lib/account-store.mjs');
   await saveAccountUsers(users);
 }
 
