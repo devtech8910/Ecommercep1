@@ -935,9 +935,9 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
 
   // 2. Inject Subbar HTML into location-subbar container
   const subbarRoot = document.getElementById('react-address-picker-root');
-  if (!subbarRoot) return;
-  subbarRoot.style.width = '100%';
-  subbarRoot.innerHTML = `
+  if (subbarRoot) {
+    subbarRoot.style.width = '100%';
+    subbarRoot.innerHTML = `
     <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; font-family: 'Inter', sans-serif;">
       <div style="display: flex; align-items: center; gap: 8px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -946,7 +946,8 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
       </div>
       <button id="subbar-change-location-btn" style="background: rgba(165,180,252,0.1); border: 1px solid rgba(165,180,252,0.25); color: #a5b4fc; padding: 5px 14px; border-radius: 99px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;">Change</button>
     </div>
-  `;
+    `;
+  }
 
   // Fetch Database Addresses Sync
   async function fetchDatabaseAddresses() {
