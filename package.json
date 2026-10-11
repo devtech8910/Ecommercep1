@@ -8,7 +8,9 @@
     "test:catalog": "node scripts/check-catalog.cjs",
     "test:catalog:browser": "node scripts/check-catalog-browser.cjs",
     "test:orders": "node scripts/check-order-flow.cjs",
-    "test:campaigns": "node scripts/check-campaigns.cjs"
+    "test:campaigns": "node scripts/check-campaigns.cjs",
+    "test:security": "node scripts/check-security.cjs",
+    "test:settings": "node scripts/check-account-settings.cjs"
   },
   "description": "Fashion Company E-Commerce — Netlify-hosted storefront",
   "dependencies": {

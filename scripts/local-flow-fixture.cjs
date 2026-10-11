@@ -13,12 +13,21 @@ async function createLocalFlowFixture(password, accounts) {
     ['fashion-company-accounts/users.json', users]
   ]);
   const state = { failWrites: false };
+  const metadata = new Map();
   global.__localFlowBcrypt = bcrypt;
   global.__localFlowStore = options => ({
     get: async key => structuredClone(values.get(options.name + '/' + key) ?? null),
     setJSON: async (key, value) => {
       if (state.failWrites && options.name === 'fashion-company-orders') throw new Error('Test storage is unavailable');
       values.set(options.name + '/' + key, structuredClone(value));
+    },
+    set: async (key, value, settings = {}) => {
+      values.set(options.name + '/' + key, await value.arrayBuffer());
+      metadata.set(options.name + '/' + key, settings.metadata || {});
+    },
+    getWithMetadata: async key => {
+      const data = values.get(options.name + '/' + key);
+      return data == null ? null : { data, metadata: metadata.get(options.name + '/' + key) };
     }
   });
   global.__localFlowAccountUsers = {
@@ -49,6 +58,6 @@ async function createLocalFlowFixture(password, accounts) {
   source = await fs.readFile(path.join(root, 'netlify/functions/banners.mjs'), 'utf8');
   global.__localFlowCampaign = require('../js/banner-defaults.js');
   const banners = (await load(prepare(source).replace("import campaign from '../../js/banner-defaults.js';", 'const campaign = global.__localFlowCampaign;'))).default;
-  return { auth, orders, products, banners, resolveUser, values, state, get users() { return users; } };
+  return { auth, orders, products, banners, resolveUser, values, state, get users() { return values.get('fashion-company-accounts/users.json'); } };
 }
 module.exports = { createLocalFlowFixture };
