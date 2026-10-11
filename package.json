@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "build": "node scripts/build-storefront.cjs",
     "start": "node scripts/preview-catalog.mjs",
     "test:catalog": "node scripts/check-catalog.cjs",
     "test:catalog:browser": "node scripts/check-catalog-browser.cjs",
