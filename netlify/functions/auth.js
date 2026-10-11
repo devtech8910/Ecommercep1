@@ -5,6 +5,7 @@
 
 import bcrypt from 'bcryptjs';
 import { getStore } from '@netlify/blobs';
+import { randomBytes, randomInt } from 'node:crypto';
 
 const ACCOUNT_STORE_NAME = 'fashion-company-accounts';
 const ACCOUNT_USERS_KEY = 'users.json';
@@ -107,14 +108,16 @@ function stripSensitiveUserFields(user) {
     resetOtpExpiresAt,
     resetOtpRequestedAt,
     resetOtpRequestCount,
+    resetOtpAttempts,
+    deletionAttempts,
+    deletionAttemptWindow,
     ...safeUser
   } = user;
   return safeUser;
 }
 
 function createToken() {
-  if (globalThis.crypto?.randomUUID) return 'dtf_token_' + globalThis.crypto.randomUUID();
-  return 'dtf_token_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  return 'dtf_token_' + randomBytes(32).toString('hex');
 }
 
 async function getCloudUsers() {
@@ -170,7 +173,8 @@ export async function handler(event, context) {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Credentials': 'true',
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-store'
   };
 
   if (event.httpMethod === 'OPTIONS') {
@@ -200,12 +204,18 @@ export async function handler(event, context) {
       else if (path.includes('check-email')) action = 'check-email';
       else if (path.includes('reset-password')) action = 'reset-password';
       else if (path.includes('delete-account')) action = 'delete-account';
+      else if (queryParams.email) action = 'check-email';
+    }
+
+    if (!['GET', 'POST'].includes(event.httpMethod) ||
+        (event.httpMethod !== 'POST' && action !== 'check-email')) {
+      return { statusCode: 405, headers, body: JSON.stringify({ success: false, errors: ['Method not allowed.'] }) };
     }
 
     const users = await getCloudUsers();
 
     // === 1. CHECK EMAIL EXISTENCE ===
-    if (action === 'check-email' || queryParams.email) {
+    if (action === 'check-email') {
       const targetEmail = (queryParams.email || body.email || '').trim().toLowerCase();
       if (!targetEmail) {
         return { statusCode: 400, headers, body: JSON.stringify({ success: false, errors: ['Email is required.'] }) };
@@ -246,7 +256,7 @@ export async function handler(event, context) {
         statusCode: 201,
         headers: {
           ...headers,
-          'Set-Cookie': `dtf_token=${newUser.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`
+          'Set-Cookie': `dtf_token=${newUser.token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`
         },
         body: JSON.stringify({ success: true, user: stripSensitiveUserFields(newUser), token: newUser.token })
       };
@@ -336,7 +346,7 @@ export async function handler(event, context) {
         statusCode: 200,
         headers: {
           ...headers,
-          'Set-Cookie': `dtf_token=${foundUser.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`
+          'Set-Cookie': `dtf_token=${foundUser.token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`
         },
         body: JSON.stringify({
           success: true,
@@ -408,7 +418,8 @@ export async function handler(event, context) {
         }
       }
 
-      const otp = String(Math.floor(100000 + Math.random() * 900000));
+      const otp = String(randomInt(100000, 1000000));
+      targetUser.resetOtpAttempts = 0;
       targetUser.resetOtpHash = await bcrypt.hash(otp, 10);
       targetUser.resetOtpExpiresAt = new Date(now + 10 * 60 * 1000).toISOString(); // 10 minutes
       targetUser.resetOtpRequestedAt = new Date(now).toISOString();
@@ -457,8 +468,14 @@ export async function handler(event, context) {
         return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['This password reset OTP has expired. Please request a new one.'] }) };
       }
 
+      if ((targetUser.resetOtpAttempts || 0) >= 5) {
+        return { statusCode: 429, headers, body: JSON.stringify({ success: false, errors: ['Too many incorrect codes. Request a new password reset OTP.'] }) };
+      }
+
       const otpMatches = await bcrypt.compare(otp, targetUser.resetOtpHash);
       if (!otpMatches) {
+        targetUser.resetOtpAttempts = (targetUser.resetOtpAttempts || 0) + 1;
+        await saveCloudUsers(users);
         return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['Invalid password reset OTP code.'] }) };
       }
 
@@ -469,6 +486,7 @@ export async function handler(event, context) {
       delete targetUser.resetOtpRequestedAt;
       delete targetUser.resetOtpRequestCount;
       delete targetUser.resetOtpWindowStart;
+      delete targetUser.resetOtpAttempts;
 
       await saveCloudUsers(users);
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'Password reset successfully.' }) };
@@ -476,28 +494,40 @@ export async function handler(event, context) {
 
     // === 6. DELETE ACCOUNT (SCHEDULE FOR 30 DAYS) ===
     if (action === 'delete-account') {
-      const { email } = body;
-      const cleanEmail = (email || '').trim().toLowerCase();
-
-      if (!cleanEmail) {
-        return { statusCode: 400, headers, body: JSON.stringify({ success: false, errors: ['Email is required.'] }) };
+      const token = (event.headers?.authorization || event.headers?.Authorization || '').replace(/^Bearer\s+/i, '').trim();
+      const targetUser = token && users.find(user => user.token === token && !user.deletionScheduled);
+      if (!targetUser) {
+        return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['Please sign in to delete your account.'] }) };
       }
-
-      let found = false;
-      const updatedUsers = users.map(u => {
-        if (u.email && u.email.toLowerCase() === cleanEmail) {
-          u.deletionScheduled = true;
-          u.deletionDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-          found = true;
-        }
-        return u;
-      });
-
-      if (found) {
-        await saveCloudUsers(updatedUsers);
+      // The session chooses the account. A caller cannot select someone else by email.
+      if (body.email && String(body.email).trim().toLowerCase() !== targetUser.email.toLowerCase()) {
+        return { statusCode: 403, headers, body: JSON.stringify({ success: false, errors: ['You can only delete your own account.'] }) };
       }
-
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'Account deletion scheduled for 30 days.' }) };
+      const now = Date.now();
+      if (now - (targetUser.deletionAttemptWindow || 0) > 15 * 60 * 1000) {
+        targetUser.deletionAttemptWindow = now;
+        targetUser.deletionAttempts = 0;
+      }
+      if ((targetUser.deletionAttempts || 0) >= 5) {
+        return { statusCode: 429, headers, body: JSON.stringify({ success: false, errors: ['Too many incorrect passwords. Try again in 15 minutes.'] }) };
+      }
+      const password = typeof body.password === 'string' ? body.password : '';
+      const verified = password && (isBcryptHash(targetUser.password)
+        ? await bcrypt.compare(password, targetUser.password)
+        : targetUser.password === password);
+      if (!verified) {
+        targetUser.deletionAttempts = (targetUser.deletionAttempts || 0) + 1;
+        await saveCloudUsers(users);
+        return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['Your current password is required.'] }) };
+      }
+      targetUser.deletionScheduled = true;
+      targetUser.deletionDate = new Date(now + 30 * 24 * 60 * 60 * 1000).toISOString();
+      delete targetUser.deletionAttempts;
+      delete targetUser.deletionAttemptWindow;
+      // Revoke the old session immediately; signing in can cancel the grace period.
+      targetUser.token = createToken();
+      await saveCloudUsers(users);
+      return { statusCode: 200, headers: { ...headers, 'Set-Cookie': 'dtf_token=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0' }, body: JSON.stringify({ success: true, message: 'Account deletion scheduled for 30 days.' }) };
     }
 
     // === 7. UPDATE PROFILE ===

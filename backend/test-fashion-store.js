@@ -9,7 +9,7 @@ async function check() {
     user: 'postgres',
     host: 'localhost',
     database: 'fashion_store',
-    password: process.env.PGPASSWORD || 'postgres',
+    password: process.env.DB_PASSWORD || process.env.PGPASSWORD,
     port: 5432,
   });
 
