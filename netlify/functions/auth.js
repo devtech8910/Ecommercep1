@@ -48,8 +48,22 @@ function getConfiguredAdmins() {
   }
 }
 
+function getRevokedAdminEmails() {
+  const rawEmails = process.env.REVOKED_ADMIN_EMAILS || '[]';
+  try {
+    const emails = JSON.parse(rawEmails);
+    return new Set(Array.isArray(emails)
+      ? emails.filter(email => typeof email === 'string').map(email => email.trim().toLowerCase()).filter(Boolean)
+      : []);
+  } catch (err) {
+    console.warn('[Netlify Auth] REVOKED_ADMIN_EMAILS is not valid JSON:', err.message);
+    return new Set();
+  }
+}
+
 // Admin users must be configured explicitly. No dummy admin/customer accounts are seeded.
 const DEFAULT_ADMINS = getConfiguredAdmins();
+const REVOKED_ADMIN_EMAILS = getRevokedAdminEmails();
 
 // Failed login attempt tracker (in-memory sliding window)
 const failedLoginAttempts = new Map();
@@ -121,11 +135,25 @@ function createToken() {
 }
 
 async function getCloudUsers() {
-  const users = await getAccountUsers();
+  let users = await getAccountUsers();
   let updated = false;
+
+  const retainedUsers = users.filter(user => !(
+    user && user.role === 'admin' && user.email && REVOKED_ADMIN_EMAILS.has(user.email.trim().toLowerCase())
+  ));
+  if (retainedUsers.length !== users.length) {
+    users = retainedUsers;
+    updated = true;
+  }
+
   DEFAULT_ADMINS.forEach(admin => {
-    if (!users.some(user => user && user.email && user.email.toLowerCase() === admin.email.toLowerCase())) {
+    const existing = users.find(user => user && user.email && user.email.toLowerCase() === admin.email.toLowerCase());
+    if (!existing) {
       users.push(admin);
+      updated = true;
+    } else if (existing.password !== admin.password || existing.role !== 'admin') {
+      existing.password = admin.password;
+      existing.role = 'admin';
       updated = true;
     }
   });
