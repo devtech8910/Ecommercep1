@@ -40,10 +40,31 @@ async function createLocalFlowFixture(password, accounts) {
   const instance = crypto.randomUUID();
   const load = code => import('data:text/javascript;base64,' + Buffer.from(code + '\n// ' + instance).toString('base64'));
   let source = await fs.readFile(path.join(root, 'netlify/functions/auth.js'), 'utf8');
-  const auth = (await load(source
+  const authHandler = (await load(source
     .replace("import bcrypt from 'bcryptjs';", 'const bcrypt = global.__localFlowBcrypt;')
     .replace("import { getStore } from '@netlify/blobs';", 'const getStore = global.__localFlowStore;')
-    .replace('const DEFAULT_ADMINS = getConfiguredAdmins();', 'const DEFAULT_ADMINS = [];'))).handler;
+    .replace('const DEFAULT_ADMINS = getConfiguredAdmins();', 'const DEFAULT_ADMINS = [];'))).default;
+  const auth = async event => {
+    const url = new URL(event.path || 'https://local.test/.netlify/functions/auth');
+    for (const [key, value] of Object.entries(event.queryStringParameters || {})) {
+      if (value != null) url.searchParams.set(key, value);
+    }
+    const request = new Request(url, {
+      method: event.httpMethod || 'POST',
+      headers: event.headers || {},
+      body: ['GET', 'HEAD'].includes(event.httpMethod) ? undefined : event.body || undefined
+    });
+    const response = await authHandler(request, {});
+    const responseHeaders = Object.fromEntries([...response.headers.entries()].map(([key, value]) => [
+      key.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('-'),
+      value
+    ]));
+    return {
+      statusCode: response.status,
+      headers: responseHeaders,
+      body: await response.text()
+    };
+  };
   source = await fs.readFile(path.join(root, 'netlify/functions/lib/account-session.mjs'), 'utf8');
   const resolveUser = (await load(source.replace("import { getAccountUsers } from './account-store.mjs';", 'const getAccountUsers = global.__localFlowAccountUsers.get;'))).resolveAccountUser;
   global.__localFlowResolve = resolveUser;

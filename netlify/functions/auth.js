@@ -166,7 +166,7 @@ async function sendResetOtpEmail(email, otp, name) {
   return true;
 }
 
-export async function handler(event, context) {
+async function handleAuthEvent(event, context) {
   // CORS Headers
   const headers = {
     'Access-Control-Allow-Origin': event.headers?.origin || '*',
@@ -591,4 +591,21 @@ export async function handler(event, context) {
       body: JSON.stringify({ success: false, errors: ['The account service is temporarily unavailable. Please try again shortly.'] })
     };
   }
+}
+
+export default async function authHandler(request, context) {
+  const url = new URL(request.url);
+  const event = {
+    httpMethod: request.method,
+    headers: Object.fromEntries(request.headers.entries()),
+    path: url.pathname,
+    queryStringParameters: Object.fromEntries(url.searchParams),
+    body: ['GET', 'HEAD'].includes(request.method) ? null : await request.text()
+  };
+
+  const result = await handleAuthEvent(event, context);
+  return new Response(result.body, {
+    status: result.statusCode,
+    headers: result.headers
+  });
 }
