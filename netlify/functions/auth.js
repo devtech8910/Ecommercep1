@@ -476,27 +476,23 @@ export async function handler(event, context) {
 
     // === 6. DELETE ACCOUNT (SCHEDULE FOR 30 DAYS) ===
     if (action === 'delete-account') {
-      const { email } = body;
-      const cleanEmail = (email || '').trim().toLowerCase();
-
-      if (!cleanEmail) {
-        return { statusCode: 400, headers, body: JSON.stringify({ success: false, errors: ['Email is required.'] }) };
+      const authHeader = event.headers?.authorization || event.headers?.Authorization || '';
+      const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+      if (!token) {
+        return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['Sign in to request account deletion.'] }) };
       }
 
-      let found = false;
-      const updatedUsers = users.map(u => {
-        if (u.email && u.email.toLowerCase() === cleanEmail) {
-          u.deletionScheduled = true;
-          u.deletionDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-          found = true;
-        }
-        return u;
-      });
-
-      if (found) {
-        await saveCloudUsers(updatedUsers);
+      const targetUser = users.find(user => user.token === token);
+      if (!targetUser) {
+        return { statusCode: 401, headers, body: JSON.stringify({ success: false, errors: ['Your session is invalid. Please sign in again.'] }) };
+      }
+      if (targetUser.deletionScheduled) {
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'Account deletion is already scheduled.' }) };
       }
 
+      targetUser.deletionScheduled = true;
+      targetUser.deletionDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      await saveCloudUsers(users);
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'Account deletion scheduled for 30 days.' }) };
     }
 

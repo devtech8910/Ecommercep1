@@ -442,8 +442,11 @@
 
               fetch(apiUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'delete-account', email: user.email })
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${user.token}`
+                },
+                body: JSON.stringify({ action: 'delete-account' })
               }).catch(e => {});
             } catch (e) {}
 
