@@ -72,6 +72,12 @@ async function main() {
   assert.equal((await call('GET', null, '?category=kids')).data.products.length, 0);
   assert.equal((await call('DELETE', { id: seed.id })).status, 200);
   assert.equal((await call('GET', null, '?id=' + seed.id)).status, 404);
+  values.clear();
+  const freshCatalog = await call('GET');
+  assert.equal(freshCatalog.data.products.length, 200, 'A new site should initialize from the bundled catalog');
+  assert(values.has('catalog-initialized.json'));
+  values.set('catalog.json', []);
+  assert.equal((await call('GET')).data.products.length, 0, 'An intentionally emptied catalog should stay empty');
   delete global.__catalogTestStore; delete global.__catalogTestDefinitions;
   console.log(JSON.stringify({ products: 200, uniquePhotographs: imageHashes.size, optimizedAssetsMB: +(totalBytes / 1024 / 1024).toFixed(2), migrationAndCRUD: 'passed', inlineScripts: 'passed' }, null, 2));
 }

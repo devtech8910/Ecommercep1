@@ -9,6 +9,7 @@ import { resolveAccountUser } from './lib/account-session.mjs';
 
 const PRODUCTS_STORE_NAME = 'devtech-products';
 const PRODUCTS_BLOB_KEY = 'catalog.json';
+const CATALOG_INITIALIZED_KEY = 'catalog-initialized.json';
 
 // Optional legacy import URL. If this points to a removed JSONBlob/resource and
 // returns 404, writes must still work through Netlify Blobs.
@@ -140,6 +141,15 @@ async function getCloudProducts() {
   const data = await store.get(PRODUCTS_BLOB_KEY, { type: 'json', consistency: 'strong' });
   if (data) {
     const products = parseProductList(data);
+    if (products.length === 0 && await store.get(CATALOG_INITIALIZED_KEY, { type: 'json' })) return products;
+    if (products.length === 0) {
+      const legacyProducts = await fetchLegacyProducts();
+      const initialProducts = legacyProducts.length
+        ? legacyProducts
+        : catalog.buildCatalog().map(({ imagePrompt, ...product }) => product);
+      await saveCloudProducts(initialProducts);
+      return initialProducts;
+    }
     const upgraded = catalog.upgradeSeedCatalog(products);
     if (upgraded.some((product, index) => product !== products[index])) {
       const backupKey = `catalog-before-${catalog.revision}.json`;
@@ -150,14 +160,18 @@ async function getCloudProducts() {
   }
 
   const legacyProducts = await fetchLegacyProducts();
-  await saveCloudProducts(legacyProducts);
-  return legacyProducts;
+  const initialProducts = legacyProducts.length
+    ? legacyProducts
+    : catalog.buildCatalog().map(({ imagePrompt, ...product }) => product);
+  await saveCloudProducts(initialProducts);
+  return initialProducts;
 }
 
 // Persist the full product list to Netlify Blob storage.
 async function saveCloudProducts(products) {
   const store = getProductsStore();
   await store.setJSON(PRODUCTS_BLOB_KEY, Array.isArray(products) ? products : []);
+  await store.setJSON(CATALOG_INITIALIZED_KEY, { revision: catalog.revision });
   console.log(`[Products] Saved ${Array.isArray(products) ? products.length : 0} products to Netlify Blobs.`);
 }
 
