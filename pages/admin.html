@@ -3917,7 +3917,7 @@ void main() {
                 try {
                   const uploadRes = await fetch(uploadApiUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user ? user.token : ''}` },
+                    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + user.token },
                     body: JSON.stringify({
                       base64Data: item.src,
                       filename: item.filename || `product_img_${index}.jpg`
@@ -5905,7 +5905,7 @@ if (!sharedUpdated) {
 
                   const uploadRes = await fetch(uploadApiUrl, {
                     method: 'POST',
-                    headers: getBannerAuthHeaders(),
+                    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + user.token },
                     body: JSON.stringify({
                       base64Data: currentBannerBase64,
                       filename: `banner_${Date.now()}.jpg`
